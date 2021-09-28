@@ -3,9 +3,11 @@ import bcrypt
 
 user_service = Blueprint('app_user_service', __name__)
 
+
 @user_service.route('/')
 def index():
     return "Test"
+
 
 @user_service.route('/signup', methods=['post', 'get'])
 def create_account():
@@ -15,7 +17,7 @@ def create_account():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        #Uncomment this section when database is established
+        # Uncomment this section when database is established
         # user = records.find_one({"email": email})
         # if user:
         #     #email already taken
@@ -38,7 +40,7 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        #Uncomment when db established
+        # Uncomment when db established
         # user = records.find_one({"email": email})
         # if user:
         #     user_email = user['email']
@@ -52,3 +54,9 @@ def login():
         # else:
         #     return json.dumps(False)
     return json.dumps(False)
+
+
+@user_service.route('/logout')
+def logout():
+    session.pop('email', None)
+    return json.dumps(True)
