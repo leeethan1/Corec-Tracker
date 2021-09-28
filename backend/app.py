@@ -1,5 +1,5 @@
 from flask import Flask
-from src.services.UserService import user_service
+from backend.src.UserService import user_service
 
 app = Flask(__name__)
 app.register_blueprint(user_service)
