@@ -1,7 +1,8 @@
 from flask import Flask
+from src.services.UserService import user_service
 
 app = Flask(__name__)
+app.register_blueprint(user_service)
 
-from src.services import UserService
-
-app.run()
+if __name__ == '__main__':
+    app.run(debug=True)

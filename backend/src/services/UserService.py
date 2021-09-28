@@ -1,8 +1,13 @@
-from __main__ import app
-from flask import Flask, request, session, json
+from flask import Blueprint, request, session, json
 import bcrypt
 
-@app.route('/signup', methods=['post', 'get'])
+user_service = Blueprint('app_user_service', __name__)
+
+@user_service.route('/')
+def index():
+    return "Test"
+
+@user_service.route('/signup', methods=['post', 'get'])
 def create_account():
     if "email" in session:
         return json.dumps(False)
@@ -23,7 +28,7 @@ def create_account():
     return json.dumps(False)
 
 
-@app.route('/login', methods=['post', 'get'])
+@user_service.route('/login', methods=['post', 'get'])
 def login():
     if "email" in session:
         return json.dumps(True)
