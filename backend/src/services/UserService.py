@@ -24,6 +24,7 @@ def create_account():
         # hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         # user_input = {'email': email, 'password': hashed}
         # records.insert_one(user_input)
+        session['email'] = email
         return json.dumps(True)
     return json.dumps(False)
 
