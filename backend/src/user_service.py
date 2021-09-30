@@ -6,6 +6,7 @@ import ssl
 
 user_service = Blueprint('app_user_service', __name__)
 db = database_service.connect_to_database("database")
+users = db["users"]
 
 
 @user_service.route('/signup', methods=['post', 'get'])
