@@ -1,6 +1,8 @@
 import pymongo
-import base64
 import ssl
+from flask import Blueprint
+
+database_service = Blueprint('app_database_service', __name__)
 
 # PASSWORD = "aWxvdmVmcmllczE="
 PASSWORD = "Cs307lol"
