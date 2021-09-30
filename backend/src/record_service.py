@@ -1,7 +1,5 @@
 from datetime import datetime
-
 from flask import Flask, Blueprint, session, jsonify
-
 import database_service as ds
 
 record_service = Blueprint("app_record_service", __name__)
