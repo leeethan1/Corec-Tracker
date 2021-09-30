@@ -1,8 +1,6 @@
 from flask import Blueprint, request, session, json
 import bcrypt
 import database_service
-import pymongo
-import ssl
 
 user_service = Blueprint('app_user_service', __name__)
 db = database_service.connect_to_database("database")
