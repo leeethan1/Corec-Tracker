@@ -12,8 +12,9 @@ def create_account():
     if "email" in session:
         return json.dumps(False)
     if request.method == 'POST':
-        email = request.form.get("email")
-        password = request.form.get("password")
+        email = request.args.get("email")
+        password = request.args.get("password")
+        phone = request.args.get("phone")
         emailNotificationsOn = True;
         smsNotificationsOn = True
         notifications = {}
@@ -27,6 +28,7 @@ def create_account():
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user_input = {'email': email,
                       'password': hashed,
+                      'phone': phone,
                       'emailNotifications': emailNotificationsOn,
                       'smsNotifications': smsNotificationsOn,
                       'notfications': notifications,
