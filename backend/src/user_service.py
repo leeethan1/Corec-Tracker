@@ -7,14 +7,14 @@ db = database_service.connect_to_database("database")
 users = db["users"]
 
 
-@user_service.route('/signup', methods=['post', 'get'])
+@user_service.route('/signup', methods=['POST', 'GET'])
 def create_account():
     if "email" in session:
-        return json.dumps(False)
+        return json.dumps("redirect")
     if request.method == 'POST':
-        email = request.args.get("email")
-        password = request.args.get("password")
-        phone = request.args.get("phone")
+        email = request.json["email"]
+        password = request.json["password"]
+        phone = request.json["phone"]
         emailNotificationsOn = True;
         smsNotificationsOn = True
         notifications = {}
@@ -23,7 +23,7 @@ def create_account():
         user = users.find_one({"email": email})
         if user:
             # email already taken
-            return json.dumps(False)
+            return json.dumps("this email is already in use")
 
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user_input = {'email': email,
@@ -31,22 +31,22 @@ def create_account():
                       'phone': phone,
                       'emailNotifications': emailNotificationsOn,
                       'smsNotifications': smsNotificationsOn,
-                      'notfications': notifications,
+                      'notifications': notifications,
                       'favoriteRooms': []}
         users.insert_one(user_input)
         session['email'] = email
-        return json.dumps(True)
-    return json.dumps(False)
+        return json.dumps("successfully signed up")
+    return json.dumps("could not create account")
 
 
 @user_service.route('/login', methods=['post', 'get'])
 def login():
     if "email" in session:
-        return json.dumps(True)
+        return json.dumps("redirect")
 
     if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
+        email = request.json["email"]
+        password = request.json["password"]
 
         # Uncomment when db established
         user = users.find_one({"email": email})
@@ -56,15 +56,17 @@ def login():
 
             if bcrypt.checkpw(password.encode('utf-8'), user_password):
                 session["email"] = user_email
-                return json.dumps(True)
+                return json.dumps("successfully logged in")
             else:
-                return json.dumps(False)
+                return json.dumps("incorrect email or password")
         else:
-            return json.dumps(False)
-    return json.dumps(False)
+            return json.dumps("incorrect email or password")
+    return json.dumps("could not log in")
 
 
-@user_service.route('/logout')
+@user_service.route('/logout', methods=['POST', "GET"])
 def logout():
+    if 'email' not in session:
+        return json.dumps("already logged out")
     session.pop('email', None)
-    return json.dumps(True)
+    return json.dumps("successfully logged out")

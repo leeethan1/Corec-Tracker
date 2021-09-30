@@ -5,6 +5,7 @@ from user_service import user_service
 app = Flask(__name__)
 app.register_blueprint(record_service)
 app.register_blueprint(user_service)
+app.secret_key = 'SECRET_KEY'
 
 
 @app.route('/')
