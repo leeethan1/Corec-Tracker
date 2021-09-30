@@ -1,3 +1,10 @@
 # Corec-Tracker
+By Team 7
+- 
+Daniel Shi
 
-testing token: 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
+Shen Wei Leong
+
+Matthew Zhang
+
+Ethan Lee
