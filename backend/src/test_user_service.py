@@ -1,4 +1,5 @@
 import user_service
+import bcrypt
 import database_service
 import unittest
 
@@ -6,7 +7,7 @@ db = database_service.connect_to_database("test")
 users = db['users']
 test_user = {
     'email': "email",
-    'password': "pass123",
+    'password': bcrypt.hashpw("pass123".encode('utf-8'), bcrypt.gensalt()),
     'emailNotifications': False,
     'smsNotifications': False,
     'notifications': {"room 1": 6},
@@ -23,7 +24,7 @@ class TestUserService(unittest.TestCase):
 
     def testRemove(self):
         query = {'email': "email"}
-        users.delete_one(query)
+        users.delete_many(query)
         assert users.find_one(query) is None
 
 
