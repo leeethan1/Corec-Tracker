@@ -1,11 +1,8 @@
 import user_service
-import constants
+import database_service
 import unittest
-import pymongo
-import ssl
 
-client = pymongo.MongoClient(constants.CONNECTION_STRING, ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
-db = client['test']
+db = database_service.connect_to_database("test")
 users = db['users']
 test_user = {
     'email': "email",

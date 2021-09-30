@@ -1,13 +1,12 @@
 from flask import Blueprint, request, session, json
 import bcrypt
+import database_service
 import pymongo
-import constants
 import ssl
 
 user_service = Blueprint('app_user_service', __name__)
-client = pymongo.MongoClient(constants.CONNECTION_STRING, ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
-db = client["database"]
-users = db["users"]
+db = database_service.connect_to_database("database")
+
 
 @user_service.route('/signup', methods=['post', 'get'])
 def create_account():
@@ -23,7 +22,7 @@ def create_account():
         # Uncomment this section when database is established
         user = users.find_one({"email": email})
         if user:
-            #email already taken
+            # email already taken
             return json.dumps(False)
 
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
