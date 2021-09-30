@@ -1,0 +1,1 @@
+CONNECTION_STRING = f"mongodb+srv://dshi:ilovefries1@cs307-project.yw0gw.mongodb.net/database?retryWrites=true&w=majority"
