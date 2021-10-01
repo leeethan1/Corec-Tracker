@@ -13,6 +13,10 @@ class TestRecordService(unittest.TestCase):
         assert record is not None
 
     def testGet(self):
-        records_as_json = rs.get_average_occupancy(17)
-        #incomplete
-        assert True
+        record_list = list(records.find({"hour": 17}))
+        occupancies = [record['occupancy'] for record in record_list]
+        if not occupancies:
+            average = 0
+        else:
+            average = sum(occupancies) / len(occupancies)
+        assert average == 87
