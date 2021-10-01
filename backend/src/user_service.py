@@ -70,3 +70,14 @@ def logout():
         return json.dumps("already logged out")
     session.pop('email', None)
     return json.dumps("successfully logged out")
+
+
+@user_service.route('/settings/update', methods=['PUT'])
+def update_notifications():
+    if 'email' not in session:
+        return json.dumps('not logged in')
+    email = request.json['email']
+    updated_notifications = request.json['notifications']
+    users.find_one_and_update({'email': email},
+                              {'$set': {'notifications': updated_notifications}})
+    return json.dumps('settings updated')
