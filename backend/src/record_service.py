@@ -9,20 +9,21 @@ records = db["records"]
 users = db["users"]
 
 
-@record_service.route('/records/notify/<room>/<occupancy>', methods=['POST', 'GET'])
-def create_and_notify(room, occupancy):
-    # email = request.json['email']
-    occupancy = int(occupancy)
-    email = "danielshi0516@gmail.com"
+@record_service.route('/records/notify', methods=['POST', 'GET'])
+def create_and_notify():
+    email = request.json['email']
+    room = request.json['room']
+    occupancy = request.json['occupancy']
     create_record(room, occupancy, records)
-    # TODO: send notification
+
+    # send notification (if applicable)
     if "email" in session:
         user = users.find_one({"email": email})
         notifications = user["notifications"]
         if room in notifications and notifications[room] > occupancy:
             # send email/SMS
             if user["emailNotifications"]:
-                ns.send_email()
+                ns.send_email(email, occupancy, room)
             if user["smsNotifications"]:
                 pass
     return jsonify(occupancy)
