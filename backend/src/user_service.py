@@ -77,7 +77,11 @@ def update_notifications():
     if 'email' not in session:
         return json.dumps('not logged in')
     email = request.json['email']
+    emailNotifications = request.json['emailNotifications']
+    smsNotifications = request.json['smsNotifications']
     updated_notifications = request.json['notifications']
     users.find_one_and_update({'email': email},
-                              {'$set': {'notifications': updated_notifications}})
+                              {'$set': {'notifications': updated_notifications,
+                                        'emailNotifications': emailNotifications,
+                                        'smsNotifications': smsNotifications}})
     return json.dumps('settings updated')
