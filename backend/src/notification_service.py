@@ -9,7 +9,12 @@ import json
 EMAIL = 'shi517@purdue.edu'
 load_dotenv()
 PASSWORD = os.getenv('EMAIL_PASSWORD')
+
+SID = os.getenv('ACCOUNT_SID')
 AUTH = os.getenv("AUTH")
+PHONE = os.getenv('PHONE')
+
+client = Client(SID, AUTH)
 
 
 def send_email(email, occupancy, room):
@@ -40,3 +45,15 @@ def send_email(email, occupancy, room):
         print(e)
     finally:
         server.quit()
+
+
+def send_text(to_phone, occupancy, room):
+    try:
+        message = client.messages.create(
+            body="{} is at {} people, time to get those gains up!".format(room, occupancy),
+            from_=PHONE,
+            to=to_phone
+        )
+        print("sms sent")
+    except Exception as e:
+        print(e)
