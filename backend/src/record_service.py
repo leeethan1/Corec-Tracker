@@ -1,6 +1,7 @@
 from datetime import datetime
-from flask import Flask, Blueprint, session, jsonify
+from flask import Flask, Blueprint, session, jsonify, request
 import database_service as ds
+import notification_service as ns
 
 record_service = Blueprint("app_record_service", __name__)
 db = ds.connect_to_database("database")
@@ -8,19 +9,24 @@ records = db["records"]
 users = db["users"]
 
 
-def create_and_notify(room, occupancy, email):
+@record_service.route('/records/notify', methods=['POST', 'GET'])
+def create_and_notify():
+    room = request.json['room']
+    occupancy = request.json['occupancy']
     create_record(room, occupancy, records)
-    # TODO: send notification
+
+    # send notification (if applicable)
     if "email" in session:
+        email = session['email']
         user = users.find_one({"email": email})
         notifications = user["notifications"]
         if room in notifications and notifications[room] > occupancy:
             # send email/SMS
             if user["emailNotifications"]:
-                pass
+                ns.send_email(email, occupancy, room)
             if user["smsNotifications"]:
                 pass
-    return occupancy
+    return jsonify(occupancy)
 
 
 def create_record(room, occupancy, col):

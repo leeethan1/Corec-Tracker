@@ -76,7 +76,7 @@ def logout():
 def update_notifications():
     if 'email' not in session:
         return json.dumps('not logged in')
-    email = request.json['email']
+    email = session['email']
     emailNotifications = request.json['emailNotifications']
     smsNotifications = request.json['smsNotifications']
     updated_notifications = request.json['notifications']
