@@ -1,6 +1,7 @@
 from flask import Blueprint, request, session, json
 import bcrypt
 import database_service
+import exceptions
 
 user_service = Blueprint('app_user_service', __name__)
 db = database_service.connect_to_database("database")
@@ -23,7 +24,7 @@ def create_account():
         user = users.find_one({"email": email})
         if user:
             # email already taken
-            return json.dumps("this email is already in use")
+            raise exceptions.DuplicateEmailError
 
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user_input = {'email': email,
@@ -35,14 +36,14 @@ def create_account():
                       'favoriteRooms': []}
         users.insert_one(user_input)
         session['email'] = email
-        return json.dumps("successfully signed up")
+        return "Signed up successfully", 200
     return json.dumps("could not create account")
 
 
 @user_service.route('/login', methods=['post', 'get'])
 def login():
     if "email" in session:
-        return json.dumps("redirect")
+        return json.dumps("already logged in")
 
     if request.method == "POST":
         email = request.json["email"]
@@ -56,12 +57,12 @@ def login():
 
             if bcrypt.checkpw(password.encode('utf-8'), user_password):
                 session["email"] = user_email
-                return json.dumps("successfully logged in")
+                return "Logged in successfully", 200
             else:
-                return json.dumps("incorrect email or password")
+                raise exceptions.AuthError
         else:
-            return json.dumps("incorrect email or password")
-    return json.dumps("could not log in")
+            raise exceptions.AuthError
+    raise exceptions.AuthError
 
 
 @user_service.route('/logout', methods=['POST', "GET"])
@@ -69,17 +70,17 @@ def logout():
     if 'email' not in session:
         return json.dumps("already logged out")
     session.pop('email', None)
-    return json.dumps("successfully logged out")
+    return "Logged out successfully", 200
 
 
 @user_service.route('/settings/email/update', methods=['PUT', 'GET'])
 def update_email():
     if 'email' not in session:
-        return json.dumps('not logged in')
+        raise exceptions.NotLoggedIn
     old_email = session['email']
     new_email = request.json['email']
     if new_email == old_email:
-        return json.dumps("new email can't be same as old")
+        raise exceptions.DuplicateEmailError
     else:
         existing_user = users.find_one({'email': new_email})
         if not existing_user:
@@ -87,33 +88,33 @@ def update_email():
                                       {'$set': {
                                           'email': new_email
                                       }})
-            return json.dumps('Email updated')
+            return "Email updated", 200
         else:
-            return json.dumps("That email is already taken")
+            raise exceptions.DuplicateEmailError
 
 
 @user_service.route('/settings/password/update', methods=['PUT', 'GET'])
 def update_password():
     if 'email' not in session:
-        return json.dumps('not logged in')
+        raise exceptions.NotLoggedIn
     user = users.find_one({'email': session['email']})
     old_password = user['password']
     new_password = request.json['password']
     if bcrypt.checkpw(new_password.encode('utf-8'), old_password):
-        return json.dumps("new password can't be same as old password")
+        raise exceptions.SamePasswordError
     else:
         hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
         users.find_one_and_update({'email': session['email']},
                                   {'$set': {
                                       'password': hashed
                                   }})
-        return json.dumps('Password updated')
+        return "Password updated", 200
 
 
 @user_service.route('/settings/phone/update', methods=['PUT', 'GET'])
 def update_phone():
     if 'email' not in session:
-        return json.dumps('not logged in')
+        raise exceptions.NotLoggedIn
     user = users.find_one({'email': session['email']})
     old_phone = user['phone']
     new_phone = request.json['phone']
@@ -124,13 +125,13 @@ def update_phone():
                                   {'$set': {
                                       'phone': new_phone
                                   }})
-        return json.dumps('Phone number updated')
+        return "Phone updated", 200
 
 
 @user_service.route('/settings/notifications/update', methods=['PUT'])
 def update_notifications():
     if 'email' not in session:
-        return json.dumps('not logged in')
+        raise exceptions.NotLoggedIn
     email = session['email']
     emailNotifications = request.json['emailNotifications']
     smsNotifications = request.json['smsNotifications']
@@ -139,4 +140,4 @@ def update_notifications():
                               {'$set': {'notifications': updated_notifications,
                                         'emailNotifications': emailNotifications,
                                         'smsNotifications': smsNotifications}})
-    return json.dumps('settings updated')
+    return "Notifications updated", 200
