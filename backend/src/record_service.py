@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, Blueprint, session, jsonify, request
 import database_service as ds
 import notification_service as ns
@@ -8,12 +8,15 @@ db = ds.connect_to_database("database")
 records = db["records"]
 users = db["users"]
 
+DAYS_BEFORE = 7
 
-@record_service.route('/records/notify', methods=['POST', 'GET'])
+
+@record_service.route('/records/notify', methods=['POST', 'GET', 'DELETE'])
 def create_and_notify():
     room = request.json['room']
     occupancy = request.json['occupancy']
     create_record(room, occupancy, records)
+    delete_old_records()
 
     # send notification (if applicable)
     if "email" in session:
@@ -39,6 +42,12 @@ def create_record(room, occupancy, col):
         "time": datetime.now()
     }
     col.insert_one(new_record)
+
+
+def delete_old_records():
+    records.delete_many({
+        "time": {"$lt": datetime.now() - timedelta(days=DAYS_BEFORE)}
+    })
 
 
 @record_service.route('/records/get', methods=['GET'])
