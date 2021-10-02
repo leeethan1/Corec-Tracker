@@ -1,4 +1,4 @@
-from flask import Blueprint, request, session, json
+from flask import Blueprint, request, session, json, jsonify
 import bcrypt
 import database_service
 
@@ -85,3 +85,64 @@ def update_notifications():
                                         'emailNotifications': emailNotifications,
                                         'smsNotifications': smsNotifications}})
     return json.dumps('settings updated')
+
+
+# favorite_rooms = db["favorite rooms"]
+
+
+@user_service.route('/add-to-favorites', methods=['POST'])
+def add_to_favorites():
+    user_email = request.json["email"]
+    room = request.json["room"]
+    if "email" not in session:
+        # not logged in
+        return jsonify("user not logged in")
+    else:
+        query = {'email':user_email}
+        entry = users.find_one(query)
+        room_list = entry["favoriteRooms"]
+        if room in room_list:
+            # room already in favorites
+            return jsonify("room already in favorites")
+        else:
+            room_list.append(room)
+            new_entry = {"favoriteRooms": room_list}
+            users.update_one(query, {'$set': new_entry})
+            return jsonify("successful")
+
+# is the method here a "GET"?
+@user_service.route("/get-favorite-rooms", methods=["GET"])
+def get_favorites_rooms():
+    email = request.json["email"]
+    if "email" not in session:
+        return jsonify("user not logged in")
+    else:
+        query = {'email': email}
+        entry = users.find_one(query)
+        return jsonify(entry["favoriteRooms"])
+
+
+# how to route to a specific user?
+# user should already be logged in to access this page. Otherwise defavoriting rooms does not make sense
+@user_service.route('/remove-favorite', methods=['POST'])
+def remove_favorite():
+    user_email = request.json["email"]
+    # what does request["room"] do?
+    room = request.json["room"]
+
+    if "email" not in session:
+        # not logged in
+        return jsonify("must be logged in to access!")
+    else:
+        # user is logged in
+        query = {'email': user_email}
+        entry = users.find_one(query)
+        room_list = entry["favoriteRooms"]
+        if room not in room_list:
+            return jsonify("Room was not favorited to begin with!")
+        else:
+            room_list.remove(room)
+            new_entry = {"favoriteRooms": room_list}
+            users.update_one(query, {'$set': new_entry})
+            return jsonify("Removal successful")
+
