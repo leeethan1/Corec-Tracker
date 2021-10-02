@@ -1,10 +1,35 @@
 import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import os
+from twilio.rest import Client
+import json
 
 EMAIL = 'shi517@purdue.edu'
 # PASSWORD = 'bkytzllfbxcjrdkr'
 PASSWORD = 'Ilovefries1!'
+
+account_SID = "AC8ad04c432e9b9c73540e3b43a74d6380"
+auth_token = "7cf07108bcf6aff9698888b3bca98c64"
+client = Client(account_SID, auth_token)
+from_number = '+12525926607'
+
+
+def send_text(phone, occupancy, room):
+    # format phone
+    phone = '+1' + phone.replace('-', '')
+
+    body = "{} is at {} people, time to get those gains up!".format(room, occupancy)
+
+    try:
+        client.messages.create(
+            to=phone,
+            from_=from_number,
+            body=body
+        )
+        print("SMS sent")
+    except Exception as e:
+        print(e)
 
 
 def send_email(email, occupancy, room):
