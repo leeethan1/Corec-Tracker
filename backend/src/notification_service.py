@@ -1,10 +1,13 @@
 import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import os
+from dotenv import load_dotenv
 
 EMAIL = 'shi517@purdue.edu'
-# PASSWORD = 'bkytzllfbxcjrdkr'
-PASSWORD = 'Ilovefries1!'
+load_dotenv()
+PASSWORD = os.getenv('EMAIL_PASSWORD')
+AUTH = os.getenv("AUTH")
 
 
 def send_email(email, occupancy, room):
