@@ -1,8 +1,10 @@
 import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import os
 from dotenv import load_dotenv
+import os
+from twilio.rest import Client
+import json
 
 EMAIL = 'shi517@purdue.edu'
 load_dotenv()
