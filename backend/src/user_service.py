@@ -72,7 +72,62 @@ def logout():
     return json.dumps("successfully logged out")
 
 
-@user_service.route('/settings/update', methods=['PUT'])
+@user_service.route('/settings/email/update', methods=['PUT', 'GET'])
+def update_email():
+    if 'email' not in session:
+        return json.dumps('not logged in')
+    old_email = session['email']
+    new_email = request.json['email']
+    if new_email == old_email:
+        return json.dumps("new email can't be same as old")
+    else:
+        existing_user = users.find_one({'email': new_email})
+        if not existing_user:
+            users.find_one_and_update({'email': old_email},
+                                      {'$set': {
+                                          'email': new_email
+                                      }})
+            return json.dumps('Email updated')
+        else:
+            return json.dumps("That email is already taken")
+
+
+@user_service.route('/settings/password/update', methods=['PUT', 'GET'])
+def update_password():
+    if 'email' not in session:
+        return json.dumps('not logged in')
+    user = users.find_one({'email': session['email']})
+    old_password = user['password']
+    new_password = request.json['password']
+    if bcrypt.checkpw(new_password.encode('utf-8'), old_password):
+        return json.dumps("new password can't be same as old password")
+    else:
+        hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+        users.find_one_and_update({'email': session['email']},
+                                  {'$set': {
+                                      'password': hashed
+                                  }})
+        return json.dumps('Password updated')
+
+
+@user_service.route('/settings/phone/update', methods=['PUT', 'GET'])
+def update_phone():
+    if 'email' not in session:
+        return json.dumps('not logged in')
+    user = users.find_one({'email': session['email']})
+    old_phone = user['phone']
+    new_phone = request.json['phone']
+    if old_phone == new_phone:
+        return json.dumps("new phone number can't be same as old phone number")
+    else:
+        users.find_one_and_update({'email': session['email']},
+                                  {'$set': {
+                                      'phone': new_phone
+                                  }})
+        return json.dumps('Phone number updated')
+
+
+@user_service.route('/settings/notifications/update', methods=['PUT'])
 def update_notifications():
     if 'email' not in session:
         return json.dumps('not logged in')
