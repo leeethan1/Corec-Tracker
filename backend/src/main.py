@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from record_service import record_service
 from user_service import user_service
 import os
@@ -10,6 +10,16 @@ app.register_blueprint(user_service)
 
 load_dotenv()
 app.secret_key = os.getenv('SECRET_KEY')
+
+
+# error handling
+@app.errorhandler(Exception)
+def handle_exception(e):
+    response = {
+        "code": e.code,
+        "message": e.description
+    }
+    return jsonify(response)
 
 
 @app.route('/')
