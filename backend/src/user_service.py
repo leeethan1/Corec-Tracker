@@ -110,6 +110,17 @@ def add_to_favorites():
             users.update_one(query, {'$set': new_entry})
             return jsonify("successful")
 
+# is the method here a "GET"?
+@user_service.route("/get-favorite-rooms", methods=["GET"])
+def get_favorites_rooms():
+    email = request.json["email"]
+    if "email" not in session:
+        return jsonify("user not logged in")
+    else:
+        query = {'email': email}
+        entry = users.find_one(query)
+        return jsonify(entry["favoriteRooms"])
+
 
 # how to route to a specific user?
 # user should already be logged in to access this page. Otherwise defavoriting rooms does not make sense
