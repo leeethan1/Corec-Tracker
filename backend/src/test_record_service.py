@@ -23,3 +23,7 @@ class TestRecordService(unittest.TestCase):
         else:
             average = sum(occupancies) / len(occupancies)
         assert average == 87
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        records.delete_many({})
