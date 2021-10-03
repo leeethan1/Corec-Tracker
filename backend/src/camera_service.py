@@ -12,7 +12,7 @@ room_to_camera = {
 
 def take_snapshot(room):
     cap = cv2.VideoCapture(room_to_camera[room])
-    i = 0
+    #i = 0
     image_path = '../images/{}-{}.jpg'.format(room, str(datetime.datetime.now()))
     while (cap.isOpened()):
         ret, frame = cap.read()
