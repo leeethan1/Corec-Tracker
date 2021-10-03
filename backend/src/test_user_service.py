@@ -18,26 +18,34 @@ test_user = {
 
 
 class TestUserService(unittest.TestCase):
-    def testCreate(self):
+    @classmethod
+    def setUpClass(cls) -> None:
         users.insert_one(test_user)
+
+    def testCreate(self):
         query = {'email': "email"}
         user = users.find_one(query)
         assert user
-
-    def testRemove(self):
-        query = {'email': "email"}
-        users.delete_many(query)
-        assert users.find_one(query) is None
 
     def testUpdateSettings(self):
         query = {'email': "email"}
         user = users.find_one(query)
         notifications = user['notifications']
         initial_size = len(notifications)
-        notifications['new room {}'.format(random.randrange(100))] = random.randrange(30)
+        notifications['new room'] = random.randrange(30)
         users.find_one_and_update(query, {'$set': {'notifications': notifications}})
         user = users.find_one(query)
-        assert len(user['notifications']) == initial_size + 1
+        new_notifications = user['notifications']
+        assert len(new_notifications) == initial_size + 1
+
+    def testRemove(self):
+        query = {'email': "email"}
+        users.delete_one(query)
+        assert users.find_one(query) is None
+
+    @classmethod
+    def tearDownClass(cls):
+        users.delete_many({})
 
 
 if __name__ == '__main__':
