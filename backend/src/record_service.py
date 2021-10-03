@@ -9,10 +9,7 @@ records = db["records"]
 users = db["users"]
 
 
-@record_service.route('/records/notify', methods=['POST', 'GET'])
-def create_and_notify():
-    room = request.json['room']
-    occupancy = request.json['occupancy']
+def create_and_notify(room, occupancy):
     create_record(room, occupancy, records)
 
     # send notification (if applicable)
@@ -27,7 +24,7 @@ def create_and_notify():
             if user["smsNotifications"]:
                 phone = user['phone']
                 ns.send_text(phone, occupancy, room)
-    return jsonify(occupancy)
+    return occupancy
 
 
 def create_record(room, occupancy, col):
