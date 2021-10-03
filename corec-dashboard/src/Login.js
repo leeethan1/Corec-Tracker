@@ -4,11 +4,13 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
 
+const cID = "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [googleData, setGoogleData] = useState([]);
   const history = useHistory();
-  const cID = "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com"
 
   function validateForm() {
     return email.length > 0 && password.length > 0;
@@ -19,6 +21,11 @@ function Login() {
   }
 
   function redirectToDashBoard() {
+    history.push('/dashboard')
+  }
+
+  function handleGoogleSuccess(res) {
+    setGoogleData(res.profileObj);
     history.push('/dashboard')
   }
 
@@ -54,7 +61,7 @@ function Login() {
         <GoogleLogin
             clientId={cID}
             buttonText="Log in with Google"
-            onSuccess={redirectToDashBoard}
+            onSuccess={handleGoogleSuccess}
             onFailure={handleFailure}
             cookiePolicy={'single_host_origin'}
         />

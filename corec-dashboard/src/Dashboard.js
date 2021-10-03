@@ -1,6 +1,9 @@
 import React from "react";
 import {BrowserRouter as Router, Switch, Route, Link} from "react-router-dom";
-import {LineChart, XAxis, YAxis, Line, Tooltip, CartesianGrid} from "recharts"
+import {LineChart, XAxis, YAxis, Line, Tooltip, CartesianGrid} from "recharts";
+import { GoogleLogout } from 'react-google-login';
+
+const cID = "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
 
 function Dashboard() {
   const data = [
@@ -24,7 +27,10 @@ function Dashboard() {
       name: "Fri",
       ct: 50
     }
-];
+  ];
+  function logout(res) {
+    console.log(res);
+  }
   return (
     <div>
       <h1>Dashboard</h1>
@@ -47,6 +53,11 @@ function Dashboard() {
           stroke="#8884d8"
           activeDot={{ r: 5 }}/>
       </LineChart>
+      <GoogleLogout
+        clientId={cID}
+        buttonText="Logout"
+        onLogoutSuccess={logout}
+      />
     </div>
   );
 }
