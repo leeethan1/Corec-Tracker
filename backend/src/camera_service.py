@@ -30,7 +30,7 @@ def process_room():
             if ret == False:
                 # failed to capture image, return the last recorded occupancy
                 record = records.find({'room': room}).sort([('time', -1)]).limit(1)
-                return jsonify(record[0]['occupancy'])
+                return jsonify(record['occupancy'])
 
             cv2.imwrite(image_path, frame)
 
