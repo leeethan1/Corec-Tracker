@@ -3,10 +3,12 @@ import {BrowserRouter as Router, Switch, Route, Link, useHistory} from "react-ro
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
+import FacebookLogin from "react-facebook-login";
 
 const cID = "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
+const facebookID = "294054042557801";
 
-function Login() {
+function Login({setLogIn}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [googleData, setGoogleData] = useState([]);
@@ -26,10 +28,20 @@ function Login() {
 
   function handleGoogleSuccess(res) {
     setGoogleData(res.profileObj);
+    console.log("test4");
+    setLogIn();
     history.push('/dashboard')
   }
 
+  function redirectToSignup(res) {
+    alert("Hello!");
+  }
+
   function handleFailure(res) {
+    console.log(res);
+  }
+
+  function responseFacebook(res) {
     console.log(res);
   }
   return (
@@ -58,12 +70,23 @@ function Login() {
         <Button block size="lg" type="submit" onClick={redirectToDashBoard} disabled={!validateForm()}>
           Login
         </Button>
+        <Button block size="lg" type="submit" onClick={redirectToSignup}>
+          Sign up
+        </Button>
         <GoogleLogin
             clientId={cID}
             buttonText="Log in with Google"
             onSuccess={handleGoogleSuccess}
             onFailure={handleFailure}
             cookiePolicy={'single_host_origin'}
+        />
+        <FacebookLogin
+          appId={facebookID}
+          autoLoad={true}
+          fields="name,email,picture"
+          callback={responseFacebook}
+          cssClass="my-facebook-button-class"
+          icon="fa-facebook"
         />
       </Form>
     </div>
