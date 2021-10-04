@@ -7,8 +7,11 @@ records = db["records"]
 
 
 class TestRecordService(unittest.TestCase):
-    def testCreate(self):
+    @classmethod
+    def setUpClass(cls) -> None:
         rs.create_record('room 1', 87, records)
+
+    def testCreate(self):
         record = records.find_one({'room': 'room 1'})
         assert record is not None
 
@@ -20,3 +23,7 @@ class TestRecordService(unittest.TestCase):
         else:
             average = sum(occupancies) / len(occupancies)
         assert average == 87
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        records.delete_many({})
