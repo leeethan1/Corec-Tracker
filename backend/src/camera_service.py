@@ -36,30 +36,20 @@ class SnapshotError(Exception):
 
 
 def take_snapshot(room):
-    # cap = cv2.VideoCapture(room_to_camera[room])
-    # image_path = '../images/{}-{}.jpg'.format(room, str(datetime.datetime.now()))
-    # while True:
-    #     ret, frame = cap.read()
-    #
-    #     if not ret:
-    #         # failed to capture image
-    #         raise SnapshotError
-    #
-    #     cv2.imwrite(image_path, frame)
-    #     break
-    # cap.release()
-    # cv2.destroyAllWindows()
-    # return image_path
-    cam = cv2.VideoCapture(1, cv2.CAP_DSHOW)
-    image_path = '{}-{}.bmp'.format(room, str(datetime.datetime.now()))
-    image = cam.read()[1]
+    cap = cv2.VideoCapture(room_to_camera[room])
+    image_path = '../images/{}-{}.jpg'.format(room, str(datetime.datetime.now()))
+    while True:
+        ret, frame = cap.read()
 
-    #cv2.imshow("image", image)
-    cv2.imwrite(image_path, image)
+        if not ret:
+            # failed to capture image
+            raise SnapshotError
 
-    #cv2.waitKey(0)
-    cam.release()
+        cv2.imwrite(image_path, frame)
+        break
+    cap.release()
     cv2.destroyAllWindows()
+    return image_path
 
 
 def open_webcam():
@@ -85,8 +75,3 @@ def open_webcam():
     vid.release()
     # Destroy all the windows
     cv2.destroyAllWindows()
-
-
-if __name__ == '__main__':
-    image = take_snapshot('room 1')
-    #print(pc.count_people_in_image(image))

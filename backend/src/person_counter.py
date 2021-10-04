@@ -10,7 +10,7 @@ detector = cv2.dnn.readNetFromCaffe(protopath, modelpath)
 
 # constants
 PERSON_INDEX = 15
-CONFIDENCE = 0.95
+CONFIDENCE = 0.7
 SNAPSHOT_INTERVAL = 1.0
 
 
