@@ -28,13 +28,12 @@ function Login({setLogIn}) {
 
   function handleGoogleSuccess(res) {
     setGoogleData(res.profileObj);
-    console.log("test4");
     setLogIn();
     history.push('/dashboard')
   }
 
   function redirectToSignup(res) {
-    alert("Hello!");
+    history.push('/signup');
   }
 
   function handleFailure(res) {
@@ -71,7 +70,7 @@ function Login({setLogIn}) {
           Login
         </Button>
         <Button block size="lg" type="submit" onClick={redirectToSignup}>
-          Sign up
+          New User?
         </Button>
         <GoogleLogin
             clientId={cID}
