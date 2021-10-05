@@ -17,7 +17,7 @@ PHONE = os.getenv('PHONE')
 client = Client(SID, AUTH)
 
 
-def send_email(email, occupancy, room):
+def send_email(email, body):
     smtp_server = "smtp-mail.outlook.com"
     port = 587
     server = smtplib.SMTP(smtp_server, port)
@@ -31,7 +31,6 @@ def send_email(email, occupancy, room):
         server.login(EMAIL, PASSWORD)
 
         # create message
-        body = "{} is at {} people, time to get those gains up!".format(room, occupancy)
         msg = MIMEMultipart()
         msg['From'] = EMAIL
         msg['To'] = email
@@ -45,6 +44,11 @@ def send_email(email, occupancy, room):
         print(e)
     finally:
         server.quit()
+
+
+def send_email_alert(email, occupancy, room):
+    body = "{} is at {} people, time to get those gains up!".format(room, occupancy)
+    send_email(email, body)
 
 
 def send_text(to_phone, occupancy, room):
