@@ -6,7 +6,7 @@ import os
 from twilio.rest import Client
 import json
 
-EMAIL = 'shi517@purdue.edu'
+EMAIL = 'corec-tracker@outlook.com'
 load_dotenv()
 PASSWORD = os.getenv('EMAIL_PASSWORD')
 
@@ -17,7 +17,7 @@ PHONE = os.getenv('PHONE')
 client = Client(SID, AUTH)
 
 
-def send_email(email, body):
+def send_email(email, subject, body):
     smtp_server = "smtp-mail.outlook.com"
     port = 587
     server = smtplib.SMTP(smtp_server, port)
@@ -34,7 +34,7 @@ def send_email(email, body):
         msg = MIMEMultipart()
         msg['From'] = EMAIL
         msg['To'] = email
-        msg['Subject'] = "Let's work out!"
+        msg['Subject'] = subject
         msg.attach(MIMEText(body, 'plain'))
 
         server.send_message(msg)
@@ -48,7 +48,7 @@ def send_email(email, body):
 
 def send_email_alert(email, occupancy, room):
     body = "{} is at {} people, time to get those gains up!".format(room, occupancy)
-    send_email(email, body)
+    send_email(email, "Let's work out!", body)
 
 
 def send_text(to_phone, occupancy, room):

@@ -158,7 +158,7 @@ def forgot_password():
     token = generate_token(email)
     link = "{}/password/reset/{}".format(base_url, token)
     body = "Here's the link to reset your password: {}".format(link)
-    ns.send_email(email, body)
+    ns.send_email(email, "Reset your password", body)
     return token, 200
 
 
