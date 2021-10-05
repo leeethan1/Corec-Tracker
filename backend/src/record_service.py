@@ -34,6 +34,7 @@ def create_record(room, occupancy, col):
         "room": room,
         "occupancy": occupancy,
         "hour": hour,
+        "day": datetime.today().weekday(),
         "time": datetime.now()
     }
     col.insert_one(new_record)
