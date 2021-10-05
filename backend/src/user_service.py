@@ -3,7 +3,7 @@ import bcrypt
 import database_service
 import exceptions
 import notification_service as ns
-import hashlib
+import secrets
 
 base_url = "http://127.0.0.1:5000"
 
@@ -163,8 +163,8 @@ def forgot_password():
 
 
 def generate_token(email):
-    token = hashlib.sha256(email.encode()).hexdigest()
-    user_tokens.delete_many({'token': token})
+    token = secrets.token_urlsafe()
+    user_tokens.delete_many({'email': email})
     entry = {
         'token': token,
         'email': email
@@ -173,8 +173,9 @@ def generate_token(email):
     return token
 
 
-@user_service.route('/password/reset/<token>/submit', methods=['POST'])
-def reset_password(token):
+@user_service.route('/password/reset/submit', methods=['POST'])
+def reset_password():
+    token = request.args.get('token')
     entry = user_tokens.find_one({'token': token})
     if not entry:
         raise exceptions.UserNotFound
