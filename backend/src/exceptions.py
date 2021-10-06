@@ -20,4 +20,9 @@ class NotLoggedIn(Exception):
 
 class UserNotFound(Exception):
     code = 403
-    description = "User not found or doesn't exist'"
+    description = "User not found or doesn't exist"
+
+
+class ExpiredToken(Exception):
+    code = 403
+    description = "Token is expired"
