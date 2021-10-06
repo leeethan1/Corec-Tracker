@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Blueprint, request, session, json
 import bcrypt
 import database_service
@@ -6,6 +8,7 @@ import notification_service as ns
 import secrets
 
 base_url = "http://127.0.0.1:5000"
+days_until_expire = 2
 
 user_service = Blueprint('app_user_service', __name__)
 db = database_service.connect_to_database("database")
@@ -167,7 +170,8 @@ def generate_token(email):
     user_tokens.delete_many({'email': email})
     entry = {
         'token': token,
-        'email': email
+        'email': email,
+        'time': datetime.datetime.now()
     }
     user_tokens.insert_one(entry)
     return token
@@ -179,6 +183,8 @@ def reset_password():
     entry = user_tokens.find_one({'token': token})
     if not entry:
         raise exceptions.UserNotFound
+    elif entry['time'] < datetime.datetime.today() - datetime.timedelta(days=days_until_expire):
+        raise exceptions.ExpiredToken
     email = entry['email']
     new_password = request.json['password']
     hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
