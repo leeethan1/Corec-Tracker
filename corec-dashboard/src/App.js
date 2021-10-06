@@ -2,7 +2,8 @@ import {React, useCallback, useState} from "react";
 import {BrowserRouter as Router, Switch,Route,Link} from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import Login from "./Login";
-import Dashboard from "./Dashboard";
+import Roompage from "./Roompage";
+import Dashboard from "./Dashboard"
 import Signup from "./Signup";
 import "./App.css";
 
@@ -21,6 +22,7 @@ function App() {
           <Route exact path="/" render={props => <Login setLogIn={logIn}/>}/>
           <Route path="/signup" render={props => <Signup setLogIn={logIn}/>}/>
           <PrivateRoute isLoggedIn={log} path="/dashboard" component={Dashboard} />
+          <PrivateRoute isLoggedIn={log} path="/roompage" component={Roompage} />
         </Switch>
       </div>
     </Router>

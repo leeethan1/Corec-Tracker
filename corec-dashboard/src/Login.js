@@ -22,7 +22,8 @@ function Login({setLogIn}) {
     event.preventDefault();
   }
 
-  function redirectToDashBoard() {
+  function checkLogin() {
+    setLogIn();
     history.push('/dashboard')
   }
 
@@ -40,9 +41,10 @@ function Login({setLogIn}) {
     console.log(res);
   }
 
-  function responseFacebook(res) {
-    console.log(res);
-  }
+  // function responseFacebook(res) {
+  //   console.log(res);
+  // }
+
   return (
     <div className="Login">
       <h1>
@@ -66,7 +68,7 @@ function Login({setLogIn}) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
-        <Button block size="lg" type="submit" onClick={redirectToDashBoard} disabled={!validateForm()}>
+        <Button block size="lg" type="submit" onClick={checkLogin} disabled={!validateForm()}>
           Login
         </Button>
         <Button block size="lg" type="submit" onClick={redirectToSignup}>
@@ -79,14 +81,14 @@ function Login({setLogIn}) {
             onFailure={handleFailure}
             cookiePolicy={'single_host_origin'}
         />
-        <FacebookLogin
+        {/* <FacebookLogin
           appId={facebookID}
           autoLoad={true}
           fields="name,email,picture"
           callback={responseFacebook}
           cssClass="my-facebook-button-class"
           icon="fa-facebook"
-        />
+        /> */}
       </Form>
     </div>
   );

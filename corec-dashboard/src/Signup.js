@@ -5,11 +5,12 @@ import Button from "react-bootstrap/Button";
 
 function Signup({setLogIn}) {
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const history = useHistory();
 
   function validateForm() {
-    return email.length > 0 && password.length > 0;
+    return email.length > 0 && password.length > 0 && name.length > 0;
   }
 
   function handleSubmit(event) {
@@ -34,6 +35,14 @@ function Signup({setLogIn}) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+          />
+        </Form.Group>
+        <Form.Group size="lg" controlId="name">
+          <Form.Label>Name</Form.Label>
+          <Form.Control
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
         </Form.Group>
         <Form.Group size="lg" controlId="password">
