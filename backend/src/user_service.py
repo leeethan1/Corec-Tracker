@@ -1,14 +1,23 @@
+import datetime
+
 from flask import Blueprint, request, session, json
 import bcrypt
 import database_service
 import exceptions
+import notification_service as ns
+import secrets
+
+base_url = "http://127.0.0.1:5000"
+days_until_expire = 2
 
 user_service = Blueprint('app_user_service', __name__)
 db = database_service.connect_to_database("database")
 users = db["users"]
 
+user_tokens = db["user tokens"]
 
-@user_service.route('/signup', methods=['POST', 'GET'])
+
+@user_service.route('/signup/submit', methods=['POST', 'GET'])
 def create_account():
     if "email" in session:
         return json.dumps("redirect")
@@ -40,7 +49,7 @@ def create_account():
     return json.dumps("could not create account")
 
 
-@user_service.route('/login', methods=['post', 'get'])
+@user_service.route('/login/submit', methods=['post', 'get'])
 def login():
     if "email" in session:
         return json.dumps("already logged in")
@@ -93,7 +102,7 @@ def update_email():
             raise exceptions.DuplicateEmailError
 
 
-@user_service.route('/settings/password/update', methods=['PUT', 'GET'])
+@user_service.route('/settings/password/update', methods=['POST', 'GET'])
 def update_password():
     if 'email' not in session:
         raise exceptions.NotLoggedIn
@@ -111,7 +120,7 @@ def update_password():
         return "Password updated", 200
 
 
-@user_service.route('/settings/phone/update', methods=['PUT', 'GET'])
+@user_service.route('/settings/phone/update', methods=['POST', 'GET'])
 def update_phone():
     if 'email' not in session:
         raise exceptions.NotLoggedIn
@@ -128,7 +137,7 @@ def update_phone():
         return "Phone updated", 200
 
 
-@user_service.route('/settings/notifications/update', methods=['PUT'])
+@user_service.route('/settings/notifications/update', methods=['POST'])
 def update_notifications():
     if 'email' not in session:
         raise exceptions.NotLoggedIn
@@ -141,3 +150,46 @@ def update_notifications():
                                         'emailNotifications': emailNotifications,
                                         'smsNotifications': smsNotifications}})
     return "Notifications updated", 200
+
+
+@user_service.route('/forgot-password/submit', methods=['POST'])
+def forgot_password():
+    email = request.json['email']
+    user = users.find_one({'email': email})
+    if not user:
+        raise exceptions.UserNotFound
+    token = generate_token(email)
+    link = "{}/password/reset/{}".format(base_url, token)
+    body = "Here's the link to reset your password: {}".format(link)
+    ns.send_email(email, "Reset your password", body)
+    return token, 200
+
+
+def generate_token(email):
+    token = secrets.token_urlsafe()
+    user_tokens.delete_many({'email': email})
+    entry = {
+        'token': token,
+        'email': email,
+        'time': datetime.datetime.now()
+    }
+    user_tokens.insert_one(entry)
+    return token
+
+
+@user_service.route('/password/reset/submit', methods=['POST'])
+def reset_password():
+    token = request.args.get('token')
+    entry = user_tokens.find_one({'token': token})
+    if not entry:
+        raise exceptions.UserNotFound
+    elif entry['time'] < datetime.datetime.today() - datetime.timedelta(days=days_until_expire):
+        raise exceptions.ExpiredToken
+    email = entry['email']
+    new_password = request.json['password']
+    hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+    users.find_one_and_update({'email': email},
+                              {'$set': {
+                                  'password': hashed
+                              }})
+    return "Password updated", 200

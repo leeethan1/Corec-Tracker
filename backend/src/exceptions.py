@@ -16,3 +16,13 @@ class SamePasswordError(Exception):
 class NotLoggedIn(Exception):
     code = 403
     description = "You are not logged in"
+
+
+class UserNotFound(Exception):
+    code = 403
+    description = "User not found or doesn't exist"
+
+
+class ExpiredToken(Exception):
+    code = 403
+    description = "Token is expired"

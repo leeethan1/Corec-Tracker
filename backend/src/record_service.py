@@ -20,7 +20,7 @@ def create_and_notify(room, occupancy):
         if room in notifications and notifications[room] > occupancy:
             # send email/SMS
             if user["emailNotifications"]:
-                ns.send_email(email, occupancy, room)
+                ns.send_email_alert(email, occupancy, room)
             if user["smsNotifications"]:
                 phone = user['phone']
                 ns.send_text(phone, occupancy, room)
