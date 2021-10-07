@@ -19,7 +19,22 @@ function Signup({setLogIn}) {
 
   function handleSignupSuccess(res) {
     setLogIn();
-    history.push('/dashboard')
+    fetch("/signup", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: {
+        email: email,
+        name: name,
+        password: password
+      }
+    })
+    .then(res => res.json())
+    .then((response) => {
+      console.log(response)
+    });
+    history.push('/dashboard', {user: name});
   }
 
   return (

@@ -5,7 +5,8 @@ import { GoogleLogout } from 'react-google-login';
 
 const cID = "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
 
-function Roompage() {
+function Roompage(props) {
+
   const data = [
     {
       name: "Mon",
@@ -31,8 +32,12 @@ function Roompage() {
   function logout(res) {
     console.log(res);
   }
+  function getRoomName() {
+    return props.location.state.item.name;
+  }
   return (
     <div>
+      <h1>{getRoomName()}</h1>
       <LineChart
         width={500}
         height={300}

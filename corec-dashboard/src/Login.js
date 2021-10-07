@@ -11,6 +11,7 @@ const facebookID = "294054042557801";
 function Login({setLogIn}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("test");
   const [googleData, setGoogleData] = useState([]);
   const history = useHistory();
 
@@ -24,13 +25,13 @@ function Login({setLogIn}) {
 
   function checkLogin() {
     setLogIn();
-    history.push('/dashboard')
+    history.push('/dashboard', {user: name});
   }
 
   function handleGoogleSuccess(res) {
     setGoogleData(res.profileObj);
     setLogIn();
-    history.push('/dashboard')
+    history.push('/dashboard', {user: res.profileObj.name});
   }
 
   function redirectToSignup(res) {
