@@ -2,7 +2,8 @@ import cv2
 import time
 
 cap = cv2.VideoCapture(0)
-i = 0
+
+# This function is meant to run forever
 while(cap.isOpened()):
     ret, frame = cap.read()
 
@@ -10,8 +11,8 @@ while(cap.isOpened()):
         break
     
     # takes one frame per sleep time and saving it to the image dir
-    cv2.imwrite('../../images/Frame'+str(i)+'.jpg', frame)
-    i+=1
+    cv2.imwrite('../../images/CapturedFrame.jpg', frame)
+
     # putting a minute for now just for testing purposes.
     time.sleep(60)
 
