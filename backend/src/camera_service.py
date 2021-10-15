@@ -37,7 +37,7 @@ class SnapshotError(Exception):
 
 def take_snapshot(room):
     cap = cv2.VideoCapture(room_to_camera[room])
-    image_path = '../images/{}-{}.jpg'.format(room, str(datetime.datetime.now()))
+    image_path = '../images/{}-{}.jpg'.format(room, str(datetime.datetime.utcnow()))
     while True:
         ret, frame = cap.read()
 

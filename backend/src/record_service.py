@@ -31,17 +31,17 @@ def create_and_notify():
 
 
 def create_record(room, occupancy, col):
-    hour = datetime.now().hour
+    hour = datetime.utcnow().hour
 
     new_record = {
         "room": room,
         "occupancy": occupancy,
         "hour": hour,
         "day": datetime.today().weekday(),
-        "time": datetime.now()
+        "time": datetime.utcnow()
     }
     col.insert_one(new_record)
-    col.delete_many({'time': {'$lt': datetime.now() - timedelta(days=7)}})
+    col.delete_many({'time': {'$lt': datetime.utcnow() - timedelta(days=7)}})
 
 
 @record_service.route('/records/get', methods=['GET'])

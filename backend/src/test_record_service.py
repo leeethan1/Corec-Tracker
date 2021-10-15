@@ -17,7 +17,7 @@ class TestRecordService(unittest.TestCase):
     def testGet(self):
         for i in range(1, 11):
             rs.create_record('room 1', i, records)
-        record_list = list(records.find({"hour": datetime.datetime.now().hour}))
+        record_list = list(records.find({"hour": datetime.datetime.utcnow().hour}))
         occupancies = [record['occupancy'] for record in record_list]
         if not occupancies:
             average = 0

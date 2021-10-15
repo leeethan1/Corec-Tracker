@@ -20,6 +20,8 @@ client = Client(SID, AUTH)
 db = ds.connect_to_database("database")
 notifications = db['notifications']
 
+NOTIF_INTERVAL = 10
+
 
 def send_email(email, subject, body):
     smtp_server = "smtp-mail.outlook.com"
@@ -51,11 +53,11 @@ def send_email(email, subject, body):
 
 
 def send_email_alert(email, occupancy, room):
-    recent_emails = notifications.find({
-        'time': {'$gt': datetime.datetime.now() - datetime.timedelta(minutes=10)},
-        'email': email
-    })
-    if recent_emails:
+    recent_emails = notifications.find(
+        {'$and': [{'time': {'$gt': datetime.datetime.utcnow() - datetime.timedelta(minutes=NOTIF_INTERVAL)}},
+                  {'email': email}]
+         })
+    if recent_emails.count() > 0:
         print("Email already sent within the last 10 minutes")
     else:
         body = "{} is at {} people, time to get those gains up!".format(room, occupancy)
@@ -63,16 +65,17 @@ def send_email_alert(email, occupancy, room):
         notifications.insert_one({
             'email': email,
             'phone': None,
-            'time': datetime.datetime.now()
+            'time': datetime.datetime.utcnow()
         })
 
 
 def send_text(to_phone, occupancy, room):
     try:
-        if notifications.find({
-            'time': {'$gt': datetime.datetime.now() - datetime.timedelta(minutes=10)},
-            'phone': to_phone
-        }):
+        recent_texts = notifications.find(
+            {'$and': [{'time': {'$gt': datetime.datetime.utcnow() - datetime.timedelta(minutes=NOTIF_INTERVAL)}},
+                      {'phone': to_phone}]
+             })
+        if recent_texts.count() > 0:
             print("Text already sent in the last 10 minutes")
         else:
             message = client.messages.create(
@@ -83,7 +86,7 @@ def send_text(to_phone, occupancy, room):
             notifications.insert_one({
                 'phone': to_phone,
                 'email': None,
-                'time': datetime.datetime.now()
+                'time': datetime.datetime.utcnow()
             })
             print("sms sent")
     except Exception as e:
