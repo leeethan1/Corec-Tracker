@@ -15,6 +15,11 @@ app.secret_key = os.getenv('SECRET_KEY')
 
 
 # error handling
+@app.errorhandler(TypeError)
+def handle_TypeError(e):
+    return jsonify(str(e))
+
+
 @app.errorhandler(Exception)
 def handle_exception(e):
     response = {
