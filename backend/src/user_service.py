@@ -171,7 +171,7 @@ def generate_token(email):
     entry = {
         'token': token,
         'email': email,
-        'time': datetime.datetime.now()
+        'time': datetime.datetime.utcnow()
     }
     user_tokens.insert_one(entry)
     return token
