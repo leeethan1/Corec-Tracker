@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, Blueprint, session, jsonify, request
 import database_service as ds
 import notification_service as ns
@@ -41,6 +41,10 @@ def create_record(room, occupancy, col):
         "time": datetime.now()
     }
     col.insert_one(new_record)
+    col.delete_many({'time': {'$lte': datetime.now() - timedelta(days=7) }})
+
+
+
 
 
 @record_service.route('/records/get', methods=['GET'])
