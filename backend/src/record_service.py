@@ -41,14 +41,15 @@ def create_record(room, occupancy, col):
         "time": datetime.now()
     }
     col.insert_one(new_record)
-    col.delete_many({'time': {'$lte': datetime.now() - timedelta(days=7) }})
+    col.delete_many({'time': {'$lt': datetime.now() - timedelta(days=7) }})
 
 
 
 
 
 @record_service.route('/records/get', methods=['GET'])
-def get_average_occupancy(hour):
+def get_average_occupancy():
+    hour = request.json['hour']
     record_list = list(records.find({"hour": hour}))
     occupancies = [record['occupancy'] for record in record_list]
     if not occupancies:
