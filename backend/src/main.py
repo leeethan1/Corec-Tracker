@@ -17,11 +17,9 @@ app.secret_key = os.getenv('SECRET_KEY')
 # error handling
 @app.errorhandler(Exception)
 def handle_exception(e):
-    response = {
-        "code": e.code,
-        "message": e.description
-    }
-    return jsonify(response)
+    if hasattr(e, "description"):
+        return e.description, 400
+    return repr(e), 400
 
 
 @app.route('/')
