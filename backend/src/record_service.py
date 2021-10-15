@@ -16,13 +16,13 @@ def create_and_notify():
     create_record(room, occupancy, records)
 
     # send notification (if applicable)
-    if "email" in session:
-        email = session['email']
-        user = users.find_one({"email": email})
+    user_list = users.find({})
+    for user in user_list:
         notifications = user["notifications"]
         if room in notifications and notifications[room] > occupancy:
             # send email/SMS
             if user["emailNotifications"]:
+                email = user['email']
                 ns.send_email_alert(email, occupancy, room)
             if user["smsNotifications"]:
                 phone = user['phone']
@@ -41,10 +41,7 @@ def create_record(room, occupancy, col):
         "time": datetime.now()
     }
     col.insert_one(new_record)
-    col.delete_many({'time': {'$lt': datetime.now() - timedelta(days=7) }})
-
-
-
+    col.delete_many({'time': {'$lt': datetime.now() - timedelta(days=7)}})
 
 
 @record_service.route('/records/get', methods=['GET'])

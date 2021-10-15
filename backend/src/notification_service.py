@@ -1,10 +1,11 @@
+import datetime
 import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
 import os
 from twilio.rest import Client
-import json
+import database_service as ds
 
 EMAIL = 'corec-tracker@outlook.com'
 load_dotenv()
@@ -15,6 +16,9 @@ AUTH = os.getenv("AUTH")
 PHONE = os.getenv('PHONE')
 
 client = Client(SID, AUTH)
+
+db = ds.connect_to_database("database")
+notifications = db['notifications']
 
 
 def send_email(email, subject, body):
@@ -47,17 +51,40 @@ def send_email(email, subject, body):
 
 
 def send_email_alert(email, occupancy, room):
-    body = "{} is at {} people, time to get those gains up!".format(room, occupancy)
-    send_email(email, "Let's work out!", body)
+    recent_emails = notifications.find({
+        'time': {'$gt': datetime.datetime.now() - datetime.timedelta(minutes=10)},
+        'email': email
+    })
+    if recent_emails:
+        print("Email already sent within the last 10 minutes")
+    else:
+        body = "{} is at {} people, time to get those gains up!".format(room, occupancy)
+        send_email(email, "Let's work out!", body)
+        notifications.insert_one({
+            'email': email,
+            'phone': None,
+            'time': datetime.datetime.now()
+        })
 
 
 def send_text(to_phone, occupancy, room):
     try:
-        message = client.messages.create(
-            body="{} is at {} people, time to get those gains up!".format(room, occupancy),
-            from_=PHONE,
-            to=to_phone
-        )
-        print("sms sent")
+        if notifications.find({
+            'time': {'$gt': datetime.datetime.now() - datetime.timedelta(minutes=10)},
+            'phone': to_phone
+        }):
+            print("Text already sent in the last 10 minutes")
+        else:
+            message = client.messages.create(
+                body="{} is at {} people, time to get those gains up!".format(room, occupancy),
+                from_=PHONE,
+                to=to_phone
+            )
+            notifications.insert_one({
+                'phone': to_phone,
+                'email': None,
+                'time': datetime.datetime.now()
+            })
+            print("sms sent")
     except Exception as e:
         print(e)
