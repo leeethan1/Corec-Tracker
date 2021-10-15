@@ -9,9 +9,11 @@ import database_service
 
 # dictionary for mapping room name to the camera that's
 # scanning that room (only has one room for now)
+
 # room_to_camera = {
 #     'room 1': 0
 # }
+
 
 camera_service = Blueprint('app_camera_service', __name__)
 

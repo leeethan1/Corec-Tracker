@@ -1,3 +1,4 @@
+import datetime
 import random
 
 import user_service
@@ -7,6 +8,7 @@ import unittest
 
 db = database_service.connect_to_database("test")
 users = db['users']
+tokens = db['user tokens']
 test_user = {
     'email': "email",
     'password': bcrypt.hashpw("pass123".encode('utf-8'), bcrypt.gensalt()),
@@ -43,9 +45,37 @@ class TestUserService(unittest.TestCase):
         users.delete_one(query)
         assert users.find_one(query) is None
 
+    def testForgotPasswordWithExpiredToken(self):
+        expired_token = {
+            'token': '123ABC',
+            'email': 'email',
+            'time': datetime.datetime.today() - datetime.timedelta(days=5)
+        }
+        tokens.insert_one(expired_token)
+        entry = tokens.find_one({'token': '123ABC'})
+        if not entry:
+            assert False
+        elif entry['time'] < datetime.datetime.today() - datetime.timedelta(days=2):
+            assert True
+
+    def testForgotPassword(self):
+        expired_token = {
+            'token': '123ABC',
+            'email': 'email',
+            'time': datetime.datetime.today()
+        }
+        tokens.insert_one(expired_token)
+        entry = tokens.find_one({'token': '123ABC'})
+        if not entry:
+            assert False
+        elif entry['time'] < datetime.datetime.today() - datetime.timedelta(days=2):
+            assert False
+        assert True
+
     @classmethod
     def tearDownClass(cls):
         users.delete_many({})
+        tokens.delete_many({})
 
 
 if __name__ == '__main__':
