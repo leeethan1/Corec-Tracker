@@ -25,6 +25,13 @@ class TestRecordService(unittest.TestCase):
             average = sum(occupancies) / len(occupancies)
         assert average == 5.5
 
+    def testExpired(self):
+        rs.create_record('room 1', 87, records)
+        records.update_one({'room': 'room 1'},
+                           {'$set': {'time': datetime.datetime.utcnow() - datetime.timedelta(days=8)}})
+        expired_records = records.find({'time': {'$lt': datetime.datetime.utcnow() - datetime.timedelta(days=7)}})
+        assert expired_records.count() > 0
+
     @classmethod
     def tearDownClass(cls) -> None:
         records.delete_many({})
