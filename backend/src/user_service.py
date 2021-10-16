@@ -1,4 +1,6 @@
 import datetime
+import random
+import re
 
 from flask import Blueprint, request, session, json, jsonify
 import bcrypt
@@ -15,6 +17,13 @@ db = database_service.connect_to_database("database")
 users = db["users"]
 
 user_tokens = db["user tokens"]
+email_verification_codes = db['email verification codes']
+phone_verification_codes = db['phone verification codes']
+unverified_accounts = db['unverified accounts']
+
+email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+password_regex = re.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$")
+phone_regex = "\w{3}-\w{3}-\w{4}"
 
 
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
@@ -25,59 +34,105 @@ def create_account():
         email = request.json["email"]
         password = request.json["password"]
         phone = request.json["phone"]
-        emailNotificationsOn = True;
-        smsNotificationsOn = True
-        notifications = {}
+
+        # validate email, phone, and password
+        if not re.fullmatch(email_regex, email):
+            return "Not a valid email", 400
+        if not re.search(password_regex, password):
+            return "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
+                   "character.\nat least one special symbol.\nhave between 6 to 20 characters long.", 400
+        if not re.search(phone_regex, phone):
+            return "Not a valid phone number", 400
 
         # Uncomment this section when database is established
+        unverified_user = unverified_accounts.find_one({"email": email})
         user = users.find_one({"email": email})
-        if user:
+        if unverified_user or user:
             # email already taken
             raise exceptions.DuplicateEmailError
 
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user_input = {'email': email,
                       'password': hashed,
-                      'phone': phone,
+                      'phone': phone}
+        unverified_accounts.insert_one(user_input)
+
+        # generate and send verification codes
+        email_code = generate_email_verification_code(email)
+        phone_code = generate_phone_verification_code(phone)
+        ns.send_email(email, "Verify your email", "Your email verification code is {}".format(email_code))
+        ns.send_text(phone, "Your phone number verification code is {}".format(phone_code))
+
+        return "Redirect to verification page to verify email and phone", 200
+    return "could not create account", 400
+
+
+@user_service.route('/account/verify/submit', methods=['POST'])
+def verify_account():
+    phone_verification_code = request.json['phone code']
+    email_verification_code = request.json['email code']
+    email_entry = email_verification_codes.find_one({'code': email_verification_code})
+    phone_entry = phone_verification_codes.find_one({'code': phone_verification_code})
+    if email_entry and phone_entry:
+        email = email_entry['email']
+        phone = phone_entry['phone']
+
+        account = unverified_accounts.find_one({'$and': [{'email': email}, {'phone': phone}]})
+        if not account:
+            raise exceptions.UserNotFound
+
+        emailNotificationsOn = True;
+        smsNotificationsOn = True
+        notifications = {}
+
+        user_input = {'email': account['email'],
+                      'password': account['password'],
+                      'phone': account['phone'],
                       'emailNotifications': emailNotificationsOn,
                       'smsNotifications': smsNotificationsOn,
                       'notifications': notifications,
                       'favoriteRooms': []}
         users.insert_one(user_input)
+
+        # remove user from unverified collection
+        unverified_accounts.find_one_and_delete({'$and': [{'email': email}, {'phone': phone}]})
+        # remove verification codes for user
+        email_verification_codes.find_one_and_delete({'email': email})
+        phone_verification_codes.find_one_and_delete({'phone': phone})
+
         session['email'] = email
         return "Signed up successfully", 200
-    return json.dumps("could not create account")
+    else:
+        return "Could not verify email or phone number.\nCheck that your verification codes are correct", 400
 
 
 @user_service.route('/login/submit', methods=['post', 'get'])
 def login():
     if "email" in session:
-        return json.dumps("already logged in")
+        return "Already logged in", 400
 
-    if request.method == "POST":
-        email = request.json["email"]
-        password = request.json["password"]
+    email = request.json["email"]
+    password = request.json["password"]
 
-        # Uncomment when db established
-        user = users.find_one({"email": email})
-        if user:
-            user_email = user['email']
-            user_password = user['password']
+    # Uncomment when db established
+    user = users.find_one({"email": email})
+    if user:
+        user_email = user['email']
+        user_password = user['password']
 
-            if bcrypt.checkpw(password.encode('utf-8'), user_password):
-                session["email"] = user_email
-                return "Logged in successfully", 200
-            else:
-                raise exceptions.AuthError
+        if bcrypt.checkpw(password.encode('utf-8'), user_password):
+            session["email"] = user_email
+            return "Logged in successfully", 200
         else:
             raise exceptions.AuthError
-    raise exceptions.AuthError
+    else:
+        raise exceptions.AuthError
 
 
 @user_service.route('/logout', methods=['POST', "GET"])
 def logout():
     if 'email' not in session:
-        return json.dumps("already logged out")
+        return "Already logged out", 400
     session.pop('email', None)
     return "Logged out successfully", 200
 
@@ -237,3 +292,29 @@ def remove_favorite():
             room_list.remove(room)
             users.update_one(query, {'$set': {'favoriteRooms': room_list}})
             return jsonify("Removed {} from favorites".format(room))
+
+
+def generate_email_verification_code(email):
+    code = str(random.randint(0, 999999))
+    code = code.zfill(6)
+    while email_verification_codes.find({'code': code}).count() > 0:
+        code = str(random.randint(0, 999999))
+        code = code.zfill(6)
+    email_verification_codes.insert_one({
+        'code': code,
+        'email': email
+    })
+    return code
+
+
+def generate_phone_verification_code(phone):
+    code = str(random.randint(0, 999999))
+    code = code.zfill(6)
+    while phone_verification_codes.find({'code': code}).count() > 0:
+        code = str(random.randint(0, 999999))
+        code = code.zfill(6)
+    phone_verification_codes.insert_one({
+        'code': code,
+        'phone': phone
+    })
+    return code

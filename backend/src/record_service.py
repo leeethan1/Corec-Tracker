@@ -26,7 +26,7 @@ def create_and_notify():
                 ns.send_email_alert(email, occupancy, room)
             if user["smsNotifications"]:
                 phone = user['phone']
-                ns.send_text(phone, occupancy, room)
+                ns.send_text_alert(phone, occupancy, room)
     return jsonify(occupancy)
 
 
