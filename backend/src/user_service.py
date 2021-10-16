@@ -195,20 +195,32 @@ def reset_password():
     return "Password updated", 200
 
 
+@user_service.route('/favorites/get', methods=['POST'])
+def get_favorites():
+    if 'email' in session:
+        email = session['email']
+        user = users.find_one({'email': email})
+        if user is None:
+            raise exceptions.UserNotFound
+        favorite_rooms = user['favoriteRooms']
+        return jsonify(favorite_rooms)
+    raise exceptions.NotLoggedIn
+
+
 @user_service.route('/favorites/add', methods=['POST'])
 def add_to_favorites():
-    user_email = request.json["email"]
     room = request.json["room"]
     if "email" not in session:
         # not logged in
         raise exceptions.NotLoggedIn
     else:
+        user_email = session['email']
         query = {'email': user_email}
         entry = users.find_one(query)
         room_list = entry["favoriteRooms"]
         if room in room_list:
             # room already in favorites
-            return jsonify("room already in favorites")
+            return "room already in favorites", 400
         else:
             room_list.append(room)
             new_entry = {"favoriteRooms": room_list}
@@ -218,7 +230,6 @@ def add_to_favorites():
 
 @user_service.route('/favorites/remove', methods=['POST'])
 def remove_favorite():
-    user_email = request.json["email"]
     room = request.json["room"]
 
     if "email" not in session:
@@ -226,13 +237,14 @@ def remove_favorite():
         raise exceptions.NotLoggedIn
     else:
         # user is logged in
+        user_email = session['email']
         query = {'email': user_email}
         user = users.find_one(query)
         if user is None:
             raise exceptions.UserNotFound
         room_list = user["favoriteRooms"]
         if room not in room_list:
-            return jsonify("Room was not favorited to begin with!")
+            return "Room was not favorited to begin with!", 400
         else:
             room_list.remove(room)
             users.update_one(query, {'$set': {'favoriteRooms': room_list}})
