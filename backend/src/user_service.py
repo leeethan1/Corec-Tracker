@@ -41,8 +41,8 @@ def create_account():
         if not re.search(password_regex, password):
             return "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
                    "character.\nat least one special symbol.\nhave between 6 to 20 characters long.", 400
-        if not re.search(phone_regex, phone):
-            return "Not a valid phone number", 400
+        # if not re.search(phone_regex, phone):
+        #     return "Not a valid phone number", 400
 
         # Uncomment this section when database is established
         unverified_user = unverified_accounts.find_one({"email": email})

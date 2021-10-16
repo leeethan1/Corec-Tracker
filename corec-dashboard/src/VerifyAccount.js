@@ -10,7 +10,7 @@ function verifyAccount() {
     const history = useHistory();
 
     function handleVerifySuccess(res) {
-        fetch("/signup", {
+        fetch("/account/verify/submit", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

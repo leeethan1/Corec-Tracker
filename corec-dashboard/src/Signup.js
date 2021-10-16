@@ -2,6 +2,8 @@ import {React, useState} from "react";
 import {BrowserRouter as Router, Switch, Route, Link, useHistory} from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 function Signup({setLogIn}) {
   const [email, setEmail] = useState("");
@@ -17,18 +19,18 @@ function Signup({setLogIn}) {
     event.preventDefault();
   }
 
-  function handleSignupSuccess(res) {
+  function handleSignup(res, data = {
+    email: email,
+    phone: phone,
+    password: password
+  }) {
     setLogIn();
-    fetch("/signup", {
+    fetch("/signup/submit", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: {
-        email: email,
-        phone: phone,
-        password: password
-      }
+      body: JSON.stringify(data)
     })
     .then(res => res.json())
     .then((response) => {
@@ -42,7 +44,7 @@ function Signup({setLogIn}) {
       <h1>
         Sign Up
       </h1>
-      <Form onSubmit={handleSubmit}>
+      <Form>
         <Form.Group size="lg" controlId="email">
           <Form.Label>Email</Form.Label>
           <Form.Control
@@ -53,12 +55,16 @@ function Signup({setLogIn}) {
           />
         </Form.Group>
         <Form.Group size="lg" controlId="phone">
-          <Form.Label>Phone</Form.Label>
+          {/* <Form.Label>Phone</Form.Label>
           <Form.Control
             type="text"
             value={phone}
             onChange={(e) => setName(e.target.value)}
-          />
+          /> */}
+          <PhoneInput
+            placeholder={"phone"}
+            value={phone}
+            onChange={setName}/>
         </Form.Group>
         <Form.Group size="lg" controlId="password">
           <Form.Label>Password</Form.Label>
@@ -68,7 +74,7 @@ function Signup({setLogIn}) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
-        <Button block size="lg" type="submit" onClick={handleSignupSuccess} disabled={!validateForm()}>
+        <Button block size="lg" type="submit" onClick={handleSignup} disabled={!validateForm()}>
           Sign Up
         </Button>
       </Form>
