@@ -1,6 +1,6 @@
 import datetime
 
-from flask import Blueprint, request, session, json
+from flask import Blueprint, request, session, json, jsonify
 import bcrypt
 import database_service
 import exceptions
@@ -171,7 +171,7 @@ def generate_token(email):
     entry = {
         'token': token,
         'email': email,
-        'time': datetime.datetime.now()
+        'time': datetime.datetime.utcnow()
     }
     user_tokens.insert_one(entry)
     return token
@@ -193,3 +193,47 @@ def reset_password():
                                   'password': hashed
                               }})
     return "Password updated", 200
+
+
+@user_service.route('/favorites/add', methods=['POST'])
+def add_to_favorites():
+    user_email = request.json["email"]
+    room = request.json["room"]
+    if "email" not in session:
+        # not logged in
+        raise exceptions.NotLoggedIn
+    else:
+        query = {'email': user_email}
+        entry = users.find_one(query)
+        room_list = entry["favoriteRooms"]
+        if room in room_list:
+            # room already in favorites
+            return jsonify("room already in favorites")
+        else:
+            room_list.append(room)
+            new_entry = {"favoriteRooms": room_list}
+            users.update_one(query, {'$set': new_entry})
+            return jsonify("{} added to favorites".format(room))
+
+
+@user_service.route('/favorites/remove', methods=['POST'])
+def remove_favorite():
+    user_email = request.json["email"]
+    room = request.json["room"]
+
+    if "email" not in session:
+        # not logged in
+        raise exceptions.NotLoggedIn
+    else:
+        # user is logged in
+        query = {'email': user_email}
+        user = users.find_one(query)
+        if user is None:
+            raise exceptions.UserNotFound
+        room_list = user["favoriteRooms"]
+        if room not in room_list:
+            return jsonify("Room was not favorited to begin with!")
+        else:
+            room_list.remove(room)
+            users.update_one(query, {'$set': {'favoriteRooms': room_list}})
+            return jsonify("Removed {} from favorites".format(room))
