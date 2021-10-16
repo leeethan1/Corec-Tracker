@@ -199,22 +199,22 @@ def reset_password():
 def get_favorites():
     if 'email' in session:
         email = session['email']
-        user = users.find_one({'email', email})
+        user = users.find_one({'email': email})
         if user is None:
             raise exceptions.UserNotFound
         favorite_rooms = user['favoriteRooms']
-        return favorite_rooms
-    return exceptions.NotLoggedIn
+        return jsonify(favorite_rooms)
+    raise exceptions.NotLoggedIn
 
 
 @user_service.route('/favorites/add', methods=['POST'])
 def add_to_favorites():
-    user_email = request.json["email"]
     room = request.json["room"]
     if "email" not in session:
         # not logged in
         raise exceptions.NotLoggedIn
     else:
+        user_email = session['email']
         query = {'email': user_email}
         entry = users.find_one(query)
         room_list = entry["favoriteRooms"]
@@ -230,7 +230,6 @@ def add_to_favorites():
 
 @user_service.route('/favorites/remove', methods=['POST'])
 def remove_favorite():
-    user_email = request.json["email"]
     room = request.json["room"]
 
     if "email" not in session:
@@ -238,6 +237,7 @@ def remove_favorite():
         raise exceptions.NotLoggedIn
     else:
         # user is logged in
+        user_email = session['email']
         query = {'email': user_email}
         user = users.find_one(query)
         if user is None:
