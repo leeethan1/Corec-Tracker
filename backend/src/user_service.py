@@ -195,6 +195,18 @@ def reset_password():
     return "Password updated", 200
 
 
+@user_service.route('/favorites/get', methods=['POST'])
+def get_favorites():
+    if 'email' in session:
+        email = session['email']
+        user = users.find_one({'email', email})
+        if user is None:
+            raise exceptions.UserNotFound
+        favorite_rooms = user['favoriteRooms']
+        return favorite_rooms
+    return exceptions.NotLoggedIn
+
+
 @user_service.route('/favorites/add', methods=['POST'])
 def add_to_favorites():
     user_email = request.json["email"]
