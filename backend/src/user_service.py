@@ -208,7 +208,7 @@ def add_to_favorites():
         room_list = entry["favoriteRooms"]
         if room in room_list:
             # room already in favorites
-            return jsonify("room already in favorites")
+            return "room already in favorites", 400
         else:
             room_list.append(room)
             new_entry = {"favoriteRooms": room_list}
@@ -232,7 +232,7 @@ def remove_favorite():
             raise exceptions.UserNotFound
         room_list = user["favoriteRooms"]
         if room not in room_list:
-            return jsonify("Room was not favorited to begin with!")
+            return "Room was not favorited to begin with!", 400
         else:
             room_list.remove(room)
             users.update_one(query, {'$set': {'favoriteRooms': room_list}})
