@@ -137,6 +137,14 @@ def logout():
     return "Logged out successfully", 200
 
 
+@user_service.route('/account/delete', methods=["POST"])
+def delete_account():
+    if 'email' not in session:
+        raise exceptions.NotLoggedIn
+    email = session['email']
+    users.delete_one({'email': email})
+
+
 @user_service.route('/settings/email/update', methods=['PUT', 'GET'])
 def update_email():
     if 'email' not in session:
