@@ -1,6 +1,6 @@
 import datetime
 
-from flask import Blueprint, request, session, json
+from flask import Blueprint, request, session, json, jsonify
 import bcrypt
 import database_service
 import exceptions
