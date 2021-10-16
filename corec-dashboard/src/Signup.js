@@ -5,12 +5,12 @@ import Button from "react-bootstrap/Button";
 
 function Signup({setLogIn}) {
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [phone, setName] = useState("");
   const [password, setPassword] = useState("");
   const history = useHistory();
 
   function validateForm() {
-    return email.length > 0 && password.length > 0 && name.length > 0;
+    return email.length > 0 && password.length > 0 && phone.length > 0;
   }
 
   function handleSubmit(event) {
@@ -26,7 +26,7 @@ function Signup({setLogIn}) {
       },
       body: {
         email: email,
-        name: name,
+        phone: phone,
         password: password
       }
     })
@@ -34,7 +34,7 @@ function Signup({setLogIn}) {
     .then((response) => {
       console.log(response)
     });
-    history.push('/dashboard', {user: name});
+    history.push('/account/verify');
   }
 
   return (
@@ -52,11 +52,11 @@ function Signup({setLogIn}) {
             onChange={(e) => setEmail(e.target.value)}
           />
         </Form.Group>
-        <Form.Group size="lg" controlId="name">
-          <Form.Label>Name</Form.Label>
+        <Form.Group size="lg" controlId="phone">
+          <Form.Label>Phone</Form.Label>
           <Form.Control
             type="text"
-            value={name}
+            value={phone}
             onChange={(e) => setName(e.target.value)}
           />
         </Form.Group>
