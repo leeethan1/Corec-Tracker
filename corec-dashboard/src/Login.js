@@ -13,6 +13,7 @@ function Login({setLogIn}) {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("test");
   const [googleData, setGoogleData] = useState([]);
+  const [loginFail, setLoginFail] = useState(false);
   const history = useHistory();
 
   function validateForm() {
@@ -35,9 +36,22 @@ function Login({setLogIn}) {
     .then(res => res.json())
     .then((response) => {
       console.log(response)
+      if (response.user) {
+        setLogIn();
+        history.push('/dashboard', {user: name});
+      }
+      else {
+        setLoginFail(true);
+      }
     });
-    setLogIn();
-    history.push('/dashboard', {user: name});
+  }
+
+  function formFailure() {
+    if (loginFail) {
+      return (
+          <p>The email or password you entered is incorrect.</p>
+      );
+    }
   }
 
   function handleGoogleSuccess(res) {
@@ -93,6 +107,7 @@ function Login({setLogIn}) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
+        {formFailure()}
         <Button block size="lg" type="submit" onClick={checkLogin} disabled={!validateForm()}>
           Login
         </Button>
