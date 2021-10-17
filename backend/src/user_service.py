@@ -2,14 +2,14 @@ import datetime
 import random
 import re
 
-from flask import Blueprint, request, session, json, jsonify
+from flask import Blueprint, request, session, json, jsonify, redirect
 import bcrypt
 import database_service
 import exceptions
 import notification_service as ns
 import secrets
 
-base_url = "http://127.0.0.1:5000"
+base_url = "https://127.0.0.1:3000"
 days_until_expire = 2
 
 user_service = Blueprint('app_user_service', __name__)
@@ -29,7 +29,7 @@ phone_regex = "\w{3}-\w{3}-\w{4}"
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
 def create_account():
     if "email" in session:
-        return json.dumps("redirect")
+        return "Already logged in", 402
     if request.method == 'POST':
         email = request.json["email"]
         password = request.json["password"]
@@ -41,8 +41,8 @@ def create_account():
         if not re.search(password_regex, password):
             return "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
                    "character.\nat least one special symbol.\nhave between 6 to 20 characters long.", 400
-        if not re.search(phone_regex, phone):
-            return "Not a valid phone number", 400
+        # if not re.search(phone_regex, phone):
+        #     return "Not a valid phone number", 400
 
         # Uncomment this section when database is established
         unverified_user = unverified_accounts.find_one({"email": email})
@@ -69,8 +69,8 @@ def create_account():
 
 @user_service.route('/account/verify/submit', methods=['POST'])
 def verify_account():
-    phone_verification_code = request.json['phone code']
-    email_verification_code = request.json['email code']
+    phone_verification_code = request.json['phoneCode']
+    email_verification_code = request.json['emailCode']
     email_entry = email_verification_codes.find_one({'code': email_verification_code})
     phone_entry = phone_verification_codes.find_one({'code': phone_verification_code})
     if email_entry and phone_entry:
@@ -109,19 +109,27 @@ def verify_account():
 @user_service.route('/login/submit', methods=['post', 'get'])
 def login():
     if "email" in session:
-        return "Already logged in", 400
+        return "Already logged in", 402
 
     email = request.json["email"]
     password = request.json["password"]
+
+    unverified = unverified_accounts.find_one({'email': email})
+    if unverified:
+        if bcrypt.checkpw(password.encode('utf-8'), unverified['password']):
+            return redirect('/account/verify')
+        else:
+            raise exceptions.AuthError
 
     # Uncomment when db established
     user = users.find_one({"email": email})
     if user:
         user_email = user['email']
         user_password = user['password']
-
         if bcrypt.checkpw(password.encode('utf-8'), user_password):
             session["email"] = user_email
+            ns.send_email(user_email, "Welcome to Corec Tracker",
+                          "Glad to have you on board! Enjoy all this app has to offer!")
             return "Logged in successfully", 200
         else:
             raise exceptions.AuthError
@@ -131,9 +139,8 @@ def login():
 
 @user_service.route('/logout', methods=['POST', "GET"])
 def logout():
-    if 'email' not in session:
-        return "Already logged out", 400
-    session.pop('email', None)
+    if 'email' in session:
+        session.pop('email', None)
     return "Logged out successfully", 200
 
 
@@ -250,11 +257,18 @@ def reset_password():
         raise exceptions.ExpiredToken
     email = entry['email']
     new_password = request.json['password']
+    if not re.search(password_regex, new_password):
+        return "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
+               "character.\nat least one special symbol.\nhave between 6 to 20 characters long.", 400
+
     hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
     users.find_one_and_update({'email': email},
                               {'$set': {
                                   'password': hashed
                               }})
+    user_tokens.find_one_and_delete({'token': token})
+    # log user in
+    # session['email'] = email
     return "Password updated", 200
 
 
