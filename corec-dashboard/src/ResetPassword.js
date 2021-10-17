@@ -7,14 +7,15 @@ function ResetPassword() {
 
     const [password, setPassword] = useState("");
     const history = useHistory();
+    const {token} = useParams();
 
     function handleResetPassword(res, data = {
       password: password
     }) {
         //const queryParams = new URLSearchParams(window.location.search);
         //const token = queryParams.get('token');
-        const token = this.props.match.params.token;
-        fetch(`/forgot-password/submit?token=${token}`, {
+        const encodedValue = encodeURIComponent(token);
+        fetch(`/password/reset/submit?token=${encodedValue}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
