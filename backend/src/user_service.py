@@ -29,7 +29,7 @@ phone_regex = "\w{3}-\w{3}-\w{4}"
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
 def create_account():
     if "email" in session:
-        return json.dumps("redirect")
+        return "Already logged in", 402
     if request.method == 'POST':
         email = request.json["email"]
         password = request.json["password"]
@@ -109,7 +109,7 @@ def verify_account():
 @user_service.route('/login/submit', methods=['post', 'get'])
 def login():
     if "email" in session:
-        return "Already logged in", 400
+        return "Already logged in", 402
 
     email = request.json["email"]
     password = request.json["password"]
@@ -139,9 +139,8 @@ def login():
 
 @user_service.route('/logout', methods=['POST', "GET"])
 def logout():
-    if 'email' not in session:
-        return "Already logged out", 400
-    session.pop('email', None)
+    if 'email' in session:
+        session.pop('email', None)
     return "Logged out successfully", 200
 
 
@@ -269,7 +268,7 @@ def reset_password():
                               }})
     user_tokens.find_one_and_delete({'token': token})
     # log user in
-    session['email'] = email
+    # session['email'] = email
     return "Password updated", 200
 
 

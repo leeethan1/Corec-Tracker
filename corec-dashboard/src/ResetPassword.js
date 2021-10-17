@@ -26,7 +26,7 @@ function ResetPassword() {
           .then((response) => {
             console.log(response)
           });
-          history.push('/dashboard');
+          history.push('/');
     }
 
     return (

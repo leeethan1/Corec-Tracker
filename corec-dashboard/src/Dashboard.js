@@ -1,10 +1,12 @@
 import {React, useEffect, useState} from "react";
 import {BrowserRouter as Router, Switch, Route, Link, useHistory} from "react-router-dom";
 import Star from "./Star"
+import { Button } from "react-bootstrap";
 
 function Dashboard(props) {
   const [rooms, setRooms] = useState([]);
   const [user, setUser] = useState("");
+  const history = useHistory();
 
   useEffect(() => {
     // mock data - will use fetch call
@@ -59,10 +61,22 @@ function Dashboard(props) {
     )
   }
 
+  function handleLogOut(res) {
+    fetch("logout", {
+      method: 'POST'
+    })
+    .then(res => res.json())
+    .then((response) => {
+      console.log(response)
+    });
+    history.push('/');
+  }
+
   return (
     <div>
-      <h1> {user}'s Dashboard </h1>
+      <h1> Dashboard </h1>
       {renderRooms()}
+      <Button onClick={handleLogOut}>Log out</Button>
     </div>
   );
 }

@@ -2,11 +2,15 @@ import {React, useState} from "react";
 import {BrowserRouter as Router, Switch, Route, Link, useHistory} from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import Overlay from "react-overlays/esm/Overlay";
 
 function VerifyAccount() {
 
     const [emailCode, setEmailCode] = useState("");
     const [phoneCode, setPhoneCode] = useState("");
+    const [error, setError] = useState({
+      value: false
+    })
     const history = useHistory();
 
     function handleVerifySuccess(res, data = {
@@ -20,11 +24,14 @@ function VerifyAccount() {
             },
             body: JSON.stringify(data)
           })
-          .then(res => res.json())
           .then((response) => {
             console.log(response)
+            if (response.status == 200) {
+              history.push('/dashboard');
+            } else {
+              setError(true);
+            }
           });
-          history.push('/dashboard');
     }
 
     return (
@@ -54,6 +61,22 @@ function VerifyAccount() {
             <Button block size="lg" type="submit" onClick={handleVerifySuccess}>
               Verify
             </Button>
+            <Overlay show={!error} placement="right">
+        {({ placement, arrowProps, show: _show, popper, ...props }) => (
+          <div
+            {...props}
+            style={{
+              backgroundColor: 'rgba(255, 100, 100, 0.85)',
+              padding: '2px 10px',
+              color: 'white',
+              borderRadius: 3,
+              ...props.style,
+            }}
+          >
+            Could not verify account
+          </div>
+        )}
+        </Overlay>
           </Form>
         </div>
       );

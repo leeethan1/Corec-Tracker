@@ -19,8 +19,8 @@ app.secret_key = os.getenv('SECRET_KEY')
 def handle_exception(e):
     print(str(e))
     if hasattr(e, "description"):
-        return e.description, 400
-    return repr(e), 400
+        return jsonify(error=400, text=e.description), 400
+    return jsonify(error=400, text=str(e)), 400
 
 
 @app.route('/')
