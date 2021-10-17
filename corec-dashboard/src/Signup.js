@@ -18,23 +18,21 @@ function Signup({setLogIn}) {
   }
 
   function handleSignupSuccess(res) {
-    setLogIn();
-    fetch("/signup", {
+    const requestOptions = {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: {
-        email: email,
-        name: name,
-        password: password
-      }
-    })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        'email': email,
+        'password': password,
+        'phone': "12312"})
+    };
+    fetch("/signup", requestOptions)
     .then(res => res.json())
     .then((response) => {
       console.log(response)
     });
     history.push('/dashboard', {user: name});
+    setLogIn();
   }
 
   return (

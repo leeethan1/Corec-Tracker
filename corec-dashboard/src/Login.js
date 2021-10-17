@@ -24,11 +24,35 @@ function Login({setLogIn}) {
   }
 
   function checkLogin() {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        'email': email,
+        'password': password})
+    };
+    fetch("/login", requestOptions)
+    .then(res => res.json())
+    .then((response) => {
+      console.log(response)
+    });
     setLogIn();
     history.push('/dashboard', {user: name});
   }
 
   function handleGoogleSuccess(res) {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        'email': res.profileObj.email,
+        'name': res.profileObj.name})
+    };
+    fetch("/googlelogin", requestOptions)
+    .then(res => res.json())
+    .then((response) => {
+      console.log(response)
+    });
     setGoogleData(res.profileObj);
     setLogIn();
     history.push('/dashboard', {user: res.profileObj.name});
