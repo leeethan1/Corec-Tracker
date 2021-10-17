@@ -3,22 +3,22 @@ import {BrowserRouter as Router, Switch, Route, Link, useHistory} from "react-ro
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
-function verifyAccount() {
+function VerifyAccount() {
 
     const [emailCode, setEmailCode] = useState("");
     const [phoneCode, setPhoneCode] = useState("");
     const history = useHistory();
 
-    function handleVerifySuccess(res) {
+    function handleVerifySuccess(res, data = {
+      emailCode: emailCode,
+      phoneCode: phoneCode
+    }) {
         fetch("/account/verify/submit", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: {
-              email: emailCode,
-              phone: phoneCode,
-            }
+            body: JSON.stringify(data)
           })
           .then(res => res.json())
           .then((response) => {
@@ -32,7 +32,8 @@ function verifyAccount() {
           <h1>
             Verify Account
           </h1>
-          <Form onSubmit={handleSubmit}>
+          <h2>Enter the two verification codes sent to your email and phone number</h2>
+          <Form>
             <Form.Group size="lg" controlId="email code">
               <Form.Label>Email Verification Code</Form.Label>
               <Form.Control
@@ -50,10 +51,12 @@ function verifyAccount() {
                 onChange={(e) => setPhoneCode(e.target.value)}
               />
             </Form.Group>
-            <Button block size="lg" type="submit" onClick={handleVerifySuccess} disabled={!validateForm()}>
+            <Button block size="lg" type="submit" onClick={handleVerifySuccess}>
               Verify
             </Button>
           </Form>
         </div>
       );
 }
+
+export default VerifyAccount

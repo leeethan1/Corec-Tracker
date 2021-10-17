@@ -17,6 +17,7 @@ app.secret_key = os.getenv('SECRET_KEY')
 # error handling
 @app.errorhandler(Exception)
 def handle_exception(e):
+    print(str(e))
     if hasattr(e, "description"):
         return e.description, 400
     return repr(e), 400

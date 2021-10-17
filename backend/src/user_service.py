@@ -2,7 +2,7 @@ import datetime
 import random
 import re
 
-from flask import Blueprint, request, session, json, jsonify
+from flask import Blueprint, request, session, json, jsonify, redirect
 import bcrypt
 import database_service
 import exceptions
@@ -69,8 +69,8 @@ def create_account():
 
 @user_service.route('/account/verify/submit', methods=['POST'])
 def verify_account():
-    phone_verification_code = request.json['phone code']
-    email_verification_code = request.json['email code']
+    phone_verification_code = request.json['phoneCode']
+    email_verification_code = request.json['emailCode']
     email_entry = email_verification_codes.find_one({'code': email_verification_code})
     phone_entry = phone_verification_codes.find_one({'code': phone_verification_code})
     if email_entry and phone_entry:
@@ -114,14 +114,22 @@ def login():
     email = request.json["email"]
     password = request.json["password"]
 
+    unverified = unverified_accounts.find_one({'email': email})
+    if unverified:
+        if bcrypt.checkpw(password.encode('utf-8'), unverified['password']):
+            return redirect('/account/verify')
+        else:
+            raise exceptions.AuthError
+
     # Uncomment when db established
     user = users.find_one({"email": email})
     if user:
         user_email = user['email']
         user_password = user['password']
-
         if bcrypt.checkpw(password.encode('utf-8'), user_password):
             session["email"] = user_email
+            ns.send_email(user_email, "Welcome to Corec Tracker",
+                          "Glad to have you on board! Enjoy all this app has to offer!")
             return "Logged in successfully", 200
         else:
             raise exceptions.AuthError
