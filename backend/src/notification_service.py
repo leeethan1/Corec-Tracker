@@ -69,28 +69,25 @@ def send_email_alert(email, occupancy, room):
         })
 
 
-def send_text(phone, message):
+def send_text(to_phone, occupancy, room):
     try:
-        message = client.messages.create(
-            body=message,
-            from_=PHONE,
-            to=phone
-        )
+        recent_texts = notifications.find(
+            {'$and': [{'time': {'$gt': datetime.datetime.utcnow() - datetime.timedelta(minutes=NOTIF_INTERVAL)}},
+                      {'phone': to_phone}]
+             })
+        if recent_texts.count() > 0:
+            print("Text already sent in the last 10 minutes")
+        else:
+            message = client.messages.create(
+                body="{} is at {} people, time to get those gains up!".format(room, occupancy),
+                from_=PHONE,
+                to=to_phone
+            )
+            notifications.insert_one({
+                'phone': to_phone,
+                'email': None,
+                'time': datetime.datetime.utcnow()
+            })
+            print("sms sent")
     except Exception as e:
         print(e)
-
-
-def send_text_alert(to_phone, occupancy, room):
-    recent_texts = notifications.find(
-        {'$and': [{'time': {'$gt': datetime.datetime.utcnow() - datetime.timedelta(minutes=NOTIF_INTERVAL)}},
-                  {'phone': to_phone}]
-         })
-    if recent_texts.count() > 0:
-        print("Text already sent in the last 10 minutes")
-    else:
-        send_text(to_phone, "{} is at {} people, time to get those gains up!".format(room, occupancy))
-        notifications.insert_one({
-            'phone': to_phone,
-            'email': None,
-            'time': datetime.datetime.utcnow()
-        })

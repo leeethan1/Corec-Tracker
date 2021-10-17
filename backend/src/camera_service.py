@@ -1,11 +1,10 @@
-import datetime
-
 import cv2
-from flask import Blueprint
-
-import database_service
-import person_counter as pc
+import time
+import datetime
+from flask import Blueprint, jsonify, request
 import record_service as rs
+import person_counter as pc
+import database_service
 
 # dictionary for mapping room name to the camera that's
 # scanning that room (only has one room for now)
@@ -19,23 +18,21 @@ db = database_service.connect_to_database("database")
 records = db['records']
 
 
-@camera_service.route('/process-rooms', methods=['POST'])
-def process_rooms():
-    occupancies = {}
-    for room in room_to_camera:
-        try:
-            image_path = take_snapshot(room)
-            occupancy = pc.count_people_in_image(image_path)
-            rs.create_and_notify(room, occupancy)
-            occupancies[room] = occupancy
-        except Exception:
-            # failed, return the last recorded occupancy
-            record = records.find({'room': room}).sort([('time', -1)]).limit(1)[0]
-            if not record:
-                occupancies[room] = 0
-            else:
-                occupancies[room] = record['occupancy']
-    return occupancies, 200
+@camera_service.route('/process-room', methods=['POST'])
+def process_room():
+    room = request.json['room']
+    try:
+        image_path = take_snapshot(room)
+        occupancy = pc.count_people_in_image(image_path)
+        return jsonify(rs.create_and_notify(room, occupancy))
+    except SnapshotError as e:
+        # failed, return the last recorded occupancy
+        record = records.find({'room': room}).sort([('time', -1)]).limit(1)
+        return jsonify(record['occupancy'])
+
+
+class SnapshotError(Exception):
+    message = "Failed to take snapshot"
 
 
 def take_snapshot(room):
@@ -53,3 +50,28 @@ def take_snapshot(room):
     cap.release()
     cv2.destroyAllWindows()
     return image_path
+
+
+def open_webcam():
+    vid = cv2.VideoCapture(1)
+    print(vid.isOpened())
+
+    while True:
+
+        # Capture the video frame
+        # by frame
+        ret, frame = vid.read()
+
+        # Display the resulting frame
+        cv2.imshow('frame', frame)
+
+        # the 'q' button is set as the
+        # quitting button you may use any
+        # desired button of your choice
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # After the loop release the cap object
+    vid.release()
+    # Destroy all the windows
+    cv2.destroyAllWindows()
