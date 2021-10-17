@@ -6,6 +6,7 @@ import Roompage from "./Roompage";
 import Dashboard from "./Dashboard"
 import Signup from "./Signup";
 import "./App.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [log, setLog] = useState(false);

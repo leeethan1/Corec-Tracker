@@ -29,7 +29,7 @@ function Signup({setLogIn}) {
     fetch("/signup", requestOptions)
     .then(res => res.json())
     .then((response) => {
-      console.log(response)
+      console.log("hello" + response)
     });
     history.push('/dashboard', {user: name});
     setLogIn();

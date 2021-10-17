@@ -1,7 +1,8 @@
 import {React, useEffect, useState} from "react";
 import {BrowserRouter as Router, Switch, Route, Link, useHistory} from "react-router-dom";
 import Button from "react-bootstrap/Button";
-import Star from "./Star"
+import Header from "./Header";
+import Star from "./Star";
 
 function Dashboard(props) {
   const [rooms, setRooms] = useState([]);
@@ -72,6 +73,7 @@ function Dashboard(props) {
 
   return (
     <div>
+      <Header/>
       <h1> {user}'s Dashboard </h1>
       <Button block size="lg" type="submit" onClick={() => setShowFavOnly(true)} disabled={showFavOnly}>
         Show favorites only

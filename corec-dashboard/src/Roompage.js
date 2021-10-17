@@ -2,6 +2,7 @@ import React from "react";
 import {BrowserRouter as Router, Switch, Route, Link} from "react-router-dom";
 import {LineChart, XAxis, YAxis, Line, Tooltip, CartesianGrid} from "recharts";
 import { GoogleLogout } from 'react-google-login';
+import Header from './Header';
 
 const cID = "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
 
@@ -37,6 +38,7 @@ function Roompage(props) {
   }
   return (
     <div>
+      <Header/>
       <h1>{getRoomName()}</h1>
       <LineChart
         width={500}
