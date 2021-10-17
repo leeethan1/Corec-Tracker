@@ -9,7 +9,7 @@ import exceptions
 import notification_service as ns
 import secrets
 
-base_url = "http://127.0.0.1:5000"
+base_url = "https://127.0.0.1:3000"
 days_until_expire = 2
 
 user_service = Blueprint('app_user_service', __name__)
@@ -258,11 +258,18 @@ def reset_password():
         raise exceptions.ExpiredToken
     email = entry['email']
     new_password = request.json['password']
+    if not re.search(password_regex, new_password):
+        return "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
+               "character.\nat least one special symbol.\nhave between 6 to 20 characters long.", 400
+
     hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
     users.find_one_and_update({'email': email},
                               {'$set': {
                                   'password': hashed
                               }})
+    user_tokens.find_one_and_delete({'token': token})
+    # log user in
+    session['email'] = email
     return "Password updated", 200
 
 

@@ -6,6 +6,9 @@ import Roompage from "./Roompage";
 import Dashboard from "./Dashboard"
 import Signup from "./Signup";
 import VerifyAccount from "./VerifyAccount";
+import ForgotPassword from "./ForgotPassword";
+import PasswordResetEmailSent from "./PasswordResetEmailSent";
+import ResetPassword from "./ResetPassword";
 import "./App.css";
 
 function App() {
@@ -24,6 +27,15 @@ function App() {
           <Route path="/signup" render={props => <Signup setLogIn={logIn}/>}/>
           <Route exact path="/account/verify">
             <VerifyAccount />
+          </Route>
+          <Route exact path="/email-sent">
+            <PasswordResetEmailSent />
+          </Route>
+          <Route path="/forgot-password">
+            <ForgotPassword />
+          </Route>
+          <Route exact path="/password/reset/:token">
+            <ResetPassword />
           </Route>
           <PrivateRoute isLoggedIn={log} path="/dashboard" component={Dashboard} />
           <PrivateRoute isLoggedIn={log} path="/roompage" component={Roompage} />
