@@ -1,21 +1,21 @@
 import {React, useEffect, useState} from "react";
 import {BrowserRouter as Router, Switch, Route, Link, useHistory} from "react-router-dom";
-import Star from "./Star"
-import { Button } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
+import Header from "./Header";
+import Star from "./Star";
 
 function Dashboard(props) {
   const [rooms, setRooms] = useState([]);
   const [user, setUser] = useState("");
-  const history = useHistory();
+  const [showFavOnly, setShowFavOnly] = useState(false);
 
   useEffect(() => {
-    // mock data - will use fetch call
-    console.log("getting rooms");
-    // fetch("/records/get")
+    // setUser(props.location.state.user);
+    // fetch(`/getrooms?u=${props.location.state.user}`)
     // .then(res => res.json())
-    // .then((result) => {
-    //   console.log(result);
-    // })
+    // .then((response) => {
+    //   setRooms(response)
+    // });
     setUser(props.location.state.user);
     setRooms(
       [
@@ -35,13 +35,23 @@ function Dashboard(props) {
             name: "Room 4",
             fav: false
           }
-      ]);
+    ]);
+  }, [])
+
+  function changeRoomFav(name) {
+    for (var i in rooms) {
+      if (rooms[i].name == name) {
+        rooms[i].fav = !rooms[i].fav;
+      }
     }
-  , [])
+  }
 
   function renderRooms() {
     let rowsToRender = []
       rooms.forEach((item) => {
+        if (showFavOnly && !item.fav) {
+          return;
+        }
         rowsToRender.push(
           <div className="room-row" key={item.name}>
             <hr/>
@@ -51,7 +61,7 @@ function Dashboard(props) {
                 state: {item}
               }}
             >{item.name}</Link>
-            <Star selected={item.fav}/>
+            <Star room={item.name} selected={item.fav} favChange={(name) => changeRoomFav(name)}/>
             <hr/>
           </div>
         )
@@ -61,22 +71,17 @@ function Dashboard(props) {
     )
   }
 
-  function handleLogOut(res) {
-    fetch("logout", {
-      method: 'POST'
-    })
-    .then(res => res.json())
-    .then((response) => {
-      console.log(response)
-    });
-    history.push('/');
-  }
-
   return (
     <div>
-      <h1> Dashboard </h1>
+      <Header/>
+      <h1> {user}'s Dashboard </h1>
+      <Button block size="lg" type="submit" onClick={() => setShowFavOnly(true)} disabled={showFavOnly}>
+        Show favorites only
+      </Button>
+      <Button block size="lg" type="submit" onClick={() => setShowFavOnly(false)} disabled={!showFavOnly}>
+        Show all
+      </Button>
       {renderRooms()}
-      <Button onClick={handleLogOut}>Log out</Button>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import ForgotPassword from "./ForgotPassword";
 import PasswordResetEmailSent from "./PasswordResetEmailSent";
 import ResetPassword from "./ResetPassword";
 import "./App.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [log, setLog] = useState(false);
@@ -31,14 +32,14 @@ function App() {
           <Route exact path="/email-sent">
             <PasswordResetEmailSent />
           </Route>
-          <Route path="/forgot-password">
+          <Route exact path="/forgot-password">
             <ForgotPassword />
           </Route>
           <Route exact path="/password/reset/:token">
             <ResetPassword />
           </Route>
           <PrivateRoute isLoggedIn={log} path="/dashboard" component={Dashboard} />
-          <PrivateRoute isLoggedIn={log} path="/roompage" component={Roompage} />
+          <Route exact path="/roompage" component={Roompage} />
         </Switch>
       </div>
     </Router>
