@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta
 from flask import Flask, Blueprint, session, jsonify, request
 import database_service as ds
@@ -44,11 +45,30 @@ def create_record(room, occupancy, col):
     col.delete_many({'time': {'$lt': datetime.utcnow() - timedelta(days=7)}})
 
 
-@record_service.route('/records/get', methods=['GET'])
-def get_average_occupancy():
-    hour = request.json['hour']
-    record_list = list(records.find({"hour": hour}))
+@record_service.route('/records/get-by-day', methods=['POST', 'GET'])
+def get_occupancies_by_day():
+    day = request.json['day']
+    averages = []
+    for hour in range(5, 24):
+        record_list = list(records.find({"$and": [{"hour": hour}, {'day': day}]}))
+
+        occupancies = [record['occupancy'] for record in record_list]
+        if not occupancies:
+            averages.append(0)
+        else:
+            averages.append(sum(occupancies) / len(occupancies))
+    return json.dumps({
+        'occupancies': averages
+    }), 200
+
+
+@record_service.route('/records/<day>', methods=['POST', 'GET'])
+def get_average_occupancy_in_day(day):
+    record_list = list(records.find({'day': day}))
+
     occupancies = [record['occupancy'] for record in record_list]
     if not occupancies:
-        return jsonify(0)
-    return jsonify(sum(occupancies) / len(occupancies))
+        average = 0
+    else:
+        average = sum(occupancies) / len(occupancies)
+    return json.dumps({'occupancy': average}), 200

@@ -138,6 +138,9 @@ function Login({ setLogIn }) {
           Login
         </Button>
         <Button block size="lg" type="submit" onClick={redirectToSignup}>
+          Continue as Guest
+        </Button>
+        <Button block size="lg" type="submit" onClick={(e)=>history.push('/roompage')}>
           Create Account
         </Button>
         <Button block size="lg" type="submit" onClick={redirectForgotPassword}>
