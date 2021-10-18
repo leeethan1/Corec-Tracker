@@ -1,14 +1,22 @@
-import {React, useState} from "react";
-import {BrowserRouter as Router, Switch, Route, Link, useHistory} from "react-router-dom";
+import { React, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useHistory,
+} from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import Overlay from "react-overlays/esm/Overlay";
 import GoogleLogin from "react-google-login";
 import FacebookLogin from "react-facebook-login";
 
-const cID = "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
+const cID =
+  "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
 const facebookID = "294054042557801";
 
-function Login({setLogIn}) {
+function Login({ setLogIn }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("test");
@@ -24,56 +32,70 @@ function Login({setLogIn}) {
     event.preventDefault();
   }
 
-  function checkLogin() {
+  async function checkLogin(res) {
     const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        'email': email,
-        'password': password})
+        email: email,
+        password: password,
+      }),
     };
-    fetch("/login", requestOptions)
-    .then(res => res.json())
-    .then((response) => {
-      console.log(response)
-      if (response.user) {
-        setLogIn();
-        history.push('/dashboard', {user: name});
-      }
-      else {
-        setLoginFail(true);
-      }
-    });
+    const response = await fetch("/login/submit", requestOptions);
+
+    if (response.ok) {
+      setLogIn();
+      history.push("/dashboard", { user: "test" });
+    } else {
+      setLoginFail(true);
+    }
   }
 
   function formFailure() {
     if (loginFail) {
       return (
-          <p>The email or password you entered is incorrect.</p>
+        <div>
+          <Overlay show={loginFail} placement="right">
+            {({ placement, arrowProps, show: _show, popper, ...props }) => (
+              <div
+                {...props}
+                style={{
+                  backgroundColor: "rgba(255, 100, 100, 0.85)",
+                  padding: "2px 10px",
+                  color: "white",
+                  borderRadius: 3,
+                  ...props.style,
+                }}
+              >
+                {"Email or password is incorrect"}
+              </div>
+            )}
+          </Overlay>
+        </div>
       );
     }
   }
 
-  function handleGoogleSuccess(res) {
+  async function handleGoogleSuccess(res) {
     const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        'email': res.profileObj.email,
-        'name': res.profileObj.name})
+        email: res.profileObj.email,
+        name: res.profileObj.name,
+      }),
     };
-    fetch("/googlelogin", requestOptions)
-    .then(res => res.json())
-    .then((response) => {
-      console.log(response)
-    });
-    setGoogleData(res.profileObj);
-    setLogIn();
-    history.push('/dashboard', {user: res.profileObj.name});
+    const response = await fetch("/googlelogin", requestOptions);
+    console.log(response.json());
+    history.push("/dashboard", { user: res.profileObj.name });
   }
 
   function redirectToSignup(res) {
-    history.push('/signup');
+    history.push("/signup");
+  }
+
+  function redirectForgotPassword(res) {
+    history.push("/forgot-password");
   }
 
   function handleFailure(res) {
@@ -86,9 +108,7 @@ function Login({setLogIn}) {
 
   return (
     <div className="Login">
-      <h1>
-        Login
-      </h1>
+      <h1>Login</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group size="lg" controlId="email">
           <Form.Label>Email</Form.Label>
@@ -106,20 +126,29 @@ function Login({setLogIn}) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          {formFailure()}
         </Form.Group>
-        {formFailure()}
-        <Button block size="lg" type="submit" onClick={checkLogin} disabled={!validateForm()}>
+        <Button
+          block
+          size="lg"
+          type="submit"
+          onClick={checkLogin}
+          disabled={!validateForm()}
+        >
           Login
         </Button>
         <Button block size="lg" type="submit" onClick={redirectToSignup}>
-          New User?
+          Create Account
+        </Button>
+        <Button block size="lg" type="submit" onClick={redirectForgotPassword}>
+          Forgot Password
         </Button>
         <GoogleLogin
-            clientId={cID}
-            buttonText="Log in with Google"
-            onSuccess={handleGoogleSuccess}
-            onFailure={handleFailure}
-            cookiePolicy={'single_host_origin'}
+          clientId={cID}
+          buttonText="Log in with Google"
+          onSuccess={handleGoogleSuccess}
+          onFailure={handleFailure}
+          cookiePolicy={"single_host_origin"}
         />
         {/* <FacebookLogin
           appId={facebookID}
@@ -135,4 +164,3 @@ function Login({setLogIn}) {
 }
 
 export default Login;
-

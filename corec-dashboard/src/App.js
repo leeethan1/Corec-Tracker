@@ -32,7 +32,7 @@ function App() {
           <Route exact path="/email-sent">
             <PasswordResetEmailSent />
           </Route>
-          <Route path="/forgot-password">
+          <Route exact path="/forgot-password">
             <ForgotPassword />
           </Route>
           <Route exact path="/password/reset/:token">
