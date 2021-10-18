@@ -1,5 +1,5 @@
 class AuthError(Exception):
-    code = 403
+    code = 401
     description = 'Email or password is incorrect'
 
 

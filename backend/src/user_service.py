@@ -28,8 +28,8 @@ phone_regex = "\w{3}-\w{3}-\w{4}"
 
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
 def create_account():
-    if "email" in session:
-        return "Already logged in", 402
+    # if "email" in session:
+    #     return "Already logged in", 402
     if request.method == 'POST':
         email = request.json["email"]
         password = request.json["password"]
@@ -37,13 +37,17 @@ def create_account():
 
         # validate email, phone, and password
         if not re.fullmatch(email_regex, email):
-            return "Not a valid email", 400
+            return json.dumps({"message": "Not a valid email"}), 400
         if not re.search(password_regex, password):
-            return "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
-                   "character.\nat least one special symbol.\nhave between 6 to 20 characters long.", 400
+            return json.dumps(
+                {"message": "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
+                            "character.\nat least one special symbol.\nhave between 6 to 20 characters long."}), 400
         # if not re.search(phone_regex, phone):
         #     return "Not a valid phone number", 400
 
+        emailNotificationsOn = True
+        smsNotificationsOn = True
+        notifications = {}
         # Uncomment this section when database is established
         unverified_user = unverified_accounts.find_one({"email": email})
         user = users.find_one({"email": email})
@@ -64,7 +68,7 @@ def create_account():
         ns.send_text(phone, "Your phone number verification code is {}".format(phone_code))
 
         return "Redirect to verification page to verify email and phone", 200
-    return "could not create account", 400
+    return json.dumps({'message': "Could not create account"}), 400
 
 
 @user_service.route('/account/verify/submit', methods=['POST'])
@@ -101,15 +105,18 @@ def verify_account():
         phone_verification_codes.find_one_and_delete({'phone': phone})
 
         session['email'] = email
+        ns.send_email(email, "Welcome to Corec Tracker",
+                      "Glad to have you on board! Enjoy all this app has to offer!")
         return "Signed up successfully", 200
     else:
-        return "Could not verify email or phone number.\nCheck that your verification codes are correct", 400
+        return json.dumps(
+            {'message': "Could not verify email or phone number.\nCheck that your verification codes are correct"}), 400
 
 
 @user_service.route('/login/submit', methods=['post', 'get'])
 def login():
-    if "email" in session:
-        return "Already logged in", 402
+    # if "email" in session:
+    #     return "Already logged in", 402
 
     email = request.json["email"]
     password = request.json["password"]
@@ -128,13 +135,36 @@ def login():
         user_password = user['password']
         if bcrypt.checkpw(password.encode('utf-8'), user_password):
             session["email"] = user_email
-            ns.send_email(user_email, "Welcome to Corec Tracker",
-                          "Glad to have you on board! Enjoy all this app has to offer!")
             return "Logged in successfully", 200
         else:
             raise exceptions.AuthError
     else:
         raise exceptions.AuthError
+
+
+@user_service.route('/googlelogin', methods=['post'])
+def googleLogin():
+    if "email" in session:
+        return json.dumps("already logged in")
+
+    if request.method == "POST":
+        email = request.json["email"]
+
+        # Uncomment when db established
+        user = users.find_one({"email": email})
+        if not user:
+            emailNotificationsOn = True
+            smsNotificationsOn = True
+            notifications = {}
+            user_input = {'email': email,
+                          'emailNotifications': emailNotificationsOn,
+                          'smsNotifications': smsNotificationsOn,
+                          'notifications': notifications,
+                          'favoriteRooms': []}
+            users.insert_one(user_input)
+        return {'message': "Google log in success"}
+
+    raise exceptions.AuthError
 
 
 @user_service.route('/logout', methods=['POST', "GET"])
@@ -225,6 +255,8 @@ def update_notifications():
 @user_service.route('/forgot-password/submit', methods=['POST'])
 def forgot_password():
     email = request.json['email']
+    if not re.fullmatch(email_regex, email):
+        return json.dumps({'message': 'Not a valid email'}), 400
     user = users.find_one({'email': email})
     if not user:
         raise exceptions.UserNotFound
@@ -232,7 +264,7 @@ def forgot_password():
     link = "{}/password/reset/{}".format(base_url, token)
     body = "Here's the link to reset your password: {}".format(link)
     ns.send_email(email, "Reset your password", body)
-    return token, 200
+    return json.dumps({'token': token}), 200
 
 
 def generate_token(email):
@@ -257,6 +289,9 @@ def reset_password():
         raise exceptions.ExpiredToken
     email = entry['email']
     new_password = request.json['password']
+    password_confirm = request.json['passwordConfirm']
+    if new_password != password_confirm:
+        return json.dumps({"message": "Passwords don't match"}), 400
     if not re.search(password_regex, new_password):
         return "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
                "character.\nat least one special symbol.\nhave between 6 to 20 characters long.", 400
