@@ -10,6 +10,7 @@ import ForgotPassword from "./ForgotPassword";
 import PasswordResetEmailSent from "./PasswordResetEmailSent";
 import ResetPassword from "./ResetPassword";
 import "./App.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [log, setLog] = useState(false);

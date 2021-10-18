@@ -13,6 +13,7 @@ function Login({setLogIn}) {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("test");
   const [googleData, setGoogleData] = useState([]);
+  const [loginFail, setLoginFail] = useState(false);
   const history = useHistory();
 
   function validateForm() {
@@ -24,11 +25,48 @@ function Login({setLogIn}) {
   }
 
   function checkLogin() {
-    setLogIn();
-    history.push('/dashboard', {user: name});
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        'email': email,
+        'password': password})
+    };
+    fetch("/login", requestOptions)
+    .then(res => res.json())
+    .then((response) => {
+      console.log(response)
+      if (response.user) {
+        setLogIn();
+        history.push('/dashboard', {user: name});
+      }
+      else {
+        setLoginFail(true);
+      }
+    });
+  }
+
+  function formFailure() {
+    if (loginFail) {
+      return (
+          <p>The email or password you entered is incorrect.</p>
+      );
+    }
   }
 
   function handleGoogleSuccess(res) {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        'email': res.profileObj.email,
+        'name': res.profileObj.name})
+    };
+    fetch("/googlelogin", requestOptions)
+    .then(res => res.json())
+    .then((response) => {
+      console.log(response)
+    });
     setGoogleData(res.profileObj);
     setLogIn();
     history.push('/dashboard', {user: res.profileObj.name});
@@ -69,6 +107,7 @@ function Login({setLogIn}) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
+        {formFailure()}
         <Button block size="lg" type="submit" onClick={checkLogin} disabled={!validateForm()}>
           Login
         </Button>

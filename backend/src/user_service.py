@@ -28,6 +28,7 @@ phone_regex = "\w{3}-\w{3}-\w{4}"
 
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
 def create_account():
+
     if "email" in session:
         return "Already logged in", 402
     if request.method == 'POST':
@@ -44,6 +45,9 @@ def create_account():
         # if not re.search(phone_regex, phone):
         #     return "Not a valid phone number", 400
 
+        emailNotificationsOn = True
+        smsNotificationsOn = True
+        notifications = {}
         # Uncomment this section when database is established
         unverified_user = unverified_accounts.find_one({"email": email})
         user = users.find_one({"email": email})
@@ -135,6 +139,30 @@ def login():
             raise exceptions.AuthError
     else:
         raise exceptions.AuthError
+
+@user_service.route('/googlelogin', methods=['post'])
+def googleLogin():
+    if "email" in session:
+        return json.dumps("already logged in")
+
+    if request.method == "POST":
+        email = request.json["email"]
+
+        # Uncomment when db established
+        user = users.find_one({"email": email})
+        if not user:
+            emailNotificationsOn = True
+            smsNotificationsOn = True
+            notifications = {}
+            user_input = {'email': email,
+                'emailNotifications': emailNotificationsOn,
+                'smsNotifications': smsNotificationsOn,
+                'notifications': notifications,
+                'favoriteRooms': []}
+            users.insert_one(user_input)
+        return {'message': "Google log in success"}
+
+    raise exceptions.AuthError
 
 
 @user_service.route('/logout', methods=['POST', "GET"])
