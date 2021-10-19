@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import {
   LineChart,
@@ -7,17 +7,20 @@ import {
   Line,
   Tooltip,
   CartesianGrid,
+  ResponsiveContainer,
 } from "recharts";
 import { GoogleLogout } from "react-google-login";
 import Header from "./Header";
-import { Tabs, Tab } from "react-bootstrap";
 import { Button } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.css";
+import Tabs from "react-bootstrap/Tabs";
+import Tab from "react-bootstrap/Tab";
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
 
-function Roompage(props) {
-  const [occupancies, setOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
+function Roompage() {
+  const [occupancies, setOccupancies] = useState([]);
 
   //we probably need to have separate graphs for each room
   const [graphs, setGraphs] = useState([]);
@@ -25,6 +28,36 @@ function Roompage(props) {
   //for now we'll separate by time
   //but in the future we'll have to separate by time
   //and have different graphs for each day of the week
+  // const [graphData, setGraphData] = useState([
+  //   {
+  //     time: "Sun",
+  //     ct: occupancies[0],
+  //   },
+  //   {
+  //     time: "Mon",
+  //     ct: occupancies[1],
+  //   },
+  //   {
+  //     time: "Tue",
+  //     ct: occupancies[2],
+  //   },
+  //   {
+  //     time: "Wed",
+  //     ct: occupancies[3],
+  //   },
+  //   {
+  //     time: "Thu",
+  //     ct: occupancies[4],
+  //   },
+  //   {
+  //     time: "Fri",
+  //     ct: occupancies[5],
+  //   },
+  //   {
+  //     time: "Sat",
+  //     ct: occupancies[6],
+  //   },
+  // ]);
   const graphData = [
     {
       time: "Sun",
@@ -56,16 +89,28 @@ function Roompage(props) {
     },
   ];
 
+  useEffect(() => {
+    handleGetOccupancies();
+  }, [occupancies]);
+
   //function I added for getting occupancies from a certain day
   //this function will be called when the refresh button I added
   //obviously in the future we want this request to be submitted automatically every couple minutes or so
-  async function handleGetOccupancies(day) {
-    const response = await fetch("/records/" + day);
+  async function handleGetOccupancies() {
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        room: "room 1",
+      }),
+    };
+    const response = await fetch("records/week", requestOptions);
     if (response.ok) {
       const res = await response.json();
       const averages = res.occupancies;
-      console.log(averages);
+      //console.log(averages);
       setOccupancies(averages);
+      console.log(occupancies);
     }
   }
 
@@ -78,20 +123,20 @@ function Roompage(props) {
     return "Room 1";
   }
 
-  function renderChart(day) {
+  function renderChart() {
     return (
       <div>
-        <Header />
+        {/* <Header /> */}
         <LineChart
           width={500}
           height={300}
           data={graphData}
-          margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
+          // margin={{
+          //   top: 5,
+          //   right: 30,
+          //   left: 20,
+          //   bottom: 5,
+          // }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="time" />
@@ -104,21 +149,17 @@ function Roompage(props) {
             activeDot={{ r: 5 }}
           />
         </LineChart>
-        <Button onClick={handleGetOccupancies(day)}>Refresh</Button>
+        {/* <Button onClick={handleGetOccupancies}>Refresh</Button> */}
       </div>
     );
   }
 
   //for some reason the chart isn't rendering when i put it in the tab
   return (
-    <div>
-      <Tabs className="mb-3">
-        <Tab title="Room 1"></Tab>
-        <Tab title="Room 2"></Tab>
-        <Tab title="Room 3"></Tab>
-        <Tab title="Room 4"></Tab>
-      </Tabs>
-      {renderChart(4)}
+    <div className="Roompage">
+      <Header />
+      <h1>Room 1</h1>
+      {renderChart()}
 
       {/* <GoogleLogout
         clientId={cID}
