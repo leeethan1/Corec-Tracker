@@ -47,10 +47,11 @@ def create_record(room, occupancy, col):
 
 @record_service.route('/records/get-by-day', methods=['POST', 'GET'])
 def get_occupancies_by_day():
+    room = request.json['room']
     day = request.json['day']
     averages = []
     for hour in range(5, 24):
-        record_list = list(records.find({"$and": [{"hour": hour}, {'day': day}]}))
+        record_list = list(records.find({"$and": [{"hour": hour}, {'day': day}, {'room': room}]}))
 
         occupancies = [record['occupancy'] for record in record_list]
         if not occupancies:
@@ -62,13 +63,30 @@ def get_occupancies_by_day():
     }), 200
 
 
+@record_service.route('/records/week', methods=["POST", "GET"])
+def get_occupancies_in_week():
+    room = request.json['room']
+    occupancies = []
+    for day in range(0, 7):
+        record_list = list(records.find({'$and': [{'day': day}, {'room': room}]}))
+        stats = [record['occupancy'] for record in record_list]
+        if not stats:
+            average = 0
+        else:
+            average = sum(stats) / len(stats)
+            average = round(average, 1)
+        occupancies.append(average)
+    return json.dumps({'occupancies': occupancies}), 200
+
+
 @record_service.route('/records/<day>', methods=['POST', 'GET'])
 def get_average_occupancy_in_day(day):
-    record_list = list(records.find({'day': day}))
-
+    room = request.json['room']
+    record_list = list(records.find({'$and': [{'room': room}, {'day': day}]}))
     occupancies = [record['occupancy'] for record in record_list]
     if not occupancies:
         average = 0
     else:
         average = sum(occupancies) / len(occupancies)
+        average = round(average, 1)
     return json.dumps({'occupancy': average}), 200

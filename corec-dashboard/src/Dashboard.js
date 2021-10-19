@@ -57,7 +57,7 @@ function Dashboard(props) {
             <hr/>
             <Link
               to={{
-                pathname: "/roompage",
+                pathname: "/room/" + item.name.substring(5),
                 state: {item}
               }}
             >{item.name}</Link>
