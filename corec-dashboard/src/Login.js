@@ -107,7 +107,7 @@ function Login({ setLogIn }) {
   // }
 
   return (
-    <div className="Login">
+    <div className="Login" style={{margin:10}}>
       <h1>Login</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group size="lg" controlId="email">
