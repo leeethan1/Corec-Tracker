@@ -1,20 +1,17 @@
-import React, { useState, useEffect, Component } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Link,
-  useParams,
-  useHistory,
-} from "react-router-dom";
-import { Button, FormCheck, Alert, Tooltip, Overlay } from "react-bootstrap";
-import Slider, { Range } from "rc-slider";
+import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
+import { Button, FormCheck, Alert } from "react-bootstrap";
+import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Header from "./Header";
 
 function Settings() {
   const [emailsOn, setEmailsOn] = useState(true);
   const [smsOn, setSmsOn] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [showToolTip, setShowToolTip] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
   //const Slider = require("rc-slider");
   //const sliderWithTooltip = Slider.createSliderWithTooltip;
   const [notificationSettings, setNotificationSettings] = useState([
@@ -70,6 +67,7 @@ function Settings() {
             toggleRoom(notification.room);
           }}
           checked={notification.on}
+          disabled={!emailsOn && !smsOn}
         />
 
         <label>
@@ -78,7 +76,7 @@ function Settings() {
               Threshold:
               <b>{notification.threshold}</b>
             </p>
-            <Slider onChange={(e) => changeThreshold(notification.room, e)} />
+            <Slider onChange={(e) => changeThreshold(notification.room, e)} disabled={!notification.on || (!emailsOn && !smsOn)}/>
           </div>
         </label>
       </div>
@@ -107,7 +105,29 @@ function Settings() {
     );
     if (!response.ok) {
       setAuthError(true);
+      const res = await response.json();
+      console.log(res);
       console.log("can't do that!");
+    } else {
+      setSettingsSaved(true);
+    }
+  }
+
+  function showSuccessful() {
+    if (settingsSaved) {
+      return (
+        <div>
+          <Alert
+            onClose={() => setSettingsSaved(false)}
+            dismissible
+            show={settingsSaved}
+            key={0}
+            variant="success"
+          >
+            <p>Saved.</p>
+          </Alert>
+        </div>
+      );
     }
   }
 
@@ -120,13 +140,14 @@ function Settings() {
             dismissible
             show={authError}
             key={0}
-            variant="dark"
+            variant="danger"
           >
-            <Alert.Heading>It seems like you're not logged in.</Alert.Heading>
+            <Alert.Heading>
+              Oops! It seems like you're not logged in.
+            </Alert.Heading>
             <p>
-              You can
-              <Alert.Link href="/">log in</Alert.Link> if you already have an
-              account or
+              You can <Alert.Link href="/">log in</Alert.Link> if you already
+              have an account or{" "}
               <Alert.Link href="/signup">create an account</Alert.Link>.
             </p>
           </Alert>
@@ -136,36 +157,40 @@ function Settings() {
   }
 
   return (
-    <div style={{ margin: 10 }}>
-      {displayError()}
-      <h1>Settings</h1>
-      <FormCheck
-        type="switch"
-        label={<h4>Email Notifications</h4>}
-        onChange={(e) => setEmailsOn(!emailsOn)}
-        checked={emailsOn}
-      />
-      <FormCheck
-        type="switch"
-        label={<h4>SMS Notifications</h4>}
-        onChange={(e) => setSmsOn(!smsOn)}
-        checked={smsOn}
-      />
-      {/* <ReactSwitch
+    <div>
+      <Header />
+      <div style={{ margin: 10 }}>
+        {displayError()}
+        {showSuccessful()}
+        <h1>Settings</h1>
+        <FormCheck
+          type="switch"
+          label={<h4>Email Notifications</h4>}
+          onChange={(e) => setEmailsOn(!emailsOn)}
+          checked={emailsOn}
+        />
+        <FormCheck
+          type="switch"
+          label={<h4>SMS Notifications</h4>}
+          onChange={(e) => setSmsOn(!smsOn)}
+          checked={smsOn}
+        />
+        {/* <ReactSwitch
         onChange={(e) => toggleRoom("Room 1")}
         checked={!notificationSettings[0].on}
       /> */}
-      {renderNotifications}
+        <p>Receive notifications for...</p>
+        {renderNotifications}
 
-      <Button
-        onClick={(e) => {
-          e.preventDefault();
-          handleSubmitNotifications();
-        }}
-      >
-        Save
-      </Button>
-      <Button onClick={() => history.push("/dashboard")}>Home</Button>
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            handleSubmitNotifications();
+          }}
+        >
+          Save
+        </Button>
+      </div>
     </div>
   );
 }

@@ -8,9 +8,10 @@ import {
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Overlay from "react-overlays/esm/Overlay";
+import { Alert } from "react-bootstrap";
 import GoogleLogin from "react-google-login";
 import FacebookLogin from "react-facebook-login";
+import Overlay from "react-bootstrap/Overlay"
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
@@ -55,7 +56,7 @@ function Login({ setLogIn }) {
     if (loginFail) {
       return (
         <div>
-          <Overlay show={loginFail} placement="right">
+          {/* <Overlay show={loginFail} placement="right">
             {({ placement, arrowProps, show: _show, popper, ...props }) => (
               <div
                 {...props}
@@ -70,7 +71,8 @@ function Login({ setLogIn }) {
                 {"Email or password is incorrect"}
               </div>
             )}
-          </Overlay>
+          </Overlay> */}
+          <b style={{"color": 'red'}}>Email or password is incorrect</b>
         </div>
       );
     }

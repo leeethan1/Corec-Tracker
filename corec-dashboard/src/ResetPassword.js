@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Overlay from "react-overlays/esm/Overlay";
+import Overlay from "react-bootstrap/Overlay"
 
 function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -60,22 +60,7 @@ function ResetPassword() {
     if (error) {
       return (
         <div>
-          <Overlay show={error} placement="right">
-            {({ placement, arrowProps, show: _show, popper, ...props }) => (
-              <div
-                {...props}
-                style={{
-                  backgroundColor: "rgba(255, 100, 100, 0.85)",
-                  padding: "2px 10px",
-                  color: "white",
-                  borderRadius: 3,
-                  ...props.style,
-                }}
-              >
-                {errMessage}
-              </div>
-            )}
-          </Overlay>
+          <b style={{"color": 'red'}}>{errMessage}</b>
         </div>
       );
     }

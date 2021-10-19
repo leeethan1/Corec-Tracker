@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Switch, Route, Link, useParams } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useParams,
+} from "react-router-dom";
 import {
   LineChart,
   XAxis,
@@ -25,7 +31,7 @@ function Roompage() {
   //we probably need to have separate graphs for each room
   const [graphs, setGraphs] = useState([]);
 
-  const {roomNumber} = useParams();
+  const { roomNumber } = useParams();
 
   //for now we'll separate by time
   //but in the future we'll have to separate by time
@@ -127,12 +133,13 @@ function Roompage() {
 
   function renderChart() {
     return (
-      <div>
+      <div className="center">
         {/* <Header /> */}
         <LineChart
-          width={500}
-          height={300}
+          width={1000}
+          height={500}
           data={graphData}
+
           // margin={{
           //   top: 5,
           //   right: 30,
@@ -160,7 +167,24 @@ function Roompage() {
   return (
     <div className="Roompage">
       <Header />
-      <h1>Room {roomNumber}</h1>
+      <h1
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        Room {roomNumber}
+      </h1>
+      <h2
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        Live Occupancy: <b>56</b>
+      </h2>
       {renderChart()}
 
       {/* <GoogleLogout
