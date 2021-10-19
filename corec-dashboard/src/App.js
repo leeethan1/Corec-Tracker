@@ -9,6 +9,7 @@ import VerifyAccount from "./VerifyAccount";
 import ForgotPassword from "./ForgotPassword";
 import PasswordResetEmailSent from "./PasswordResetEmailSent";
 import ResetPassword from "./ResetPassword";
+import Settings from "./Settings";
 import "./App.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -37,6 +38,9 @@ function App() {
           </Route>
           <Route exact path="/password/reset/:token">
             <ResetPassword />
+          </Route>
+          <Route exact path="/settings">
+            <Settings />
           </Route>
           <PrivateRoute isLoggedIn={log} path="/dashboard" component={Dashboard} />
           <Route exact path="/room/:roomNumber" component={Roompage} />

@@ -23,6 +23,10 @@ function Header() {
     history.push(`/room/${roomNumber}`);
   }
 
+  function redirectToSettings() {
+    history.push("/settings");
+  }
+
   return (
     <Navbar bg="light" variant="light">
       <Container>
@@ -32,6 +36,9 @@ function Header() {
           {/* <Nav.Link href="/">Settings</Nav.Link> */}
           <Nav.Link href="/">
             <span onClick={signOut}>Logout</span>
+          </Nav.Link>
+          <Nav.Link href="/settings">
+            <span onClick={redirectToSettings}>Settings</span>
           </Nav.Link>
           {rooms.map((roomNumber, index) => (
             <Nav.Link href="/">
