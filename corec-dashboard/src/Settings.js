@@ -6,14 +6,17 @@ import {
   useParams,
   useHistory,
 } from "react-router-dom";
-import { Button, FormCheck, Alert } from "react-bootstrap";
-import Slider from "react-rangeslider";
-import ReactSwitch from "react-switch";
+import { Button, FormCheck, Alert, Tooltip, Overlay } from "react-bootstrap";
+import Slider, { Range } from "rc-slider";
+import "rc-slider/assets/index.css";
 
 function Settings() {
   const [emailsOn, setEmailsOn] = useState(true);
   const [smsOn, setSmsOn] = useState(true);
   const [authError, setAuthError] = useState(false);
+  const [showToolTip, setShowToolTip] = useState(false);
+  //const Slider = require("rc-slider");
+  //const sliderWithTooltip = Slider.createSliderWithTooltip;
   const [notificationSettings, setNotificationSettings] = useState([
     {
       room: "Room 1",
@@ -59,32 +62,23 @@ function Settings() {
 
   let renderNotifications = notificationSettings.map((notification, index) => {
     return (
-      <div>
-        <label>
-          <FormCheck
-            type="switch"
-            label={notification.room}
-            onChange={(e) => {
-              toggleRoom(notification.room);
-            }}
-            checked={notification.on}
-          />
+      <div style={{ "margin-bottom": 40 }}>
+        <FormCheck
+          type="switch"
+          label={notification.room}
+          onChange={(e) => {
+            toggleRoom(notification.room);
+          }}
+          checked={notification.on}
+        />
 
+        <label>
           <div className="rowC">
-            <label>Threshold</label>
-            {/* <Slider
-              value={notification.threshold}
-              min={1}
-              max={100}
-              step={1}
-              onChange={(value) => {
-                changeThreshold(notification.room, value);
-              }}
-            /> */}
-            <div className="my-5">
-              <input type="range" min="10" max="100" step="1" />
-            </div>
-            <p1>{index}</p1>
+            <p>
+              Threshold:
+              <b>{notification.threshold}</b>
+            </p>
+            <Slider onChange={(e) => changeThreshold(notification.room, e)} />
           </div>
         </label>
       </div>
@@ -144,6 +138,7 @@ function Settings() {
   return (
     <div style={{ margin: 10 }}>
       {displayError()}
+      <h1>Settings</h1>
       <FormCheck
         type="switch"
         label={<h4>Email Notifications</h4>}
@@ -170,6 +165,7 @@ function Settings() {
       >
         Save
       </Button>
+      <Button onClick={() => history.push("/dashboard")}>Home</Button>
     </div>
   );
 }
