@@ -39,7 +39,7 @@ function App() {
             <ResetPassword />
           </Route>
           <PrivateRoute isLoggedIn={log} path="/dashboard" component={Dashboard} />
-          <Route exact path="/roompage" component={Roompage} />
+          <Route exact path="/room/:roomNumber" component={Roompage} />
         </Switch>
       </div>
     </Router>

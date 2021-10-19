@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Link, useParams } from "react-router-dom";
 import {
   LineChart,
   XAxis,
@@ -24,6 +24,8 @@ function Roompage() {
 
   //we probably need to have separate graphs for each room
   const [graphs, setGraphs] = useState([]);
+
+  const {roomNumber} = useParams();
 
   //for now we'll separate by time
   //but in the future we'll have to separate by time
@@ -101,10 +103,10 @@ function Roompage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        room: "room 1",
+        room: "room " + roomNumber,
       }),
     };
-    const response = await fetch("records/week", requestOptions);
+    const response = await fetch(`/records/week`, requestOptions);
     if (response.ok) {
       const res = await response.json();
       const averages = res.occupancies;
@@ -158,7 +160,7 @@ function Roompage() {
   return (
     <div className="Roompage">
       <Header />
-      <h1>Room 1</h1>
+      <h1>Room {roomNumber}</h1>
       {renderChart()}
 
       {/* <GoogleLogout

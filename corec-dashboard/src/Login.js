@@ -137,13 +137,13 @@ function Login({ setLogIn }) {
         >
           Login
         </Button>
-        <Button block size="lg" type="submit" onClick={(e)=>history.push('/roompage')}>
+        <Button block size="lg" type="submit" variant="secondary" onClick={(e)=>history.push('/room/1')}>
           Continue as Guest
         </Button>
-        <Button block size="lg" type="submit" onClick={redirectToSignup}>
+        <Button block size="lg" type="submit" variant="secondary" onClick={redirectToSignup}>
           Create Account
         </Button>
-        <Button block size="lg" type="submit" onClick={redirectForgotPassword}>
+        <Button block size="lg" type="submit" variant="secondary" onClick={redirectForgotPassword}>
           Forgot Password
         </Button>
         <GoogleLogin
