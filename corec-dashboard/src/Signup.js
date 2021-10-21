@@ -9,7 +9,6 @@ import {
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import PhoneInput from "react-phone-number-input";
-import Overlay from "react-overlays/esm/Overlay";
 import "react-phone-number-input/style.css";
 
 function Signup({ setLogIn }) {
@@ -54,24 +53,7 @@ function Signup({ setLogIn }) {
 
   function displayError() {
     if (error) {
-      return (
-        <Overlay show={error} placement="right">
-          {({ placement, arrowProps, show: _show, popper, ...props }) => (
-            <div
-              {...props}
-              style={{
-                backgroundColor: "rgba(255, 100, 100, 0.85)",
-                padding: "2px 10px",
-                color: "white",
-                borderRadius: 3,
-                ...props.style,
-              }}
-            >
-              {errMessage}
-            </div>
-          )}
-        </Overlay>
-      );
+      return <b style={{ color: "red" }}>{errMessage}</b>;
     }
   }
 
