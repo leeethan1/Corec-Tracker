@@ -3,7 +3,7 @@ import numpy as np
 import time
 import datetime
 from flask import Blueprint, jsonify, request
-# import  xrecord_service as rs
+# import record_service as rs
 import person_counter as pc
 import database_service
 
