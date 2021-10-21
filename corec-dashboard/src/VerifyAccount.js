@@ -1,14 +1,9 @@
 import { React, useState } from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
   useHistory,
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Overlay from "react-overlays/esm/Overlay";
 
 function VerifyAccount() {
   const [emailCode, setEmailCode] = useState("");
@@ -35,6 +30,12 @@ function VerifyAccount() {
       setError(true);
       const res = await response.json();
       setErrMessage(res.message);
+    }
+  }
+
+  function displayError() {
+    if (error) {
+      return <b style={{ color: "red" }}>{errMessage}</b>;
     }
   }
 
@@ -65,22 +66,7 @@ function VerifyAccount() {
         <Button block size="lg" type="submit" onClick={handleVerifySuccess}>
           Verify
         </Button>
-        <Overlay show={error} placement="right">
-          {({ placement, arrowProps, show: _show, popper, ...props }) => (
-            <div
-              {...props}
-              style={{
-                backgroundColor: "rgba(255, 100, 100, 0.85)",
-                padding: "2px 10px",
-                color: "white",
-                borderRadius: 3,
-                ...props.style,
-              }}
-            >
-              {errMessage}
-            </div>
-          )}
-        </Overlay>
+        {displayError()}
       </Form>
     </div>
   );
