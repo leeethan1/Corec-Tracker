@@ -13,5 +13,18 @@ code {
 }
 
 .center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
+}
+
+.horizontal {
+  display: flex;
+  flex-direction: row;
+}
+
+.vertical {
+  display: flex;
+  flex-direction: column;
 }
