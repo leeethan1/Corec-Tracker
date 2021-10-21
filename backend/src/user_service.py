@@ -293,8 +293,8 @@ def reset_password():
     if new_password != password_confirm:
         return json.dumps({"message": "Passwords don't match"}), 400
     if not re.search(password_regex, new_password):
-        return "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
-               "character.\nat least one special symbol.\nhave between 6 to 20 characters long.", 400
+        return {"message": "Password should...\nhave at least one number.\nat least one uppercase and one lowercase "
+                           "character.\nat least one special symbol.\nhave between 6 to 20 characters long."}, 400
 
     hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
     users.find_one_and_update({'email': email},
