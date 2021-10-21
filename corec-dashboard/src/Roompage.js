@@ -166,7 +166,7 @@ function Roompage() {
       case 1:
         return (
           <BarChart width={1000} height={400} data={graphData}>
-            <XAxis dataKey="time" fill="#000000" />
+            <XAxis dataKey="time" fill="#FF0000" />
             <YAxis />
             <Tooltip />
             <Bar dataKey="ct"></Bar>
@@ -192,12 +192,15 @@ function Roompage() {
         <span className="vertical">
           <Tabs
             id="chart tabs"
-            activeKey={0}
-            onSelect={(k) => setChartType(k)}
+            defaultActiveKey={0}
+            // onSelect={(k) => {
+            //   setChartType(k);
+            //   console.log(chartType);
+            // }}
           >
-            {[0,1].map((element, index) => (
+            {[0, 1].map((element, index) => (
               <Tab eventKey={element} title={index}>
-                {renderChart(chartType)}
+                {renderChart(element)}
                 {/* <h1>{element}</h1> */}
               </Tab>
             ))}
