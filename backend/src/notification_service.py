@@ -1,10 +1,11 @@
+import datetime
 import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
 import os
 from twilio.rest import Client
-import json
+import database_service as ds
 
 EMAIL = 'corec-tracker@outlook.com'
 load_dotenv()
@@ -15,6 +16,11 @@ AUTH = os.getenv("AUTH")
 PHONE = os.getenv('PHONE')
 
 client = Client(SID, AUTH)
+
+db = ds.connect_to_database("database")
+notifications = db['notifications']
+
+NOTIF_INTERVAL = 10
 
 
 def send_email(email, subject, body):
@@ -47,17 +53,44 @@ def send_email(email, subject, body):
 
 
 def send_email_alert(email, occupancy, room):
-    body = "{} is at {} people, time to get those gains up!".format(room, occupancy)
-    send_email(email, "Let's work out!", body)
+    recent_emails = notifications.find(
+        {'$and': [{'time': {'$gt': datetime.datetime.utcnow() - datetime.timedelta(minutes=NOTIF_INTERVAL)}},
+                  {'email': email}]
+         })
+    if recent_emails.count() > 0:
+        print("Email already sent within the last 10 minutes")
+    else:
+        body = "{} is at {} people, time to get those gains up!".format(room, occupancy)
+        send_email(email, "Let's work out!", body)
+        notifications.insert_one({
+            'email': email,
+            'phone': None,
+            'time': datetime.datetime.utcnow()
+        })
 
 
-def send_text(to_phone, occupancy, room):
+def send_text(phone, message):
     try:
         message = client.messages.create(
-            body="{} is at {} people, time to get those gains up!".format(room, occupancy),
+            body=message,
             from_=PHONE,
-            to=to_phone
+            to=phone
         )
-        print("sms sent")
     except Exception as e:
         print(e)
+
+
+def send_text_alert(to_phone, occupancy, room):
+    recent_texts = notifications.find(
+        {'$and': [{'time': {'$gt': datetime.datetime.utcnow() - datetime.timedelta(minutes=NOTIF_INTERVAL)}},
+                  {'phone': to_phone}]
+         })
+    if recent_texts.count() > 0:
+        print("Text already sent in the last 10 minutes")
+    else:
+        send_text(to_phone, "{} is at {} people, time to get those gains up!".format(room, occupancy))
+        notifications.insert_one({
+            'phone': to_phone,
+            'email': None,
+            'time': datetime.datetime.utcnow()
+        })

@@ -6,6 +6,8 @@ from flask import Blueprint, jsonify, request
 # import record_service as rs
 import person_counter as pc
 import database_service
+import person_counter as pc
+import record_service as rs
 
 # dictionary for mapping room name to the camera that's
 # scanning that room (only has one room for now)
