@@ -22,6 +22,8 @@ const cID =
 function Roompage() {
   const [occupancies, setOccupancies] = useState([]);
 
+  const [liveOccupancy, setLiveOccupancy] = useState(0)
+
   //we probably need to have separate graphs for each room
   const [graphs, setGraphs] = useState([]);
 
@@ -93,7 +95,8 @@ function Roompage() {
 
   useEffect(() => {
     handleGetOccupancies();
-  }, [occupancies]);
+    handleGetLiveOccupancy();
+  }, [occupancies, liveOccupancy]);
 
   //function I added for getting occupancies from a certain day
   //this function will be called when the refresh button I added
@@ -113,6 +116,24 @@ function Roompage() {
       //console.log(averages);
       setOccupancies(averages);
       console.log(occupancies);
+    }
+  }
+
+  async function handleGetLiveOccupancy() {
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        room: "room " + roomNumber,
+      }),
+    };
+    const response = await fetch(`/process-room`, requestOptions);
+    if (response.ok) {
+      const res = await response.json();
+      const occupancy = res.occupancy;
+      //console.log(averages);
+      setLiveOccupancy(occupancy);
+      console.log(occupancy);
     }
   }
 
