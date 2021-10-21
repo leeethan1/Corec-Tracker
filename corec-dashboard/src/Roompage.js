@@ -205,7 +205,7 @@ function Roompage() {
       <h1 className="center">Room {roomNumber}</h1>
       <h2 className="center">
         <Col>
-          Live Occupancy: <b>56</b>{" "}
+          Live Occupancy: <b>{liveOccupancy}</b>{" "}
           <Spinner variant="danger" animation="grow" size="sm" />
         </Col>
       </h2>
