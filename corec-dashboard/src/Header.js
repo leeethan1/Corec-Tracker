@@ -11,9 +11,8 @@ function Header() {
     fetch("/logout")
       .then((res) => res.json())
       .then((response) => {
-        if (response.message) {
-          console.log(response);
-        }
+        localStorage.removeItem("access")
+        localStorage.removeItem("remove")
       });
   }
   const rooms = [1, 2, 3, 4];

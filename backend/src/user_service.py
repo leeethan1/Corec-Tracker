@@ -8,6 +8,9 @@ import database_service
 import exceptions
 import notification_service as ns
 import secrets
+import jwt
+import datetime
+import time
 
 base_url = "https://127.0.0.1:3000"
 days_until_expire = 2
@@ -25,6 +28,7 @@ email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 password_regex = re.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$")
 phone_regex = "\w{3}-\w{3}-\w{4}"
 
+my_secret = 'secret_decode'
 
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
 def create_account():
@@ -134,18 +138,43 @@ def login():
         user_email = user['email']
         user_password = user['password']
         if bcrypt.checkpw(password.encode('utf-8'), user_password):
-            session["email"] = user_email
-            return "Logged in successfully", 200
+            access_payload = {
+                "email": user_email,
+                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
+            }
+            access_token = jwt.encode(
+                payload=access_payload,
+                key=my_secret
+            )
+            refresh_payload = {
+                "email": user_email,
+                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
+            }
+            refresh_token = jwt.encode(
+                payload=refresh_payload,
+                key=my_secret
+            )
+            # session["email"] = user_email
+            return {'access_token': access_token, 'user_token': refresh_token}, 200
         else:
             raise exceptions.AuthError
     else:
         raise exceptions.AuthError
 
+@user_service.route('/auth', methods=['post'])
+def auth():
+    token = request.json["token"]
+    header_data = jwt.get_unverified_header(token)
+    try:
+        access = jwt.decode(token, key=my_secret, algorithms=[header_data['alg'], ])
+        return {'status': 'success'}
+    except:
+        return {'status': 'failure'}
 
 @user_service.route('/googlelogin', methods=['post'])
 def googleLogin():
-    if "email" in session:
-        return json.dumps("already logged in")
+    # if "email" in session:
+    #     return json.dumps("already logged in")
 
     if request.method == "POST":
         email = request.json["email"]
@@ -162,15 +191,32 @@ def googleLogin():
                           'notifications': notifications,
                           'favoriteRooms': []}
             users.insert_one(user_input)
-        return {'message': "Google log in success"}
+            access_payload = {
+                "email": email,
+                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
+            }
+            access_token = jwt.encode(
+                payload=access_payload,
+                key=my_secret
+            )
+            refresh_payload = {
+                "email": email,
+                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
+            }
+            refresh_token = jwt.encode(
+                payload=refresh_payload,
+                key=my_secret
+            )
+            # session["email"] = user_email
+            return {'access_token': access_token, 'user_token': refresh_token}, 200
 
     raise exceptions.AuthError
 
 
 @user_service.route('/logout', methods=['POST', "GET"])
 def logout():
-    if 'email' in session:
-        session.pop('email', None)
+    # if 'email' in session:
+    #     session.pop('email', None)
     return "Logged out successfully", 200
 
 
