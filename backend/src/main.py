@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, jsonify
 from record_service import record_service
 from user_service import user_service
@@ -17,11 +19,13 @@ app.secret_key = os.getenv('SECRET_KEY')
 # error handling
 @app.errorhandler(Exception)
 def handle_exception(e):
-    response = {
-        "code": e.code,
-        "message": e.description
-    }
-    return jsonify(response)
+    code = 400
+    message = str(e)
+    if hasattr(e, "code"):
+        code = e.code
+    if hasattr(e, "message"):
+        message = e.message
+    return json.dumps({'message': message}), code
 
 
 @app.route('/')

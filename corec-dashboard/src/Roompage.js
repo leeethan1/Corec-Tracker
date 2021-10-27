@@ -192,15 +192,15 @@ function Roompage() {
         <span className="vertical">
           <Tabs
             id="chart tabs"
-            defaultActiveKey={0}
+            defaultActiveKey={"Line"}
             // onSelect={(k) => {
             //   setChartType(k);
             //   console.log(chartType);
             // }}
           >
-            {[0, 1].map((element, index) => (
-              <Tab eventKey={element} title={index}>
-                {renderChart(element)}
+            {["Line", "Bar"].map((element, index) => (
+              <Tab eventKey={element} title={element}>
+                {renderChart(index)}
                 {/* <h1>{element}</h1> */}
               </Tab>
             ))}
