@@ -43,9 +43,11 @@ function Login({ setLogIn }) {
       }),
     };
     const response = await fetch("/login/submit", requestOptions);
-
     if (response.ok) {
       setLogIn();
+      const tokens = await response.json()
+      localStorage.setItem('access', tokens.access_token)
+      localStorage.setItem('refresh', tokens.refresh_token)
       history.push("/dashboard", { user: "test" });
     } else {
       setLoginFail(true);
@@ -88,8 +90,13 @@ function Login({ setLogIn }) {
       }),
     };
     const response = await fetch("/googlelogin", requestOptions);
-    console.log(response.json());
-    history.push("/dashboard", { user: res.profileObj.name });
+    if (response.ok) {
+      setLogIn();
+      const tokens = await response.json()
+      localStorage.setItem('access', tokens.access_token)
+      localStorage.setItem('refresh', tokens.refresh_token)
+      history.push("/dashboard", { user: res.profileObj.name });
+    }
   }
 
   function redirectToSignup(res) {

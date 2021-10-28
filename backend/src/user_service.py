@@ -8,6 +8,12 @@ import database_service
 import exceptions
 import notification_service as ns
 import secrets
+import jwt
+import datetime
+from dotenv import load_dotenv
+import os
+from functools import wraps
+import time
 
 base_url = "https://127.0.0.1:3000"
 days_until_expire = 2
@@ -24,6 +30,30 @@ unverified_accounts = db['unverified accounts']
 email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 password_regex = re.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$")
 phone_regex = "\w{3}-\w{3}-\w{4}"
+
+load_dotenv()
+my_secret = os.getenv("SECRET_KEY")
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None;
+        if 'token' in request.headers:
+            token = request.headers['token']
+        if not token:
+            raise exceptions.NotLoggedIn
+        try:
+            data = jwt.decode(token, my_secret)
+            user = users.find_one({"email": data['email']})
+            if not user:
+                raise exceptions.NotLoggedIn
+        except Exception:
+            print("decode error")
+            raise exceptions.NotLoggedIn
+        return f(user, *args, **kwargs)
+
+    return decorated
 
 
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
@@ -124,7 +154,7 @@ def login():
     unverified = unverified_accounts.find_one({'email': email})
     if unverified:
         if bcrypt.checkpw(password.encode('utf-8'), unverified['password']):
-            return redirect('/account/verify')
+            return {'message': "redirect to verify account page"}, 400
         else:
             raise exceptions.AuthError
 
@@ -134,8 +164,25 @@ def login():
         user_email = user['email']
         user_password = user['password']
         if bcrypt.checkpw(password.encode('utf-8'), user_password):
-            session["email"] = user_email
-            return "Logged in successfully", 200
+            access_payload = {
+                "email": user_email,
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+            }
+            access_token = jwt.encode(
+                payload=access_payload,
+                key=my_secret
+            )
+            refresh_payload = {
+                "email": user_email,
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
+            }
+            refresh_token = jwt.encode(
+                payload=refresh_payload,
+                key=my_secret
+            )
+            # session["email"] = user_email
+            return json.dumps(
+                {'access_token': access_token.decode("utf-8"), 'user_token': refresh_token.decode("utf-8")}), 200
         else:
             raise exceptions.AuthError
     else:
@@ -144,8 +191,8 @@ def login():
 
 @user_service.route('/googlelogin', methods=['post'])
 def googleLogin():
-    if "email" in session:
-        return json.dumps("already logged in")
+    # if "email" in session:
+    #     return json.dumps("already logged in")
 
     if request.method == "POST":
         email = request.json["email"]
@@ -162,31 +209,46 @@ def googleLogin():
                           'notifications': notifications,
                           'favoriteRooms': []}
             users.insert_one(user_input)
-        return {'message': "Google log in success"}
+            access_payload = {
+                "email": email,
+                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
+            }
+            access_token = jwt.encode(
+                payload=access_payload,
+                key=my_secret
+            )
+            refresh_payload = {
+                "email": email,
+                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
+            }
+            refresh_token = jwt.encode(
+                payload=refresh_payload,
+                key=my_secret
+            )
+            # session["email"] = user_email
+            return {'access_token': access_token, 'user_token': refresh_token}, 200
 
     raise exceptions.AuthError
 
 
 @user_service.route('/logout', methods=['POST', "GET"])
 def logout():
-    if 'email' in session:
-        session.pop('email', None)
+    # if 'email' in session:
+    #     session.pop('email', None)
     return "Logged out successfully", 200
 
 
 @user_service.route('/account/delete', methods=["POST"])
-def delete_account():
-    if 'email' not in session:
-        raise exceptions.NotLoggedIn
-    email = session['email']
+@token_required
+def delete_account(user):
+    email = user['email']
     users.delete_one({'email': email})
 
 
 @user_service.route('/settings/email/update', methods=['PUT', 'GET'])
-def update_email():
-    if 'email' not in session:
-        raise exceptions.NotLoggedIn
-    old_email = session['email']
+@token_required
+def update_email(user):
+    old_email = user['email']
     new_email = request.json['email']
     if new_email == old_email:
         raise exceptions.DuplicateEmailError
@@ -203,10 +265,9 @@ def update_email():
 
 
 @user_service.route('/settings/password/update', methods=['POST', 'GET'])
-def update_password():
-    if 'email' not in session:
-        raise exceptions.NotLoggedIn
-    user = users.find_one({'email': session['email']})
+@token_required
+def update_password(user):
+    # user = users.find_one({'email': session['email']})
     old_password = user['password']
     new_password = request.json['password']
     if bcrypt.checkpw(new_password.encode('utf-8'), old_password):
@@ -221,10 +282,9 @@ def update_password():
 
 
 @user_service.route('/settings/phone/update', methods=['POST', 'GET'])
-def update_phone():
-    if 'email' not in session:
-        raise exceptions.NotLoggedIn
-    user = users.find_one({'email': session['email']})
+@token_required
+def update_phone(user):
+    # user = users.find_one({'email': session['email']})
     old_phone = user['phone']
     new_phone = request.json['phone']
     if old_phone == new_phone:
@@ -238,10 +298,9 @@ def update_phone():
 
 
 @user_service.route('/settings/notifications/update', methods=['POST'])
-def update_notifications():
-    if 'email' not in session:
-        raise exceptions.NotLoggedIn
-    email = session['email']
+@token_required
+def update_notifications(user):
+    email = user['email']
     emailNotifications = request.json['emailNotifications']
     smsNotifications = request.json['smsNotifications']
     updated_notifications = request.json['notifications']
@@ -253,8 +312,8 @@ def update_notifications():
 
 
 @user_service.route('/forgot-password/submit', methods=['POST'])
-def forgot_password():
-    email = request.json['email']
+def forgot_password(user):
+    email = user['email']
     if not re.fullmatch(email_regex, email):
         return json.dumps({'message': 'Not a valid email'}), 400
     user = users.find_one({'email': email})
@@ -308,59 +367,50 @@ def reset_password():
 
 
 @user_service.route('/favorites/get', methods=['POST'])
-def get_favorites():
-    if 'email' in session:
-        email = session['email']
-        user = users.find_one({'email': email})
-        if user is None:
-            raise exceptions.UserNotFound
-        favorite_rooms = user['favoriteRooms']
-        return jsonify(favorite_rooms)
-    raise exceptions.NotLoggedIn
+@token_required
+def get_favorites(user):
+    # email = user['email']
+    # user = users.find_one({'email': email})
+    if user is None:
+        raise exceptions.UserNotFound
+    favorite_rooms = user['favoriteRooms']
+    return jsonify({'rooms': favorite_rooms})
 
 
 @user_service.route('/favorites/add', methods=['POST'])
-def add_to_favorites():
+@token_required
+def add_to_favorites(user):
     room = request.json["room"]
-    if "email" not in session:
-        # not logged in
-        raise exceptions.NotLoggedIn
+    user_email = user['email']
+    query = {'email': user_email}
+    room_list = user["favoriteRooms"]
+    if room in room_list:
+        # room already in favorites
+        return {'message': "room already in favorites"}, 400
     else:
-        user_email = session['email']
-        query = {'email': user_email}
-        entry = users.find_one(query)
-        room_list = entry["favoriteRooms"]
-        if room in room_list:
-            # room already in favorites
-            return "room already in favorites", 400
-        else:
-            room_list.append(room)
-            new_entry = {"favoriteRooms": room_list}
-            users.update_one(query, {'$set': new_entry})
-            return jsonify("{} added to favorites".format(room))
+        room_list.append(room)
+        new_entry = {"favoriteRooms": room_list}
+        users.update_one(query, {'$set': new_entry})
+        return jsonify("{} added to favorites".format(room))
 
 
 @user_service.route('/favorites/remove', methods=['POST'])
-def remove_favorite():
+@token_required
+def remove_favorite(user):
     room = request.json["room"]
-
-    if "email" not in session:
-        # not logged in
-        raise exceptions.NotLoggedIn
+    # user is logged in
+    user_email = user['email']
+    query = {'email': user_email}
+    # user = users.find_one(query)
+    if user is None:
+        raise exceptions.UserNotFound
+    room_list = user["favoriteRooms"]
+    if room not in room_list:
+        return "Room was not favorited to begin with!", 400
     else:
-        # user is logged in
-        user_email = session['email']
-        query = {'email': user_email}
-        user = users.find_one(query)
-        if user is None:
-            raise exceptions.UserNotFound
-        room_list = user["favoriteRooms"]
-        if room not in room_list:
-            return "Room was not favorited to begin with!", 400
-        else:
-            room_list.remove(room)
-            users.update_one(query, {'$set': {'favoriteRooms': room_list}})
-            return jsonify("Removed {} from favorites".format(room))
+        room_list.remove(room)
+        users.update_one(query, {'$set': {'favoriteRooms': room_list}})
+        return jsonify("Removed {} from favorites".format(room))
 
 
 def generate_email_verification_code(email):
