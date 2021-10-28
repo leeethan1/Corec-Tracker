@@ -164,10 +164,11 @@ function Dashboard() {
   return (
     <div>
       <Header />
-      <h1> Dashboard </h1>
-      {/* {displayError()} */}
+      <div style={{ margin: 10 }}>
+        <h1> Dashboard </h1>
+        {/* {displayError()} */}
 
-      {/* <Button
+        {/* <Button
         block
         size="lg"
         type="submit"
@@ -177,16 +178,17 @@ function Dashboard() {
         Show all
       </Button> */}
 
-      {renderRooms()}
-      <Button
-        block
-        size="lg"
-        type="submit"
-        onClick={() => history.push("/favorites")}
-        disabled={authError}
-      >
-        Show favorites only
-      </Button>
+        {renderRooms()}
+        <Button
+          block
+          size="lg"
+          type="submit"
+          onClick={() => history.push("/favorites")}
+          disabled={authError}
+        >
+          Show favorites only
+        </Button>
+      </div>
     </div>
   );
 }

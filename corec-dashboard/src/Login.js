@@ -11,7 +11,7 @@ import Button from "react-bootstrap/Button";
 import { Alert } from "react-bootstrap";
 import GoogleLogin from "react-google-login";
 import FacebookLogin from "react-facebook-login";
-import Overlay from "react-bootstrap/Overlay"
+import Overlay from "react-bootstrap/Overlay";
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
@@ -45,9 +45,9 @@ function Login({ setLogIn }) {
     const response = await fetch("/login/submit", requestOptions);
     if (response.ok) {
       setLogIn();
-      const tokens = await response.json()
-      localStorage.setItem('access', tokens.access_token)
-      localStorage.setItem('refresh', tokens.refresh_token)
+      const tokens = await response.json();
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
       history.push("/dashboard", { user: "test" });
     } else {
       setLoginFail(true);
@@ -74,7 +74,7 @@ function Login({ setLogIn }) {
               </div>
             )}
           </Overlay> */}
-          <b style={{"color": 'red'}}>Email or password is incorrect</b>
+          <b style={{ color: "red" }}>Email or password is incorrect</b>
         </div>
       );
     }
@@ -92,9 +92,9 @@ function Login({ setLogIn }) {
     const response = await fetch("/googlelogin", requestOptions);
     if (response.ok) {
       setLogIn();
-      const tokens = await response.json()
-      localStorage.setItem('access', tokens.access_token)
-      localStorage.setItem('refresh', tokens.refresh_token)
+      const tokens = await response.json();
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
       history.push("/dashboard", { user: res.profileObj.name });
     }
   }
@@ -116,7 +116,7 @@ function Login({ setLogIn }) {
   // }
 
   return (
-    <div className="Login" style={{margin:10}}>
+    <div className="Login" style={{ margin: 10 }}>
       <h1>Login</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group size="lg" controlId="email">
@@ -146,13 +146,31 @@ function Login({ setLogIn }) {
         >
           Login
         </Button>
-        <Button block size="lg" type="submit" variant="secondary" onClick={(e)=>history.push('/dashboard')}>
+        <Button
+          block
+          size="lg"
+          type="submit"
+          variant="secondary"
+          onClick={(e) => history.push("/dashboard")}
+        >
           Continue as Guest
         </Button>
-        <Button block size="lg" type="submit" variant="secondary" onClick={redirectToSignup}>
+        <Button
+          block
+          size="lg"
+          type="submit"
+          variant="secondary"
+          onClick={redirectToSignup}
+        >
           Create Account
         </Button>
-        <Button block size="lg" type="submit" variant="secondary" onClick={redirectForgotPassword}>
+        <Button
+          block
+          size="lg"
+          type="submit"
+          variant="secondary"
+          onClick={redirectForgotPassword}
+        >
           Forgot Password
         </Button>
         <GoogleLogin

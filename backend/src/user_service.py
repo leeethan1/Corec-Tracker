@@ -55,6 +55,18 @@ def token_required(f):
     return decorated
 
 
+@user_service.route('/settings/get', methods=['POST'])
+@token_required
+def get_user_settings(user):
+    return json.dumps(
+        {
+            "emailNotifications": user['emailNotifications'],
+            "smsNotifications": user['smsNotifications'],
+            "notifications": user['notifications'],
+        }
+    ), 200
+
+
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
 def create_account():
     # if "email" in session:

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, FormCheck, Alert } from "react-bootstrap";
 import Slider from "rc-slider";
@@ -76,7 +76,10 @@ function Settings() {
               Threshold:
               <b>{notification.threshold}</b>
             </p>
-            <Slider onChange={(e) => changeThreshold(notification.room, e)} disabled={!notification.on || (!emailsOn && !smsOn)}/>
+            <Slider
+              onChange={(e) => changeThreshold(notification.room, e)}
+              disabled={!notification.on || (!emailsOn && !smsOn)}
+            />
           </div>
         </label>
       </div>
@@ -92,7 +95,10 @@ function Settings() {
     });
     const requestOptions = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        access: localStorage.getItem("access"),
+      },
       body: JSON.stringify({
         notifications: notifications,
         emailNotifications: emailsOn,
@@ -113,6 +119,37 @@ function Settings() {
     }
   }
 
+  async function handleGetSettings() {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: localStorage.getItem("access"),
+      },
+    };
+    const response = await fetch("/settings/get", requestOptions);
+    if (response.ok) {
+      //setAuthError(false);
+      const res = await response.json();
+      setEmailsOn(res.emailNotifications);
+      setSmsOn(res.smsNotifications);
+      let newNotifications = [...notificationSettings];
+      newNotifications.forEach((setting) => {
+        setting.on = setting.room in res.notifications;
+        setting.threshold = res.notifications[setting.room];
+      });
+      setNotificationSettings(newNotifications);
+    } else if (response.status == 403) {
+      const res = await response.json();
+      console.log(res);
+      setAuthError(true);
+    }
+  }
+
+  useEffect(() => {
+    handleGetSettings();
+  }, []);
+
   function showSuccessful() {
     if (settingsSaved) {
       return (
@@ -132,27 +169,66 @@ function Settings() {
   }
 
   function displayError() {
-    if (authError) {
+    return (
+      <div>
+        <Alert
+          onClose={() => setAuthError(false)}
+          dismissible={false}
+          show={authError}
+          key={0}
+          variant="danger"
+        >
+          <Alert.Heading>
+            Oops! It seems like you're not logged in.
+          </Alert.Heading>
+          <p>
+            You can <Alert.Link href="/">log in</Alert.Link> if you already have
+            an account or{" "}
+            <Alert.Link href="/signup">create an account</Alert.Link>.
+          </p>
+        </Alert>
+      </div>
+    );
+  }
+
+  function displaySettings() {
+    if (!authError) {
       return (
         <div>
-          <Alert
-            onClose={() => setAuthError(false)}
-            dismissible
-            show={authError}
-            key={0}
-            variant="danger"
+          {/* {displayError()} */}
+          {showSuccessful()}
+
+          <FormCheck
+            type="switch"
+            label={<h4>Email Notifications</h4>}
+            onChange={(e) => setEmailsOn(!emailsOn)}
+            checked={emailsOn}
+          />
+          <FormCheck
+            type="switch"
+            label={<h4>SMS Notifications</h4>}
+            onChange={(e) => setSmsOn(!smsOn)}
+            checked={smsOn}
+          />
+          {/* <ReactSwitch
+        onChange={(e) => toggleRoom("Room 1")}
+        checked={!notificationSettings[0].on}
+      /> */}
+          <p>Receive notifications for...</p>
+          {renderNotifications}
+
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              handleSubmitNotifications();
+            }}
           >
-            <Alert.Heading>
-              Oops! It seems like you're not logged in.
-            </Alert.Heading>
-            <p>
-              You can <Alert.Link href="/">log in</Alert.Link> if you already
-              have an account or{" "}
-              <Alert.Link href="/signup">create an account</Alert.Link>.
-            </p>
-          </Alert>
+            Save
+          </Button>
         </div>
       );
+    } else {
+      return displayError();
     }
   }
 
@@ -160,36 +236,8 @@ function Settings() {
     <div>
       <Header />
       <div style={{ margin: 10 }}>
-        {displayError()}
-        {showSuccessful()}
         <h1>Settings</h1>
-        <FormCheck
-          type="switch"
-          label={<h4>Email Notifications</h4>}
-          onChange={(e) => setEmailsOn(!emailsOn)}
-          checked={emailsOn}
-        />
-        <FormCheck
-          type="switch"
-          label={<h4>SMS Notifications</h4>}
-          onChange={(e) => setSmsOn(!smsOn)}
-          checked={smsOn}
-        />
-        {/* <ReactSwitch
-        onChange={(e) => toggleRoom("Room 1")}
-        checked={!notificationSettings[0].on}
-      /> */}
-        <p>Receive notifications for...</p>
-        {renderNotifications}
-
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            handleSubmitNotifications();
-          }}
-        >
-          Save
-        </Button>
+        {displaySettings()}
       </div>
     </div>
   );
