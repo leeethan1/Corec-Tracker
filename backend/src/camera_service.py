@@ -37,7 +37,6 @@ def process_room():
     while (cap.isOpened()):
         ret, frame = cap.read()
         cv2.normalize(frame, frame, 0, 80, cv2.NORM_MINMAX)
-        time.sleep(5)
 
         if ret == False:
             # failed to capture image, return the last recorded occupancy
@@ -50,6 +49,7 @@ def process_room():
         cv2.destroyAllWindows()
         occupancy = pc.count_people_in_image(image_path)
         rs.create_and_notify(room, occupancy, records)
+        print(occupancy)
         return json.dumps({'occupancy': occupancy}), 200
         # return jsonify(rs.create_and_notify(room, occupancy))
     # record = records.find({'room': room}).sort([('time', -1)]).limit(1)
@@ -57,5 +57,4 @@ def process_room():
 
 # print(occupancy)
 
-# process_room()
 
