@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { Button, FormCheck, Alert } from "react-bootstrap";
+import { Button, FormCheck, Alert, Dropdown, DropdownButton, ButtonGroup } from "react-bootstrap";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -230,15 +230,86 @@ function Settings() {
     }
   }
 
+  function convertTo12HourTime(hour) {
+    let timeString = "";
+    if (hour < 12) {
+      timeString = `${hour} AM`
+    } else {
+      hour = hour % 12;
+      if (hour == 0) {
+        return `12 PM`
+      }
+      timeString = `${hour % 12} PM`
+    }
+    return timeString;
+  }
+
+  function RenderTimeFrame() {
+    const timeFrame = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    var showEndTime = false; 
+    var startTime, endTime, e;
+    const [time,setTime]=useState('');
+    function handleSelect(e) {
+      console.log(e)
+      setTime(e);
+    }
+
+    return (<>
+      {['Start Time'].map(
+        (variant) => (
+          <DropdownButton
+            as={ButtonGroup}
+            key={variant}
+            id={`dropdown-variants-${variant}`}
+            variant={variant.toLowerCase()}
+            title={variant}
+            onSelect={e=>handleSelect(e)}
+          >
+            {timeFrame.map((time, index) => (
+              <option>
+                value = `{convertTo12HourTime(time)}`
+                {showEndTime=true}
+              </option>
+            ))}
+          </DropdownButton>
+        ),
+      )}
+      {['End Time'].map(
+        (variant) => (
+          <DropdownButton
+            as={ButtonGroup}
+            key={variant}
+            id={`dropdown-variants-${variant}`}
+            variant={variant.toLowerCase()}
+            title={variant}
+            disabled={showEndTime}
+
+          >
+            {timeFrame.map((time, index) => (
+              <Dropdown.Item>
+                {convertTo12HourTime(time)}
+              </Dropdown.Item>
+            ))}
+          </DropdownButton>
+        ),
+      )}
+    </>
+    );
+  }
+
   return (
     <div>
       <Header />
       <div style={{ margin: 10 }}>
         <h1>Settings</h1>
         {displaySettings()}
+        {RenderTimeFrame()}
       </div>
     </div>
   );
 }
+
+
+
 
 export default Settings;
