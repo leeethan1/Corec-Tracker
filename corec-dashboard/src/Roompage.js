@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
   useParams,
 } from "react-router-dom";
 import {
@@ -14,12 +10,11 @@ import {
   Line,
   Tooltip,
   CartesianGrid,
-  ResponsiveContainer,
   Bar,
+  Legend,
 } from "recharts";
-import { GoogleLogout } from "react-google-login";
 import Header from "./Header";
-import { Button, Col, Row, Spinner } from "react-bootstrap";
+import { Col, Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.css";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
@@ -28,102 +23,85 @@ const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
 
 function Roompage() {
-  const [occupancies, setOccupancies] = useState([]);
-  const [chartType, setChartType] = useState(0);
+  const [occupancies, setOccupancies] = useState(
+    [...new Array(19)].map(() => [0, 0, 0, 0, 0, 0, 0])
+  );
+
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const chartColors = [
+    "#F00000",
+    "#ff7605",
+    "#ffcf24",
+    "#00e016",
+    "#005de0",
+    "#7800e0",
+    "#e00056",
+  ];
 
   const [liveOccupancy, setLiveOccupancy] = useState(0)
 
   //we probably need to have separate graphs for each room
   const [graphs, setGraphs] = useState([]);
 
-  const { roomNumber } = useParams();
+  const { roomName } = useParams();
 
-  //for now we'll separate by time
-  //but in the future we'll have to separate by time
-  //and have different graphs for each day of the week
-  // const [graphData, setGraphData] = useState([
-  //   {
-  //     time: "Sun",
-  //     ct: occupancies[0],
-  //   },
-  //   {
-  //     time: "Mon",
-  //     ct: occupancies[1],
-  //   },
-  //   {
-  //     time: "Tue",
-  //     ct: occupancies[2],
-  //   },
-  //   {
-  //     time: "Wed",
-  //     ct: occupancies[3],
-  //   },
-  //   {
-  //     time: "Thu",
-  //     ct: occupancies[4],
-  //   },
-  //   {
-  //     time: "Fri",
-  //     ct: occupancies[5],
-  //   },
-  //   {
-  //     time: "Sat",
-  //     ct: occupancies[6],
-  //   },
-  // ]);
+  function createData(t, index) {
+    return {
+      time: t,
+      [days[0]]: occupancies[index][0],
+      [days[1]]: occupancies[index][1],
+      [days[2]]: occupancies[index][2],
+      [days[3]]: occupancies[index][3],
+      [days[4]]: occupancies[index][4],
+      [days[5]]: occupancies[index][5],
+      [days[6]]: occupancies[index][6],
+    };
+  }
+
   const graphData = [
-    {
-      time: "Sun",
-      ct: occupancies[0],
-    },
-    {
-      time: "Mon",
-      ct: occupancies[1],
-    },
-    {
-      time: "Tue",
-      ct: occupancies[2],
-    },
-    {
-      time: "Wed",
-      ct: occupancies[3],
-    },
-    {
-      time: "Thu",
-      ct: occupancies[4],
-    },
-    {
-      time: "Fri",
-      ct: occupancies[5],
-    },
-    {
-      time: "Sat",
-      ct: occupancies[6],
-    },
-  ];
+    "5 am",
+    "6 am",
+    "7 am",
+    "8 am",
+    "9 am",
+    "10 am",
+    "11 am",
+    "12 pm",
+    "1 pm",
+    "2 pm",
+    "3 pm",
+    "4 pm",
+    "5 pm",
+    "6 pm",
+    "7 pm",
+    "8 pm",
+    "9 pm",
+    "10 pm",
+    "11 pm",
+  ].map((element, index) => createData(element, index));
+
+
 
   useEffect(() => {
-    handleGetOccupancies();
+    updateOccupancies();
     handleGetLiveOccupancy();
   }, []);
 
-  //function I added for getting occupancies from a certain day
-  //this function will be called when the refresh button I added
-  //obviously in the future we want this request to be submitted automatically every couple minutes or so
-  async function handleGetOccupancies() {
+
+  async function updateOccupancies() {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        room: "room " + roomNumber,
+        room: roomName.toLowerCase(),
       }),
     };
-    const response = await fetch(`/records/week`, requestOptions);
+    const response = await fetch(`/records/get`, requestOptions);
     if (response.ok) {
       const res = await response.json();
-      const averages = res.occupancies;
+      const o = res.occupancies;
       //console.log(averages);
-      setOccupancies(averages);
+      setOccupancies(o);
       //console.log(occupancies);
     }
   }
@@ -157,11 +135,11 @@ function Roompage() {
 
   function renderChart(chart) {
     switch (chart) {
-      case 0:
+      case "Line Graph":
         return (
           <LineChart
-            width={1000}
-            height={400}
+            width={1200}
+            height={300}
             data={graphData}
 
             // margin={{
@@ -175,22 +153,29 @@ function Roompage() {
             <XAxis dataKey="time" />
             <YAxis />
             <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="ct"
-              stroke="#8884d8"
-              activeDot={{ r: 5 }}
-            />
+            <Legend />
+            {days.map((day, index) => (
+              <Line
+                type="monotone"
+                dataKey={day}
+                stroke="#8884d8"
+                activeDot={{ r: 5 }}
+                stroke={chartColors[index]}
+              />
+            ))}
           </LineChart>
         );
         break;
-      case 1:
+      case "Bar Chart":
         return (
-          <BarChart width={1000} height={400} data={graphData}>
-            <XAxis dataKey="time" fill="#FF0000" />
+          <BarChart width={1000} height={300} data={graphData}>
+            <XAxis dataKey="time" />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="ct"></Bar>
+            <Legend />
+            {days.map((day, index) => (
+              <Bar dataKey={day} fill={chartColors[index]}></Bar>
+            ))}
           </BarChart>
         );
       default:
@@ -202,7 +187,7 @@ function Roompage() {
   return (
     <div className="vertical">
       <Header />
-      <h1 className="center">Room {roomNumber}</h1>
+      <h1 className="center">{roomName}</h1>
       <h2 className="center">
         <Col>
           Live Occupancy: <b>{liveOccupancy}</b>{" "}
@@ -213,18 +198,20 @@ function Roompage() {
         <span className="vertical">
           <Tabs
             id="chart tabs"
-            defaultActiveKey={"Line"}
+            defaultActiveKey="Line Graph"
             // onSelect={(k) => {
             //   setChartType(k);
             //   console.log(chartType);
             // }}
           >
-            {["Line", "Bar"].map((element, index) => (
-              <Tab eventKey={element} title={element}>
-                {renderChart(index)}
-                {/* <h1>{element}</h1> */}
-              </Tab>
-            ))}
+            {["Line Graph", "Bar Chart"].map(
+              (element, index) => (
+                <Tab eventKey={element} title={element}>
+                  {renderChart(element)}
+                  {/* <h1>{element}</h1> */}
+                </Tab>
+              )
+            )}
           </Tabs>
         </span>
         {/* {renderChart(0)}

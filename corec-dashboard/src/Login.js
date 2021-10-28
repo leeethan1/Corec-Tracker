@@ -146,7 +146,7 @@ function Login({ setLogIn }) {
         >
           Login
         </Button>
-        <Button block size="lg" type="submit" variant="secondary" onClick={(e)=>history.push('/room/1')}>
+        <Button block size="lg" type="submit" variant="secondary" onClick={(e)=>history.push('/dashboard')}>
           Continue as Guest
         </Button>
         <Button block size="lg" type="submit" variant="secondary" onClick={redirectToSignup}>
