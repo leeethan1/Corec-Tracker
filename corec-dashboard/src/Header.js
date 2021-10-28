@@ -26,7 +26,7 @@ function Header() {
   return (
     <Navbar bg="light" variant="light">
       <Container>
-        <Navbar.Brand href="/dashboard">Corec-Tracker</Navbar.Brand>
+        <Navbar.Brand href="/dashboard">Corec Tracker</Navbar.Brand>
         <Nav className="core-nav">
           <Nav.Link href="/dashboard">Home</Nav.Link>
           {/* <Nav.Link href="/">Settings</Nav.Link> */}

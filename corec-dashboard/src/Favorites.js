@@ -1,17 +1,6 @@
-import { React, useCallback, useState, useEffect } from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import PrivateRoute from "./PrivateRoute";
-import Login from "./Login";
-import Roompage from "./Roompage";
-import Dashboard from "./Dashboard";
-import Signup from "./Signup";
-import VerifyAccount from "./VerifyAccount";
-import ForgotPassword from "./ForgotPassword";
-import PasswordResetEmailSent from "./PasswordResetEmailSent";
-import ResetPassword from "./ResetPassword";
-import Settings from "./Settings";
+import { React, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Header from "./Header";
-import { Alert } from "react-bootstrap";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 

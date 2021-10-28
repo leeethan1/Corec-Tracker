@@ -1,15 +1,10 @@
 import { React, useState } from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
   useHistory,
   useParams,
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Overlay from "react-bootstrap/Overlay"
 
 function ResetPassword() {
   const [password, setPassword] = useState("");
