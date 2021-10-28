@@ -1,17 +1,10 @@
 import { React, useState } from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
   useHistory,
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { Alert } from "react-bootstrap";
 import GoogleLogin from "react-google-login";
-import FacebookLogin from "react-facebook-login";
-import Overlay from "react-bootstrap/Overlay";
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
