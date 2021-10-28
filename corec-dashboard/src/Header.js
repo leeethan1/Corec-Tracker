@@ -9,18 +9,14 @@ function Header() {
   const history = useHistory();
 
   function signOut() {
-    fetch("/logout")
-      .then((res) => res.json())
-      .then((response) => {
-        localStorage.removeItem("access")
-        localStorage.removeItem("remove")
-      });
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
   }
-  const rooms = [1, 2, 3, 4];
+  const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
 
-  function redirectToRoom(event, roomNumber) {
+  function redirectToRoom(event, room) {
     event.preventDefault();
-    history.push(`/room/${roomNumber}`);
+    history.push(`/room/${encodeURIComponent(room)}`);
   }
 
   function redirectToSettings() {
@@ -30,10 +26,8 @@ function Header() {
   return (
     <Navbar bg="light" variant="light">
       <Container>
-        <Navbar.Brand href="#home">Corec-Tracker</Navbar.Brand>
+        <Navbar.Brand href="/dashboard">Corec-Tracker</Navbar.Brand>
         <Nav className="core-nav">
-
-
           <Nav.Link href="/dashboard">Home</Nav.Link>
           {/* <Nav.Link href="/">Settings</Nav.Link> */}
           <Nav.Link href="/">
@@ -43,13 +37,11 @@ function Header() {
             <span onClick={redirectToSettings}>Settings</span>
           </Nav.Link>
           <DropdownButton title="Rooms">
-            {rooms.map((roomNumber, index) => (
+            {rooms.map((room, index) => (
               <Dropdown.Item href="/">
-                <span onClick={(e) => redirectToRoom(e, roomNumber)}>
-                  Room {roomNumber}
-                </span>
+                <span onClick={(e) => redirectToRoom(e, room)}>{room}</span>
               </Dropdown.Item>
-          ))}
+            ))}
           </DropdownButton>
         </Nav>
       </Container>

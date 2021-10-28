@@ -1,19 +1,18 @@
 import datetime
+import os
 import random
 import re
+import secrets
+from functools import wraps
 
-from flask import Blueprint, request, session, json, jsonify, redirect
 import bcrypt
+import jwt
+from dotenv import load_dotenv
+from flask import Blueprint, request, session, json, jsonify
+
 import database_service
 import exceptions
 import notification_service as ns
-import secrets
-import jwt
-import datetime
-from dotenv import load_dotenv
-import os
-from functools import wraps
-import time
 
 base_url = "https://127.0.0.1:3000"
 days_until_expire = 2
@@ -38,9 +37,9 @@ my_secret = os.getenv("SECRET_KEY")
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = None;
-        if 'token' in request.headers:
-            token = request.headers['token']
+        token = None
+        if 'access' in request.headers:
+            token = request.headers['access']
         if not token:
             raise exceptions.NotLoggedIn
         try:
@@ -54,6 +53,18 @@ def token_required(f):
         return f(user, *args, **kwargs)
 
     return decorated
+
+
+@user_service.route('/settings/get', methods=['POST'])
+@token_required
+def get_user_settings(user):
+    return json.dumps(
+        {
+            "emailNotifications": user['emailNotifications'],
+            "smsNotifications": user['smsNotifications'],
+            "notifications": user['notifications'],
+        }
+    ), 200
 
 
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
@@ -380,7 +391,7 @@ def get_favorites(user):
 @user_service.route('/favorites/add', methods=['POST'])
 @token_required
 def add_to_favorites(user):
-    room = request.json["room"]
+    room = request.json['room']
     user_email = user['email']
     query = {'email': user_email}
     room_list = user["favoriteRooms"]
@@ -391,13 +402,13 @@ def add_to_favorites(user):
         room_list.append(room)
         new_entry = {"favoriteRooms": room_list}
         users.update_one(query, {'$set': new_entry})
-        return jsonify("{} added to favorites".format(room))
+        return json.dumps({"rooms": room_list}), 200
 
 
 @user_service.route('/favorites/remove', methods=['POST'])
 @token_required
 def remove_favorite(user):
-    room = request.json["room"]
+    room = request.json['room']
     # user is logged in
     user_email = user['email']
     query = {'email': user_email}
@@ -410,7 +421,7 @@ def remove_favorite(user):
     else:
         room_list.remove(room)
         users.update_one(query, {'$set': {'favoriteRooms': room_list}})
-        return jsonify("Removed {} from favorites".format(room))
+        return json.dumps({"rooms": room_list}), 200
 
 
 def generate_email_verification_code(email):

@@ -67,7 +67,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="ResetPassword">
+    <div className="ResetPassword" style={{ margin: 10 }}>
       <h1>Reset Password</h1>
       <Form onSubmit={(e) => e.preventDefault()}>
         <Form.Group size="lg" controlId="password">
