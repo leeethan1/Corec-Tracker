@@ -24,7 +24,7 @@ function App() {
   );
   return (
     <Router>
-      <div>
+      <div className="margin">
         <Switch>
           <Route exact path="/" render={props => <Login setLogIn={logIn}/>}/>
           <Route path="/signup" render={props => <Signup setLogIn={logIn}/>}/>
