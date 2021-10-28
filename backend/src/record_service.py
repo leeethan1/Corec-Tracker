@@ -11,7 +11,7 @@ users = db["users"]
 
 
 @record_service.route("/records/notify", methods=['POST'])
-def create_and_notify(room, occupancy):
+def create_and_notify(room, occupancy, records):
     # room = request.json['room']
     # occupancy = request.json['occupancy']
     create_record(room, occupancy, records)
@@ -42,7 +42,7 @@ def create_record(room, occupancy, col):
         "time": datetime.utcnow()
     }
     col.insert_one(new_record)
-    col.delete_many({'time': {'$lt': datetime.utcnow() - timedelta(days=7)}})
+    # col.delete_many({'time': {'$lt': datetime.utcnow() - timedelta(days=7)}})
 
 
 @record_service.route('/records/get-by-day', methods=['POST', 'GET'])

@@ -9,7 +9,8 @@ import database_service
 import person_counter as pc
 import record_service as rs
 import json
-
+import traceback
+import logging
 
 # dictionary for mapping room name to the camera that's
 # scanning that room (only has one room for now)
@@ -32,10 +33,13 @@ def process_room():
     room = request.json['room']
     occupancy = 0
 
-    cap = cv2.VideoCapture(room_to_camera[room])
+    cap = cv2.VideoCapture(0)
     image_path = '../images/{}.jpg'.format(str(datetime.datetime.now().date()))
     while (cap.isOpened()):
-        ret, frame = cap.read()
+        try:
+            ret, frame = cap.read()
+        except Exception as e:
+            logging.error(traceback.format_exc())
         cv2.normalize(frame, frame, 0, 80, cv2.NORM_MINMAX)
 
         if ret == False:
@@ -49,12 +53,6 @@ def process_room():
         cv2.destroyAllWindows()
         occupancy = pc.count_people_in_image(image_path)
         rs.create_and_notify(room, occupancy, records)
-        print(occupancy)
         return json.dumps({'occupancy': occupancy}), 200
-        # return jsonify(rs.create_and_notify(room, occupancy))
-    # record = records.find({'room': room}).sort([('time', -1)]).limit(1)
-    # return jsonify(record['occupancy'])
-
-# print(occupancy)
 
 

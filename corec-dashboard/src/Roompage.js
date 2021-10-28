@@ -105,7 +105,7 @@ function Roompage() {
   useEffect(() => {
     handleGetOccupancies();
     handleGetLiveOccupancy();
-  }, [occupancies, liveOccupancy]);
+  }, []);
 
   //function I added for getting occupancies from a certain day
   //this function will be called when the refresh button I added

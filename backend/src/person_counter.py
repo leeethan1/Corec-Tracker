@@ -39,7 +39,5 @@ def count_people_in_image(path):
 
     #image = cv2.addWeighted(image, 0.7, image, 0, 0)
     print(str(people) + " people counted")
-    cv2.imshow("results", image)
-    cv2.waitKey(0)
     cv2.destroyAllWindows()
     return people
