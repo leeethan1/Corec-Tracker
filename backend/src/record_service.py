@@ -42,7 +42,17 @@ def create_record(room, occupancy, col):
         "time": datetime.utcnow()
     }
     col.insert_one(new_record)
-    col.delete_many({'time': {'$lt': datetime.utcnow() - timedelta(days=7)}})
+    # col.delete_many({'time': {'$lt': datetime.utcnow() - timedelta(days=7)}})
+
+
+@record_service.route('/records/recent', methods=['POST'])
+def get_recent_occupancy():
+    room = request.json['room']
+    record = records.find({'room': room}).sort([('time', -1)]).limit(1)
+    occupancy = 0
+    if record:
+        occupancy = record[0]['occupancy']
+    return json.dumps({'occupancy': occupancy}), 200
 
 
 @record_service.route('/records/get-by-day', methods=['POST', 'GET'])
@@ -136,4 +146,3 @@ def get_advanced_stats():
         maxes.append(maximum)
         averages.append(round(average, 1))
     return json.dumps({'minimums': mins, 'maximums': maxes, 'averages': averages}), 200
-

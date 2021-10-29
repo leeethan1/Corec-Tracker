@@ -28,5 +28,5 @@ def remove():
     print("done")
 
 if __name__ == '__main__':
+    remove()
     create()
-    #remove()
