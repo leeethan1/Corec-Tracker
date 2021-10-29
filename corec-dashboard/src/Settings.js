@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { Button, FormCheck, Alert, Dropdown, DropdownButton, ButtonGroup } from "react-bootstrap";
+import {
+  Button,
+  FormCheck,
+  Alert,
+  Dropdown,
+  DropdownButton,
+  ButtonGroup,
+} from "react-bootstrap";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -233,67 +240,54 @@ function Settings() {
   function convertTo12HourTime(hour) {
     let timeString = "";
     if (hour < 12) {
-      timeString = `${hour} AM`
+      timeString = `${hour} AM`;
     } else {
       hour = hour % 12;
       if (hour == 0) {
-        return `12 PM`
+        return `12 PM`;
       }
-      timeString = `${hour % 12} PM`
+      timeString = `${hour % 12} PM`;
     }
     return timeString;
   }
+  const [disableEndTime, setDisableEndTime] = useState(true);
+  const [startTime, setStartTime] = useState("Start Time");
+  const [endTime, setEndTime] = useState("End Time");
 
   function RenderTimeFrame() {
-    const timeFrame = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
-    var showEndTime = false; 
-    var startTime, endTime, e;
-    const [time,setTime]=useState('');
-    function handleSelect(e) {
-      console.log(e)
-      setTime(e);
-    }
+    const timeFrame = [
+      5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+    ];
 
-    return (<>
-      {['Start Time'].map(
-        (variant) => (
-          <DropdownButton
-            as={ButtonGroup}
-            key={variant}
-            id={`dropdown-variants-${variant}`}
-            variant={variant.toLowerCase()}
-            title={variant}
-            onSelect={e=>handleSelect(e)}
-          >
-            {timeFrame.map((time, index) => (
-              <option>
-                value = `{convertTo12HourTime(time)}`
-                {showEndTime=true}
-              </option>
-            ))}
-          </DropdownButton>
-        ),
-      )}
-      {['End Time'].map(
-        (variant) => (
-          <DropdownButton
-            as={ButtonGroup}
-            key={variant}
-            id={`dropdown-variants-${variant}`}
-            variant={variant.toLowerCase()}
-            title={variant}
-            disabled={showEndTime}
+    return (
+      <>
+        <DropdownButton as={ButtonGroup} title={startTime}>
+          {timeFrame.map((element, index) => (
+            <Dropdown.Item
+              onClick={() => {
+                setDisableEndTime(false);
+                setStartTime(convertTo12HourTime(element));
+              }}
+            >
+              {convertTo12HourTime(element)}
+            </Dropdown.Item>
+          ))}
+        </DropdownButton>
 
-          >
-            {timeFrame.map((time, index) => (
-              <Dropdown.Item>
-                {convertTo12HourTime(time)}
-              </Dropdown.Item>
-            ))}
-          </DropdownButton>
-        ),
-      )}
-    </>
+        <DropdownButton
+          as={ButtonGroup}
+          title={endTime}
+          disabled={disableEndTime}
+        >
+          {timeFrame.map((element, index) => (
+            <Dropdown.Item
+              onClick={() => setEndTime(convertTo12HourTime(element))}
+            >
+              {convertTo12HourTime(element)}
+            </Dropdown.Item>
+          ))}
+        </DropdownButton>
+      </>
     );
   }
 
@@ -308,8 +302,5 @@ function Settings() {
     </div>
   );
 }
-
-
-
 
 export default Settings;
