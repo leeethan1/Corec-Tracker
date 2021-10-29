@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  useParams,
-} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   LineChart,
   BarChart,
@@ -14,7 +12,14 @@ import {
   Legend,
 } from "recharts";
 import Header from "./Header";
-import { Col, Spinner } from "react-bootstrap";
+import {
+  Col,
+  Spinner,
+  Accordion,
+  Dropdown,
+  DropdownButton,
+  Button,
+} from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.css";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
@@ -26,6 +31,12 @@ function Roompage() {
   const [occupancies, setOccupancies] = useState(
     [...new Array(19)].map(() => [0, 0, 0, 0, 0, 0, 0])
   );
+  const [maxOccupancies, setMaxOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
+  const [minOccupancies, setMinOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
+  const [averages, setAverages] = useState([0, 0, 0, 0, 0, 0, 0]);
+  const [forecastDay, setForecastDay] = useState(0);
+  const [forecastTime, setForecastTime] = useState(0);
+  const [tick, setTick] = useState(0);
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -43,6 +54,15 @@ function Roompage() {
 
   const { roomName } = useParams();
 
+  function convertTo12HourTime(hour) {
+    let time = "";
+    if (hour < 12) {
+      return `${hour} AM`;
+    } else {
+      return `${hour % 12} PM`;
+    }
+  }
+
   function createData(t, index) {
     return {
       time: t,
@@ -56,7 +76,7 @@ function Roompage() {
     };
   }
 
-  const graphData = [
+  const times = [
     "5 am",
     "6 am",
     "7 am",
@@ -76,16 +96,65 @@ function Roompage() {
     "9 pm",
     "10 pm",
     "11 pm",
-  ].map((element, index) => createData(element, index));
+  ];
 
+  const graphData = times.map((element, index) => createData(element, index));
 
+  function compare(md1, md2) {
+    for (var x = 0; x < md1.length; x++) {
+      //Iterate through all elements in second array
+      for (var y = 0; y < md1.length; y++) {
+        /*This causes us to compare all elements 
+           in first array to each element in second array
+          Since md1[x] stays fixed while md2[y] iterates through second array.
+           We compare the first two indexes of each array in conditional
+        */
+        if (md1[x][y] != md2[x][y]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  useEffect(() => {
+    let interval = null;
+    console.log(tick);
+    interval = setInterval(() => {
+      setTick((tick) => tick + 1);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [tick]);
 
   useEffect(() => {
     updateOccupancies();
-  }, [occupancies]);
+    getAdvancedStatistics();
+    //console.log("sleeping");
+  }, [tick, roomName]);
 
+  async function getAdvancedStatistics() {
+    //console.log("fetching advanced stats...");
+    //await sleep(10000);
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        room: roomName.toLowerCase(),
+      }),
+    };
+    const response = await fetch(`/records/advanced`, requestOptions);
+    if (response.ok) {
+      const res = await response.json();
+      setMaxOccupancies(res.maximums);
+      setMinOccupancies(res.minimums);
+      setAverages(res.averages);
+    }
+  }
 
   async function updateOccupancies() {
+    //console.log("fetching graph data...");
+    //await sleep(10000);
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -97,9 +166,8 @@ function Roompage() {
     if (response.ok) {
       const res = await response.json();
       const o = res.occupancies;
-      //console.log(averages);
       setOccupancies(o);
-      //console.log(occupancies);
+      //console.log(o);
     }
   }
 
@@ -162,7 +230,72 @@ function Roompage() {
     }
   }
 
-  //for some reason the chart isn't rendering when i put it in the tab
+  const handleSelect = (e) => {
+    e.preventDefault();
+    console.log(e.target.value);
+    setForecastDay(e.target.value);
+  };
+
+  function displayAdvancedStats() {
+    let max = averages.reduce(function (a, b) {
+      return Math.max(a, b);
+    }, 0);
+    let min = averages.reduce(function (a, b) {
+      return Math.min(a, b);
+    }, 0);
+    return (
+      <Accordion>
+        <Accordion.Item eventKey="0">
+          <Accordion.Header>View Advanced Stats</Accordion.Header>
+          <Accordion.Body>
+            {days.map((day, index) => (
+              <p>
+                The average occupancy on <b>{day}</b> was around{" "}
+                <b>{averages[index]}</b> people with a max occupancy of{" "}
+                <b>{maxOccupancies[index]}</b> people and a minimum of{" "}
+                <b>{minOccupancies[index]}</b> people
+              </p>
+            ))}
+            <p>
+              It seems like <b>{days[averages.indexOf(max)]}</b> is the busiest
+              day while <b>{days[averages.indexOf(min)]}</b> is the least
+              busiest day
+            </p>
+            <div className="horizontal">
+              The predicted occupancy for{" "}
+              <DropdownButton
+                title={days[forecastDay]}
+                size="sm"
+                variant="secondary"
+              >
+                {days.map((day, index) => (
+                  <Dropdown.Item onClick={() => setForecastDay(index)}>
+                    {day}
+                  </Dropdown.Item>
+                ))}
+              </DropdownButton>{" "}
+              at{" "}
+              <DropdownButton
+                title={times[forecastTime]}
+                size="sm"
+                varant="secondary"
+              >
+                {times.map((time, index) => (
+                  <Dropdown.Item onClick={() => setForecastTime(index)}>
+                    {time}
+                  </Dropdown.Item>
+                ))}
+              </DropdownButton>
+              is
+              <b> {occupancies[forecastTime][forecastDay]} </b>
+              people
+            </div>
+          </Accordion.Body>
+        </Accordion.Item>
+      </Accordion>
+    );
+  }
+
   return (
     <div className="vertical">
       <Header />
@@ -183,20 +316,19 @@ function Roompage() {
             //   console.log(chartType);
             // }}
           >
-            {["Line Graph", "Bar Chart"].map(
-              (element, index) => (
-                <Tab eventKey={element} title={element}>
-                  {renderChart(element)}
-                  {/* <h1>{element}</h1> */}
-                </Tab>
-              )
-            )}
+            {["Line Graph", "Bar Chart"].map((element, index) => (
+              <Tab eventKey={element} title={element}>
+                {renderChart(element)}
+                {/* <h1>{element}</h1> */}
+              </Tab>
+            ))}
           </Tabs>
         </span>
+
         {/* {renderChart(0)}
         {renderChart(1)} */}
       </span>
-
+      {displayAdvancedStats()}
       {/* <GoogleLogout
         clientId={cID}
         buttonText="Logout"

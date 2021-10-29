@@ -10,7 +10,6 @@ function Settings() {
   const [emailsOn, setEmailsOn] = useState(true);
   const [smsOn, setSmsOn] = useState(true);
   const [authError, setAuthError] = useState(false);
-  const [showToolTip, setShowToolTip] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   //const Slider = require("rc-slider");
   //const sliderWithTooltip = Slider.createSliderWithTooltip;
@@ -36,7 +35,6 @@ function Settings() {
       threshold: 10,
     },
   ]);
-  const history = useHistory();
 
   function toggleRoom(roomName) {
     const roomNumber = parseInt(roomName.substring(5));
@@ -57,13 +55,13 @@ function Settings() {
     setNotificationSettings(newSettings);
   }
 
-  let renderNotifications = notificationSettings.map((notification, index) => {
+  let renderNotifications = notificationSettings.map((notification) => {
     return (
       <div style={{ "margin-bottom": 40 }}>
         <FormCheck
           type="switch"
           label={notification.room}
-          onChange={(e) => {
+          onChange={() => {
             toggleRoom(notification.room);
           }}
           checked={notification.on}
@@ -139,7 +137,7 @@ function Settings() {
         setting.threshold = res.notifications[setting.room];
       });
       setNotificationSettings(newNotifications);
-    } else if (response.status == 403) {
+    } else {
       const res = await response.json();
       console.log(res);
       setAuthError(true);
@@ -201,13 +199,13 @@ function Settings() {
           <FormCheck
             type="switch"
             label={<h4>Email Notifications</h4>}
-            onChange={(e) => setEmailsOn(!emailsOn)}
+            onChange={() => setEmailsOn(!emailsOn)}
             checked={emailsOn}
           />
           <FormCheck
             type="switch"
             label={<h4>SMS Notifications</h4>}
-            onChange={(e) => setSmsOn(!smsOn)}
+            onChange={() => setSmsOn(!smsOn)}
             checked={smsOn}
           />
           {/* <ReactSwitch
