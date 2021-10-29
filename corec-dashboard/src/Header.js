@@ -29,6 +29,9 @@ function Header() {
         <Navbar.Brand href="/dashboard">Corec Tracker</Navbar.Brand>
         <Nav className="core-nav">
           <Nav.Link href="/dashboard">Home</Nav.Link>
+          <Nav.Link href="/">Log In</Nav.Link>
+          <Nav.Link href="/signup">Sign Up</Nav.Link>
+
           {/* <Nav.Link href="/">Settings</Nav.Link> */}
           <Nav.Link href="/">
             <span onClick={signOut}>Logout</span>
