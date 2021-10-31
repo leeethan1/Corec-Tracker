@@ -253,6 +253,7 @@ function Settings() {
   const [disableEndTime, setDisableEndTime] = useState(true);
   const [startTime, setStartTime] = useState("Start Time");
   const [endTime, setEndTime] = useState("End Time");
+  const [startTimeIndex, setStartTimeIndex] = useState(0);
 
   function RenderTimeFrame() {
     const timeFrame = [
@@ -267,6 +268,7 @@ function Settings() {
               onClick={() => {
                 setDisableEndTime(false);
                 setStartTime(convertTo12HourTime(element));
+                setStartTimeIndex(index)
               }}
             >
               {convertTo12HourTime(element)}
@@ -282,6 +284,7 @@ function Settings() {
           {timeFrame.map((element, index) => (
             <Dropdown.Item
               onClick={() => setEndTime(convertTo12HourTime(element))}
+              disabled={startTimeIndex > index - 1}
             >
               {convertTo12HourTime(element)}
             </Dropdown.Item>
