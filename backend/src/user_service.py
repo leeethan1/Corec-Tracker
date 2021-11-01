@@ -329,7 +329,9 @@ def update_notifications(user):
     users.find_one_and_update({'email': email},
                               {'$set': {'notifications': updated_notifications,
                                         'emailNotifications': emailNotifications,
-                                        'smsNotifications': smsNotifications}})
+                                        'smsNotifications': smsNotifications,
+                                        'startTime': request.json['startTime'],
+                                        'endTime': request.json['endTime']}})
     return "Notifications updated", 200
 
 

@@ -22,6 +22,7 @@ function Settings() {
   const [startTime, setStartTime] = useState("Start Time");
   const [endTime, setEndTime] = useState("End Time");
   const [startTimeIndex, setStartTimeIndex] = useState(0);
+  const [timeBoundaries, setTimeBoundaries] = useState([0,0]);
   //const Slider = require("rc-slider");
   //const sliderWithTooltip = Slider.createSliderWithTooltip;
   const [notificationSettings, setNotificationSettings] = useState([
@@ -112,6 +113,8 @@ function Settings() {
         notifications: notifications,
         emailNotifications: emailsOn,
         smsNotifications: smsOn,
+        startTime: timeBoundaries[0],
+        endTime: timeBoundaries[1]
       }),
     };
     const response = await fetch(
@@ -277,6 +280,7 @@ function Settings() {
                 setDisableEndTime(false);
                 setStartTime(convertTo12HourTime(element));
                 setStartTimeIndex(index)
+                setTimeBoundaries([element, timeBoundaries[1]])
               }}
             >
               {convertTo12HourTime(element)}
@@ -291,7 +295,8 @@ function Settings() {
         >
           {timeFrame.map((element, index) => (
             <Dropdown.Item
-              onClick={() => setEndTime(convertTo12HourTime(element))}
+              onClick={() => {setEndTime(convertTo12HourTime(element));
+              setTimeBoundaries([timeBoundaries[0], element]);}}
               disabled={startTimeIndex > index - 1}
             >
               {convertTo12HourTime(element)}
