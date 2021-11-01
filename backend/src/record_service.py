@@ -21,7 +21,7 @@ def create_and_notify(room, occupancy):
     for user in userList:
         email = user['email']
         notifications = user["notifications"]
-        startTime, endTime = 0, 0
+        startTime, endTime = None, None
         currentTime = datetime.now()
         if "startTime" in user and "endTime" in user:
             startTime = user["startTime"]
@@ -30,11 +30,11 @@ def create_and_notify(room, occupancy):
 
             # send email/SMS
             if user["emailNotifications"]:
-                if ("startTime" not in user and "endTime" not in user) or (startTime <= currentTime.hour <= endTime):
+                if (not "startTime" and not "endTime") or (startTime <= currentTime.hour <= endTime):
                     ns.send_email_alert(email, occupancy, room)
             if user["smsNotifications"]:
                 phone = user['phone']
-                if ("startTime" not in user and "endTime" not in user) or (startTime < currentTime.hour < endTime):
+                if (not "startTime" and not "endTime") or (startTime <= currentTime.hour <= endTime):
                     ns.send_text_alert(phone, occupancy, room)
 
     return {"occupancy": occupancy}, 200
