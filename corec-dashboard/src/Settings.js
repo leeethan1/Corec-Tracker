@@ -18,6 +18,10 @@ function Settings() {
   const [smsOn, setSmsOn] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
+  const [disableEndTime, setDisableEndTime] = useState(true);
+  const [startTime, setStartTime] = useState("Start Time");
+  const [endTime, setEndTime] = useState("End Time");
+  const [startTimeIndex, setStartTimeIndex] = useState(0);
   //const Slider = require("rc-slider");
   //const sliderWithTooltip = Slider.createSliderWithTooltip;
   const [notificationSettings, setNotificationSettings] = useState([
@@ -144,6 +148,13 @@ function Settings() {
         setting.threshold = res.notifications[setting.room];
       });
       setNotificationSettings(newNotifications);
+      if ('startTime' in res) {
+        console.log(res.startTime);
+        setStartTime(convertTo12HourTime(res.startTime));
+      }
+      if ('endTime' in res) {
+        setEndTime(convertTo12HourTime(res.endTime));
+      }
     } else {
       const res = await response.json();
       console.log(res);
@@ -250,10 +261,7 @@ function Settings() {
     }
     return timeString;
   }
-  const [disableEndTime, setDisableEndTime] = useState(true);
-  const [startTime, setStartTime] = useState("Start Time");
-  const [endTime, setEndTime] = useState("End Time");
-  const [startTimeIndex, setStartTimeIndex] = useState(0);
+
 
   function RenderTimeFrame() {
     const timeFrame = [
