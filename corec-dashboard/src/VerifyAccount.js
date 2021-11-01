@@ -1,7 +1,5 @@
 import { React, useState } from "react";
-import {
-  useHistory,
-} from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
@@ -24,8 +22,11 @@ function VerifyAccount() {
       }),
     });
 
-    if (response.status == 200) {
-      history.push("/");
+    if (response.ok) {
+      const tokens = await response.json();
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
+      history.push("/dashboard");
     } else {
       setError(true);
       const res = await response.json();
@@ -63,8 +64,11 @@ function VerifyAccount() {
             onChange={(e) => setPhoneCode(e.target.value)}
           />
         </Form.Group>
-        <Button block size="lg" type="submit" onClick={handleVerifySuccess}>
+        <Button block size="lg" type="submit" onClick={handleVerifySuccess} disabled={phoneCode.length == 0 || emailCode.length == 0}>
           Verify
+        </Button>
+        <Button variant="secondary" onClick={() => history.push("/signup")}>
+          Back
         </Button>
         {displayError()}
       </Form>

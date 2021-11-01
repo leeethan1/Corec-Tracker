@@ -103,9 +103,11 @@ def create_account():
         # Uncomment this section when database is established
         unverified_user = unverified_accounts.find_one({"email": email})
         user = users.find_one({"email": email})
-        if unverified_user or user:
+        if user:
             # email already taken
             raise exceptions.DuplicateEmailError
+        if unverified_user:
+            unverified_accounts.delete_many({'email': email})
 
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user_input = {'email': email,
@@ -114,6 +116,8 @@ def create_account():
         unverified_accounts.insert_one(user_input)
 
         # generate and send verification codes
+        email_verification_codes.delete_many({'email': email})
+        phone_verification_codes.delete_many({'phone': phone})
         email_code = generate_email_verification_code(email)
         phone_code = generate_phone_verification_code(phone)
         ns.send_email(email, "Verify your email", "Your email verification code is {}".format(email_code))
@@ -151,15 +155,32 @@ def verify_account():
         users.insert_one(user_input)
 
         # remove user from unverified collection
-        unverified_accounts.find_one_and_delete({'$and': [{'email': email}, {'phone': phone}]})
+        unverified_accounts.delete_many({'email': email})
         # remove verification codes for user
-        email_verification_codes.find_one_and_delete({'email': email})
-        phone_verification_codes.find_one_and_delete({'phone': phone})
+        email_verification_codes.delete_many({'email': email})
+        phone_verification_codes.delete_many({'phone': phone})
 
-        session['email'] = email
         ns.send_email(email, "Welcome to Corec Tracker",
                       "Glad to have you on board! Enjoy all this app has to offer!")
-        return "Signed up successfully", 200
+        access_payload = {
+            "email": email,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        }
+        access_token = jwt.encode(
+            payload=access_payload,
+            key=my_secret
+        )
+        refresh_payload = {
+            "email": email,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
+        }
+        refresh_token = jwt.encode(
+            payload=refresh_payload,
+            key=my_secret
+        )
+        # session["email"] = user_email
+        return json.dumps(
+            {'access_token': access_token.decode("utf-8"), 'refresh_token': refresh_token.decode("utf-8")}), 200
     else:
         return json.dumps(
             {'message': "Could not verify email or phone number.\nCheck that your verification codes are correct"}), 400
@@ -204,7 +225,7 @@ def login():
             )
             # session["email"] = user_email
             return json.dumps(
-                {'access_token': access_token.decode("utf-8"), 'user_token': refresh_token.decode("utf-8")}), 200
+                {'access_token': access_token.decode("utf-8"), 'refresh_token': refresh_token.decode("utf-8")}), 200
         else:
             raise exceptions.AuthError
     else:
@@ -248,7 +269,7 @@ def googleLogin():
                 key=my_secret
             )
             # session["email"] = user_email
-            return {'access_token': access_token, 'user_token': refresh_token}, 200
+            return {'access_token': access_token, 'refresh_token': refresh_token}, 200
 
     raise exceptions.AuthError
 
@@ -336,8 +357,8 @@ def update_notifications(user):
 
 
 @user_service.route('/forgot-password/submit', methods=['POST'])
-def forgot_password(user):
-    email = user['email']
+def forgot_password():
+    email = request.json['email']
     if not re.fullmatch(email_regex, email):
         return json.dumps({'message': 'Not a valid email'}), 400
     user = users.find_one({'email': email})

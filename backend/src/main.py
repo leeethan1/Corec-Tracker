@@ -20,11 +20,11 @@ app.secret_key = os.getenv('SECRET_KEY')
 @app.errorhandler(Exception)
 def handle_exception(e):
     code = 400
-    message = repr(e)
+    message = str(e)
     if hasattr(e, "code"):
         code = e.code
-    if hasattr(e, "message"):
-        message = e.message
+    if hasattr(e, "description"):
+        message = e.description
     return json.dumps({'message': message}), code
 
 
