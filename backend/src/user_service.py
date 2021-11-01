@@ -58,13 +58,24 @@ def token_required(f):
 @user_service.route('/settings/get', methods=['POST'])
 @token_required
 def get_user_settings(user):
-    return json.dumps(
-        {
-            "emailNotifications": user['emailNotifications'],
-            "smsNotifications": user['smsNotifications'],
-            "notifications": user['notifications'],
-        }
-    ), 200
+    if 'startTime' in user and 'endTime' in user:
+        return json.dumps(
+            {
+                "emailNotifications": user['emailNotifications'],
+                "smsNotifications": user['smsNotifications'],
+                "notifications": user['notifications'],
+                "startTime": user['startTime'],
+                "endTime": user['endTime']
+            }
+        ), 200
+    else:
+        return json.dumps(
+            {
+                "emailNotifications": user['emailNotifications'],
+                "smsNotifications": user['smsNotifications'],
+                "notifications": user['notifications'],
+            }
+        ), 200
 
 
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
