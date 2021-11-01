@@ -76,9 +76,11 @@ function Signup({ setLogIn }) {
         </Form.Group>
         <Form.Group size="lg" controlId="phone">
           <PhoneInput
+            defaultCountry="US"
             placeholder="Phone Number"
             value={phone}
             onChange={setPhone}
+            
           />
         </Form.Group>
         <Form.Group size="lg" controlId="password">
