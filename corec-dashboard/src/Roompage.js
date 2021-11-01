@@ -183,9 +183,7 @@ function Roompage() {
 
   function renderLoading() {
     if (loading) {
-      return (
-        <Spinner animation="border" />
-      );
+      return <Spinner animation="border" />;
     }
   }
 
@@ -197,13 +195,12 @@ function Roompage() {
             width={1200}
             height={300}
             data={graphData}
-
-            // margin={{
-            //   top: 5,
-            //   right: 30,
-            //   left: 20,
-            //   bottom: 5,
-            // }}
+            margin={{
+              top: 5,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="time" />
@@ -224,7 +221,17 @@ function Roompage() {
         break;
       case "Bar Chart":
         return (
-          <BarChart width={1000} height={300} data={graphData}>
+          <BarChart
+            width={1000}
+            height={300}
+            data={graphData}
+            margin={{
+              top: 5,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
             <XAxis dataKey="time" />
             <YAxis />
             <Tooltip />
@@ -281,7 +288,7 @@ function Roompage() {
               <DropdownButton
                 title={times[forecastTime]}
                 size="sm"
-                varant="secondary"
+                variant="secondary"
               >
                 {times.map((time, index) => (
                   <Dropdown.Item onClick={() => setForecastTime(index)}>

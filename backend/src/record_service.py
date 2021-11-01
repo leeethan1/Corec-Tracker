@@ -30,11 +30,11 @@ def create_and_notify(room, occupancy, records):
 
             # send email/SMS
             if user["emailNotifications"]:
-                if (not "startTime" and not "endTime") or (startTime <= currentTime.hour <= endTime):
+                if (not startTime and not endTime) or (startTime <= currentTime.hour <= endTime):
                     ns.send_email_alert(email, occupancy, room)
             if user["smsNotifications"]:
                 phone = user['phone']
-                if (not "startTime" and not "endTime") or (startTime <= currentTime.hour <= endTime):
+                if (not startTime and not endTime) or (startTime <= currentTime.hour <= endTime):
                     ns.send_text_alert(phone, occupancy, room)
 
     return {"occupancy": occupancy}, 200
