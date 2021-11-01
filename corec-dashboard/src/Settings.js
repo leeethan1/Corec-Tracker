@@ -15,7 +15,7 @@ import Header from "./Header";
 
 function Settings() {
   const timeFrame = [
-    5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24
+    5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
   ];
 
   const [emailsOn, setEmailsOn] = useState(true);
@@ -155,7 +155,12 @@ function Settings() {
         setting.threshold = res.notifications[setting.room];
       });
       setNotificationSettings(newNotifications);
-      if ("startTime" in res && "endTime" in res) {
+      if (
+        "startTime" in res &&
+        "endTime" in res &&
+        res.startTime != null &&
+        res.endTime != null
+      ) {
         console.log(res.startTime);
         setStartTime(convertTo12HourTime(res.startTime));
         setStartTimeIndex(timeFrame.indexOf(res.startTime));
@@ -279,7 +284,11 @@ function Settings() {
     return (
       <div>
         <p>Only receive notifications from:</p>
-        <DropdownButton as={ButtonGroup} title={startTime} disabled={!emailsOn && !smsOn}>
+        <DropdownButton
+          as={ButtonGroup}
+          title={startTime}
+          disabled={!emailsOn && !smsOn}
+        >
           {timeFrame.map((element, index) => (
             <Dropdown.Item
               onClick={() => {

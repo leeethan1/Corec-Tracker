@@ -77,6 +77,7 @@ function ForgotPassword() {
         <Button block size="lg" type="submit" onClick={handleForgotPassword}>
           Send Email
         </Button>
+        <Button size="lg" variant="secondary" onClick={() => history.push("/")}>Back</Button>
       </Form>
       {loading()}
     </div>

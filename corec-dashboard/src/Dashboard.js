@@ -1,8 +1,5 @@
 import { React, useEffect, useState } from "react";
-import {
-  Link,
-  useHistory,
-} from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Header from "./Header";
 import { Alert } from "react-bootstrap";
@@ -91,31 +88,6 @@ function Dashboard() {
     handleGetFavorites();
   }, []);
 
-  function displayError() {
-    if (authError) {
-      return (
-        <div>
-          <Alert
-            onClose={() => setAuthError(false)}
-            dismissible
-            show={authError}
-            key={0}
-            variant="danger"
-          >
-            <Alert.Heading>
-              Oops! It seems like you're not logged in.
-            </Alert.Heading>
-            <p>
-              You can <Alert.Link href="/">log in</Alert.Link> if you already
-              have an account or{" "}
-              <Alert.Link href="/signup">create an account</Alert.Link>.
-            </p>
-          </Alert>
-        </div>
-      );
-    }
-  }
-
   function changeRoomFav(name) {
     if (favoriteRooms.includes(name)) {
       handleRemoveFavorite(name);
@@ -163,18 +135,6 @@ function Dashboard() {
       <Header />
       <div style={{ margin: 10 }}>
         <h1> Dashboard </h1>
-        {/* {displayError()} */}
-
-        {/* <Button
-        block
-        size="lg"
-        type="submit"
-        onClick={() => setShowFavOnly(false)}
-        disabled={!showFavOnly}
-      >
-        Show all
-      </Button> */}
-
         {renderRooms()}
         <Button
           block

@@ -18,7 +18,7 @@ import logging
 
 
 room_to_camera = {
-    'room 1': 1
+    'Room 1': 1
 }
 
 

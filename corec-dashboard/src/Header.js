@@ -26,7 +26,9 @@ function Header() {
   return (
     <Navbar bg="light" variant="light">
       <Container>
-        <Navbar.Brand href="/dashboard">Corec Tracker</Navbar.Brand>
+        <Navbar.Brand href="/dashboard">
+          <b>Corec Tracker</b>
+        </Navbar.Brand>
         <Nav className="core-nav">
           <Nav.Link href="/dashboard">Home</Nav.Link>
           <Nav.Link href="/">Log In</Nav.Link>
@@ -41,8 +43,8 @@ function Header() {
           </Nav.Link>
           <DropdownButton title="Rooms">
             {rooms.map((room, index) => (
-              <Dropdown.Item>
-                <span onClick={() => redirectToRoom(room)}>{room}</span>
+              <Dropdown.Item href={`/room/${encodeURIComponent(room)}`}>
+                <span>{room}</span>
               </Dropdown.Item>
             ))}
           </DropdownButton>

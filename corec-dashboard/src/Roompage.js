@@ -14,6 +14,7 @@ import {
 import Header from "./Header";
 import {
   Col,
+  Row,
   Spinner,
   Accordion,
   Dropdown,
@@ -37,6 +38,7 @@ function Roompage() {
   const [forecastTime, setForecastTime] = useState(0);
   const [loading, setLoading] = useState(false);
   const [tick, setTick] = useState(0);
+  const updateInterval = 5;
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -49,7 +51,7 @@ function Roompage() {
     "#e00056",
   ];
 
-  const [liveOccupancy, setLiveOccupancy] = useState(0)
+  const [liveOccupancy, setLiveOccupancy] = useState(0);
 
   //we probably need to have separate graphs for each room
   const [graphs, setGraphs] = useState([]);
@@ -107,7 +109,7 @@ function Roompage() {
     console.log(tick);
     interval = setInterval(() => {
       setTick((tick) => tick + 1);
-    }, 5000);
+    }, updateInterval * 1000);
 
     return () => clearInterval(interval);
   }, [tick]);
@@ -164,7 +166,7 @@ function Roompage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        room: "room " + roomNumber,
+        room: roomName,
       }),
     };
     const response = await fetch(`/process-room`, requestOptions);
@@ -183,7 +185,7 @@ function Roompage() {
 
   function renderLoading() {
     if (loading) {
-      return <Spinner animation="border" />;
+      return <Spinner animation="border" size="sm"/>;
     }
   }
 
@@ -206,7 +208,7 @@ function Roompage() {
             <XAxis dataKey="time" />
             <YAxis />
             <Tooltip />
-            <Legend />
+            <Legend height={36}/>
             {days.map((day, index) => (
               <Line
                 type="monotone"
@@ -235,7 +237,7 @@ function Roompage() {
             <XAxis dataKey="time" />
             <YAxis />
             <Tooltip />
-            <Legend />
+            <Legend height={36}/>
             {days.map((day, index) => (
               <Bar dataKey={day} fill={chartColors[index]}></Bar>
             ))}
@@ -312,9 +314,7 @@ function Roompage() {
       <h1 className="center">{roomName}</h1>
       <h2 className="center">
         <Col>
-        {renderLoading()}
           Live Occupancy: <b>{liveOccupancy}</b>{" "}
-          Live Occupancy: <b>56</b>{" "}
           <Spinner variant="danger" animation="grow" size="sm" />
         </Col>
       </h2>
@@ -346,6 +346,10 @@ function Roompage() {
         buttonText="Logout"
         onLogoutSuccess={logout}
       /> */}
+      <p className="center">
+        <i>Occupancy statistics are updated every {updateInterval} seconds</i>
+        <span>{renderLoading()}</span>
+      </p>
     </div>
   );
 }

@@ -101,6 +101,7 @@ function Signup({ setLogIn }) {
         >
           Sign Up
         </Button>
+        <Button size="lg" variant="secondary" onClick={() => history.push("/")}>Back</Button>
       </Form>
     </div>
   );
