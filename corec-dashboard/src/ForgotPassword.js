@@ -1,7 +1,5 @@
 import { React, useState } from "react";
-import {
-  useHistory,
-} from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { Spinner } from "react-bootstrap";
@@ -33,7 +31,6 @@ function ForgotPassword() {
       setIsLoading(false);
       setError(true);
       setErrMessage(r.message);
-      
     }
   }
 
@@ -57,7 +54,7 @@ function ForgotPassword() {
 
   function loading() {
     if (isLoading) {
-      return <Spinner animation="border"/>;
+      return <Spinner animation="border" />;
     }
   }
 
@@ -76,6 +73,9 @@ function ForgotPassword() {
         </Form.Group>
         <Button block size="lg" type="submit" onClick={handleForgotPassword}>
           Send Email
+        </Button>
+        <Button variant="secondary" onClick={() => history.push("/")}>
+          Back
         </Button>
       </Form>
       {loading()}

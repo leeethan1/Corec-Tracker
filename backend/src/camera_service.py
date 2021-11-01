@@ -19,23 +19,21 @@ db = database_service.connect_to_database("database")
 records = db['records']
 
 
-@camera_service.route('/process-rooms', methods=['POST'])
-def process_rooms():
-    occupancies = {}
-    for room in room_to_camera:
-        try:
-            image_path = take_snapshot(room)
-            occupancy = pc.count_people_in_image(image_path)
-            rs.create_and_notify(room, occupancy)
-            occupancies[room] = occupancy
-        except Exception:
-            # failed, return the last recorded occupancy
-            record = records.find({'room': room}).sort([('time', -1)]).limit(1)[0]
-            if not record:
-                occupancies[room] = 0
-            else:
-                occupancies[room] = record['occupancy']
-    return occupancies, 200
+@camera_service.route('/process-room', methods=['POST'])
+def process_room():
+    room = request.json["room"]
+    try:
+        image_path = take_snapshot(room)
+        occupancy = pc.count_people_in_image(image_path)
+        rs.create_and_notify(room, occupancy)
+    except Exception:
+        # failed, return the last recorded occupancy
+        recent_records = records.find({'room': room}).sort([('time', -1)]).limit(1)
+        if recent_records.count() == 0:
+            occupancy = 0
+        else:
+            occupancy = recent_records[0]['occupancy']
+    return {'occupancy', occupancy}, 200
 
 
 def take_snapshot(room):

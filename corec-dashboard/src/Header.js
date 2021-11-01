@@ -11,11 +11,11 @@ function Header() {
   function signOut() {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
+    history.push("/");
   }
   const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
 
-  function redirectToRoom(event, room) {
-    event.preventDefault();
+  function redirectToRoom(room) {
     history.push(`/room/${encodeURIComponent(room)}`);
   }
 
@@ -33,16 +33,16 @@ function Header() {
           <Nav.Link href="/signup">Sign Up</Nav.Link>
 
           {/* <Nav.Link href="/">Settings</Nav.Link> */}
-          <Nav.Link href="/">
-            <span onClick={signOut}>Logout</span>
+          <Nav.Link>
+            <span onClick={() => signOut()}>Logout</span>
           </Nav.Link>
           <Nav.Link href="/settings">
-            <span onClick={redirectToSettings}>Settings</span>
+            <span>Settings</span>
           </Nav.Link>
           <DropdownButton title="Rooms">
             {rooms.map((room, index) => (
-              <Dropdown.Item href="/">
-                <span onClick={(e) => redirectToRoom(e, room)}>{room}</span>
+              <Dropdown.Item>
+                <span onClick={() => redirectToRoom(room)}>{room}</span>
               </Dropdown.Item>
             ))}
           </DropdownButton>

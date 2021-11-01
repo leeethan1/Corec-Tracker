@@ -1,7 +1,5 @@
 import { React, useState } from "react";
-import {
-  useHistory,
-} from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
@@ -144,7 +142,11 @@ function Login({ setLogIn }) {
           size="lg"
           type="submit"
           variant="secondary"
-          onClick={(e) => history.push("/dashboard")}
+          onClick={(e) => {
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            history.push("/dashboard");
+          }}
         >
           Continue as Guest
         </Button>
