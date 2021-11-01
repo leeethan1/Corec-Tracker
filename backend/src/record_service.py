@@ -15,20 +15,29 @@ def create_and_notify(room, occupancy, records):
     # room = request.json['room']
     # occupancy = request.json['occupancy']
     create_record(room, occupancy, records)
+    userList = list(users.find({}))
 
     # send notification (if applicable)
-    if "email" in session:
-        email = session['email']
-        user = users.find_one({"email": email})
+    for user in userList:
+        email = user['email']
         notifications = user["notifications"]
+        startTime, endTime = 0, 0
+        currentTime = datetime.now()
+        if "startTime" in user and "endTime" in user:
+            startTime = user["startTime"]
+            endTime = user["endTime"]
         if room in notifications and notifications[room] > occupancy:
+
             # send email/SMS
             if user["emailNotifications"]:
-                ns.send_email_alert(email, occupancy, room)
+                if ("startTime" not in user and "endTime" not in user) or (startTime <= currentTime.hour <= endTime):
+                    ns.send_email_alert(email, occupancy, room)
             if user["smsNotifications"]:
                 phone = user['phone']
-                ns.send_text_alert(phone, occupancy, room)
-    return occupancy
+                if ("startTime" not in user and "endTime" not in user) or (startTime < currentTime.hour < endTime):
+                    ns.send_text_alert(phone, occupancy, room)
+
+    return {"occupancy": occupancy}, 200
 
 
 def create_record(room, occupancy, col):
