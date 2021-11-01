@@ -6,6 +6,7 @@ import { useHistory } from "react-router";
 function TokenExpirePopup(props) {
   const history = useHistory();
   const handleClose = () => {
+    console.log("hello");
     props.clickEvent();
     history.push("/");
   }
