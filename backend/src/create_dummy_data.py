@@ -9,7 +9,7 @@ records = db["records"]
 def create():
     for i in range(0,51):
         occ = random.randint(10, 70)
-        room = "room " + str(random.randint(1, 5))
+        room = "Room " + str(random.randint(1, 5))
         hour = random.randint(5, 24)
         day = random.randint(0, 7)
         new_record = {

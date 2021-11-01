@@ -14,6 +14,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./Header";
 
 function Settings() {
+  const timeFrame = [
+    5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24
+  ];
+
   const [emailsOn, setEmailsOn] = useState(true);
   const [smsOn, setSmsOn] = useState(true);
   const [authError, setAuthError] = useState(false);
@@ -22,9 +26,9 @@ function Settings() {
   const [startTime, setStartTime] = useState("Start Time");
   const [endTime, setEndTime] = useState("End Time");
   const [startTimeIndex, setStartTimeIndex] = useState(0);
-  const [timeBoundaries, setTimeBoundaries] = useState([0,0]);
-  //const Slider = require("rc-slider");
-  //const sliderWithTooltip = Slider.createSliderWithTooltip;
+  const [endTimeIndex, setEndTimeIndex] = useState(timeFrame.length - 1);
+  const [timeBoundaries, setTimeBoundaries] = useState([null, null]);
+
   const [notificationSettings, setNotificationSettings] = useState([
     {
       room: "Room 1",
@@ -114,7 +118,7 @@ function Settings() {
         emailNotifications: emailsOn,
         smsNotifications: smsOn,
         startTime: timeBoundaries[0],
-        endTime: timeBoundaries[1]
+        endTime: timeBoundaries[1],
       }),
     };
     const response = await fetch(
@@ -151,13 +155,16 @@ function Settings() {
         setting.threshold = res.notifications[setting.room];
       });
       setNotificationSettings(newNotifications);
-      if ('startTime' in res) {
+      if ("startTime" in res && "endTime" in res) {
         console.log(res.startTime);
         setStartTime(convertTo12HourTime(res.startTime));
-      }
-      if ('endTime' in res) {
+        setStartTimeIndex(timeFrame.indexOf(res.startTime));
         setEndTime(convertTo12HourTime(res.endTime));
+        setEndTimeIndex(timeFrame.indexOf(res.endTime));
+        setDisableEndTime(false);
+        setTimeBoundaries([res.startTime, res.endTime]);
       }
+      //console.log(startTimeIndex, endTimeIndex);
     } else {
       const res = await response.json();
       console.log(res);
@@ -229,18 +236,18 @@ function Settings() {
             onChange={() => setSmsOn(!smsOn)}
             checked={smsOn}
           />
-          {/* <ReactSwitch
-        onChange={(e) => toggleRoom("Room 1")}
-        checked={!notificationSettings[0].on}
-      /> */}
+
           <p>Receive notifications for...</p>
           {renderNotifications}
+
+          {renderTimeFrame()}
 
           <Button
             onClick={(e) => {
               e.preventDefault();
               handleSubmitNotifications();
             }}
+            size="lg"
           >
             Save
           </Button>
@@ -253,57 +260,60 @@ function Settings() {
 
   function convertTo12HourTime(hour) {
     let timeString = "";
+    if (hour == 12) {
+      return "12 PM";
+    }
     if (hour < 12) {
       timeString = `${hour} AM`;
     } else {
       hour = hour % 12;
       if (hour == 0) {
-        return `12 PM`;
+        return `12 AM`;
       }
       timeString = `${hour % 12} PM`;
     }
     return timeString;
   }
 
-
-  function RenderTimeFrame() {
-    const timeFrame = [
-      5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-    ];
-
+  function renderTimeFrame() {
     return (
-      <>
-        <DropdownButton as={ButtonGroup} title={startTime}>
+      <div>
+        <p>Only receive notifications from:</p>
+        <DropdownButton as={ButtonGroup} title={startTime} disabled={!emailsOn && !smsOn}>
           {timeFrame.map((element, index) => (
             <Dropdown.Item
               onClick={() => {
                 setDisableEndTime(false);
                 setStartTime(convertTo12HourTime(element));
-                setStartTimeIndex(index)
-                setTimeBoundaries([element, timeBoundaries[1]])
+                setStartTimeIndex(index);
+                setTimeBoundaries([element, timeBoundaries[1]]);
               }}
+              disabled={index + 1 > endTimeIndex}
             >
               {convertTo12HourTime(element)}
             </Dropdown.Item>
           ))}
         </DropdownButton>
-
+        <p>to</p>
         <DropdownButton
           as={ButtonGroup}
           title={endTime}
-          disabled={disableEndTime}
+          disabled={disableEndTime || (!emailsOn && !smsOn)}
         >
           {timeFrame.map((element, index) => (
             <Dropdown.Item
-              onClick={() => {setEndTime(convertTo12HourTime(element));
-              setTimeBoundaries([timeBoundaries[0], element]);}}
+              onClick={() => {
+                setEndTime(convertTo12HourTime(element));
+                setEndTimeIndex(index);
+                setTimeBoundaries([timeBoundaries[0], element]);
+              }}
               disabled={startTimeIndex > index - 1}
             >
               {convertTo12HourTime(element)}
             </Dropdown.Item>
           ))}
         </DropdownButton>
-      </>
+      </div>
     );
   }
 
@@ -313,7 +323,6 @@ function Settings() {
       <div style={{ margin: 10 }}>
         <h1>Settings</h1>
         {displaySettings()}
-        {RenderTimeFrame()}
       </div>
     </div>
   );

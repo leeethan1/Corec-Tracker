@@ -18,7 +18,6 @@ import {
   Accordion,
   Dropdown,
   DropdownButton,
-  Button,
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.css";
 import Tabs from "react-bootstrap/Tabs";
@@ -36,6 +35,7 @@ function Roompage() {
   const [averages, setAverages] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [forecastDay, setForecastDay] = useState(0);
   const [forecastTime, setForecastTime] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [tick, setTick] = useState(0);
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -102,23 +102,6 @@ function Roompage() {
 
   const graphData = times.map((element, index) => createData(element, index));
 
-  function compare(md1, md2) {
-    for (var x = 0; x < md1.length; x++) {
-      //Iterate through all elements in second array
-      for (var y = 0; y < md1.length; y++) {
-        /*This causes us to compare all elements
-           in first array to each element in second array
-          Since md1[x] stays fixed while md2[y] iterates through second array.
-           We compare the first two indexes of each array in conditional
-        */
-        if (md1[x][y] != md2[x][y]) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
   useEffect(() => {
     let interval = null;
     console.log(tick);
@@ -143,7 +126,7 @@ function Roompage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        room: roomName.toLowerCase(),
+        room: roomName,
       }),
     };
     const response = await fetch(`/records/advanced`, requestOptions);
@@ -158,11 +141,12 @@ function Roompage() {
   async function updateOccupancies() {
     //console.log("fetching graph data...");
     //await sleep(10000);
+    setLoading(true);
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        room: roomName.toLowerCase(),
+        room: roomName,
       }),
     };
     const response = await fetch(`/records/get`, requestOptions);
@@ -172,6 +156,7 @@ function Roompage() {
       setOccupancies(o);
       //console.log(o);
     }
+    setLoading(false);
   }
 
   async function handleGetLiveOccupancy() {
@@ -196,9 +181,12 @@ function Roompage() {
     console.log(res);
   }
 
-  function getRoomName() {
-    //return props.location.state.item.time;
-    return "Room 1";
+  function renderLoading() {
+    if (loading) {
+      return (
+        <Spinner animation="border" />
+      );
+    }
   }
 
   function renderChart(chart) {
@@ -250,12 +238,6 @@ function Roompage() {
         return <h1>NA</h1>;
     }
   }
-
-  const handleSelect = (e) => {
-    e.preventDefault();
-    console.log(e.target.value);
-    setForecastDay(e.target.value);
-  };
 
   function displayAdvancedStats() {
     let max = averages.reduce(function (a, b) {
@@ -323,7 +305,9 @@ function Roompage() {
       <h1 className="center">{roomName}</h1>
       <h2 className="center">
         <Col>
+        {renderLoading()}
           Live Occupancy: <b>{liveOccupancy}</b>{" "}
+          Live Occupancy: <b>56</b>{" "}
           <Spinner variant="danger" animation="grow" size="sm" />
         </Col>
       </h2>
