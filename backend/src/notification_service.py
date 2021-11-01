@@ -52,10 +52,7 @@ def send_email(email, subject, body):
         server.quit()
 
 
-def send_email_alert(email, occupancy, room, start_time, end_time):
-    if (start_time >= end_time):
-        print("Make sure the time parameters are correct!")
-        return
+def send_email_alert(email, occupancy, room):
     recent_emails = notifications.find(
         {'$and': [{'time': {'$gt': datetime.datetime.utcnow() - datetime.timedelta(minutes=NOTIF_INTERVAL)}},
                   {'email': email}]
