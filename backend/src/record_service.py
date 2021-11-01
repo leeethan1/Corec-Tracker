@@ -11,9 +11,9 @@ users = db["users"]
 
 
 @record_service.route("/records/notify", methods=['POST'])
-def create_and_notify():
-    room = request.json['room']
-    occupancy = request.json['occupancy']
+def create_and_notify(room, occupancy):
+    #room = request.json['room']
+    #occupancy = request.json['occupancy']
     create_record(room, occupancy, records)
     userList = list(users.find({}))
 
