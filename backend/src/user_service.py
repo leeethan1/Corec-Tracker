@@ -180,7 +180,7 @@ def verify_account():
         )
         # session["email"] = user_email
         return json.dumps(
-            {'access_token': access_token.decode("utf-8"), 'refresh_token': refresh_token.decode("utf-8")}), 200
+            {'access_token': access_token, 'refresh_token': refresh_token}), 200
     else:
         return json.dumps(
             {'message': "Could not verify email or phone number.\nCheck that your verification codes are correct"}), 400
