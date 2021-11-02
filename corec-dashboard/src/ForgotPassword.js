@@ -1,9 +1,5 @@
 import { React, useState } from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
   useHistory,
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
@@ -81,6 +77,7 @@ function ForgotPassword() {
         <Button block size="lg" type="submit" onClick={handleForgotPassword}>
           Send Email
         </Button>
+        <Button size="lg" variant="secondary" onClick={() => history.push("/")}>Back</Button>
       </Form>
       {loading()}
     </div>

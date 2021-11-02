@@ -16,7 +16,7 @@ import logging
 # scanning that room (only has one room for now)
 
 room_to_camera = {
-    'room 1': 1
+    'Room 1': 1
 }
 
 camera_service = Blueprint('app_camera_service', __name__)

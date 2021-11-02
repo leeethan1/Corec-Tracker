@@ -1,15 +1,10 @@
 import { React, useState } from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
   useHistory,
   useParams,
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Overlay from "react-bootstrap/Overlay"
 
 function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -67,7 +62,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="ResetPassword">
+    <div className="ResetPassword" style={{ margin: 10 }}>
       <h1>Reset Password</h1>
       <Form onSubmit={(e) => e.preventDefault()}>
         <Form.Group size="lg" controlId="password">

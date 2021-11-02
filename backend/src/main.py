@@ -23,8 +23,8 @@ def handle_exception(e):
     message = str(e)
     if hasattr(e, "code"):
         code = e.code
-    if hasattr(e, "message"):
-        message = e.message
+    if hasattr(e, "description"):
+        message = e.description
     return json.dumps({'message': message}), code
 
 
