@@ -55,6 +55,14 @@ def token_required(f):
     return decorated
 
 
+@user_service.route('/login/get', methods=['POST'])
+@token_required
+def get_user_login(user):
+    if 'remember' in user and user['remember']:
+        return "redirect", 200
+    return "User info isn't remembered", 400
+
+
 @user_service.route('/settings/get', methods=['POST'])
 @token_required
 def get_user_settings(user):
@@ -193,6 +201,7 @@ def login():
 
     email = request.json["email"]
     password = request.json["password"]
+    remember = request.json["remember"]
 
     unverified = unverified_accounts.find_one({'email': email})
     if unverified:
@@ -207,6 +216,7 @@ def login():
         user_email = user['email']
         user_password = user['password']
         if bcrypt.checkpw(password.encode('utf-8'), user_password):
+            users.find_one_and_update({"email": email}, {"$set": {'remember': remember}})
             access_payload = {
                 "email": user_email,
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
@@ -275,9 +285,9 @@ def googleLogin():
 
 
 @user_service.route('/logout', methods=['POST', "GET"])
-def logout():
-    # if 'email' in session:
-    #     session.pop('email', None)
+@token_required
+def logout(user):
+    users.find_one_and_update({'email': user['email']}, {"$set": {"remember": False}})
     return "Logged out successfully", 200
 
 

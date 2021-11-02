@@ -8,10 +8,22 @@ import { useHistory } from "react-router";
 function Header() {
   const history = useHistory();
 
-  function signOut() {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    history.push("/");
+  async function signOut() {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: localStorage.getItem("access"),
+      },
+    };
+    const response = await fetch(`/logout`, requestOptions);
+    if (response.ok) {
+      //console.log(averages);
+      //console.log(occupancies);
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      history.push("/");
+    }
   }
   const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
 
