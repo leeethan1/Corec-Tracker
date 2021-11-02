@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import imutils
 import time
+import os
 
 protopath = "resources/MobileNetSSD_deploy.prototxt"
 modelpath = "resources/MobileNetSSD_deploy.caffemodel"
@@ -39,5 +40,6 @@ def count_people_in_image(path):
 
     #image = cv2.addWeighted(image, 0.7, image, 0, 0)
     print(str(people) + " people counted")
+    os.remove(path)
     cv2.destroyAllWindows()
     return people

@@ -15,12 +15,9 @@ import logging
 # dictionary for mapping room name to the camera that's
 # scanning that room (only has one room for now)
 
-
-
 room_to_camera = {
     'room 1': 1
 }
-
 
 camera_service = Blueprint('app_camera_service', __name__)
 
@@ -54,5 +51,3 @@ def process_room():
         occupancy = pc.count_people_in_image(image_path)
         rs.create_and_notify(room, occupancy, records)
         return json.dumps({'occupancy': occupancy}), 200
-
-
