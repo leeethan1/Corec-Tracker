@@ -141,7 +141,7 @@ def verify_account():
         if not account:
             raise exceptions.UserNotFound
 
-        emailNotificationsOn = True;
+        emailNotificationsOn = True
         smsNotificationsOn = True
         notifications = {}
 
@@ -180,7 +180,7 @@ def verify_account():
         )
         # session["email"] = user_email
         return json.dumps(
-            {'access_token': access_token, 'refresh_token': refresh_token}), 200
+            {'access_token': access_token.decode("UTF-8"), 'refresh_token': refresh_token.decode("UTF-8")}), 200
     else:
         return json.dumps(
             {'message': "Could not verify email or phone number.\nCheck that your verification codes are correct"}), 400

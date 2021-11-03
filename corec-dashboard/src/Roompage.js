@@ -31,6 +31,8 @@ function Roompage() {
   const [occupancies, setOccupancies] = useState(
     [...new Array(19)].map(() => [0, 0, 0, 0, 0, 0, 0])
   );
+
+  const [weeklyOccupancies, setWeeklyOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [maxOccupancies, setMaxOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [minOccupancies, setMinOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [averages, setAverages] = useState([0, 0, 0, 0, 0, 0, 0]);
@@ -38,6 +40,7 @@ function Roompage() {
   const [forecastTime, setForecastTime] = useState(0);
   const [loading, setLoading] = useState(false);
   const [tick, setTick] = useState(0);
+  const [weekBoundaries, setWeekBoundaries] = useState([0, 6]);
   const updateInterval = 5;
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -80,6 +83,13 @@ function Roompage() {
     };
   }
 
+  function createWeeklyData(index) {
+    return {
+      "day": days[index],
+      "occupancy": weeklyOccupancies[index]
+    }
+  }
+
   const times = [
     "5 am",
     "6 am",
@@ -104,9 +114,11 @@ function Roompage() {
 
   const graphData = times.map((element, index) => createData(element, index));
 
+  const weeklyGraphData = weeklyOccupancies.map((element, index) => createWeeklyData(index))
+
   useEffect(() => {
     let interval = null;
-    console.log(tick);
+    //console.log(tick);
     interval = setInterval(() => {
       setTick((tick) => tick + 1);
     }, updateInterval * 1000);
@@ -118,8 +130,9 @@ function Roompage() {
     updateOccupancies();
     getAdvancedStatistics();
     handleGetLiveOccupancy();
+    updateWeeklyOccupancies();
     //console.log("sleeping");
-  }, [tick, roomName]);
+  }, [tick, roomName, weekBoundaries]);
 
   async function getAdvancedStatistics() {
     //console.log("fetching advanced stats...");
@@ -161,6 +174,24 @@ function Roompage() {
     setLoading(false);
   }
 
+  async function updateWeeklyOccupancies() {
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        room: roomName,
+
+      }),
+    };
+    const response = await fetch("/records/week", requestOptions);
+    if (response.ok) {
+      const res = await response.json();
+      const averages = res.occupancies;
+      console.log(averages);
+      setWeeklyOccupancies(averages);
+    }
+  }
+
   async function handleGetLiveOccupancy() {
     const requestOptions = {
       method: "POST",
@@ -185,40 +216,104 @@ function Roompage() {
 
   function renderLoading() {
     if (loading) {
-      return <Spinner animation="border" size="sm"/>;
+      return <Spinner animation="border" size="sm" />;
     }
+  }
+
+  function updateBoundaries(index, value) {
+   let newBoundaries = [...weekBoundaries];
+   newBoundaries[index] = value;
+   setWeekBoundaries(newBoundaries); 
+  }
+
+  function renderFilterOption() {
+    return (
+      <div >
+        <select class="form-select" aria-label="Default select example" onChange={(e) => {
+          e.preventDefault();
+          updateBoundaries(0, parseInt(e.target.value)); 
+          console.log(e.target.value, weekBoundaries);
+        }}>
+          {days.map((day, index) => {
+            if (index < weekBoundaries[1]) {
+              return (<option value={index} >{day}</option>);
+            }
+          })}
+        </select>
+        <select class="form-select" aria-label="Default select example" onChange={(e) => { 
+          e.preventDefault();
+          updateBoundaries(1, parseInt(e.target.value)); 
+          console.log(e.target.value, weekBoundaries) }}>
+          {days.map((day, index) => {
+            if (index > weekBoundaries[0])
+              return (<option value={index}>{day}</option>);
+          })}
+        </select>
+      </div>
+    );
   }
 
   function renderChart(chart) {
     switch (chart) {
       case "Line Graph":
         return (
-          <LineChart
-            width={1200}
-            height={300}
-            data={graphData}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" />
-            <YAxis />
-            <Tooltip />
-            <Legend height={36}/>
-            {days.map((day, index) => (
-              <Line
-                type="monotone"
-                dataKey={day}
-                stroke="#8884d8"
-                activeDot={{ r: 5 }}
-                stroke={chartColors[index]}
-              />
-            ))}
-          </LineChart>
+          <Accordion defaultActiveKey="0">
+            <Accordion.Item eventKey="0">
+              <Accordion.Header>View by time</Accordion.Header>
+              <Accordion.Body>
+                <LineChart
+                  width={1200}
+                  height={300}
+                  data={graphData}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend height={36} />
+                  {days.map((day, index) => (
+                    <Line
+                      type="monotone"
+                      dataKey={day}
+                      stroke="#8884d8"
+                      activeDot={{ r: 5 }}
+                      stroke={chartColors[index]}
+                    />
+                  ))}
+                </LineChart>
+              </Accordion.Body>
+            </Accordion.Item>
+            <Accordion.Item eventKey="1">
+              <Accordion.Header>View by day</Accordion.Header>
+              <Accordion.Body>
+                {renderFilterOption()}
+                <LineChart
+                  width={1200}
+                  height={300}
+                  data={weeklyGraphData.slice(weekBoundaries[0], weekBoundaries[1] + 1)}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend height={36} />
+                  <Line dataKey="occupancy" />
+                </LineChart>
+              </Accordion.Body>
+            </Accordion.Item>
+          </Accordion>
         );
         break;
       case "Bar Chart":
@@ -237,7 +332,7 @@ function Roompage() {
             <XAxis dataKey="time" />
             <YAxis />
             <Tooltip />
-            <Legend height={36}/>
+            <Legend height={36} />
             {days.map((day, index) => (
               <Bar dataKey={day} fill={chartColors[index]}></Bar>
             ))}
@@ -323,10 +418,10 @@ function Roompage() {
           <Tabs
             id="chart tabs"
             defaultActiveKey="Line Graph"
-            // onSelect={(k) => {
-            //   setChartType(k);
-            //   console.log(chartType);
-            // }}
+          // onSelect={(k) => {
+          //   setChartType(k);
+          //   console.log(chartType);
+          // }}
           >
             {["Line Graph", "Bar Chart"].map((element, index) => (
               <Tab eventKey={element} title={element}>
