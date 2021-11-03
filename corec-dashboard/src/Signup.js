@@ -1,15 +1,10 @@
 import { React, useState } from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
   useHistory,
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import PhoneInput from "react-phone-number-input";
-import Overlay from "react-overlays/esm/Overlay";
 import "react-phone-number-input/style.css";
 
 function Signup({ setLogIn }) {
@@ -54,24 +49,7 @@ function Signup({ setLogIn }) {
 
   function displayError() {
     if (error) {
-      return (
-        <Overlay show={error} placement="right">
-          {({ placement, arrowProps, show: _show, popper, ...props }) => (
-            <div
-              {...props}
-              style={{
-                backgroundColor: "rgba(255, 100, 100, 0.85)",
-                padding: "2px 10px",
-                color: "white",
-                borderRadius: 3,
-                ...props.style,
-              }}
-            >
-              {errMessage}
-            </div>
-          )}
-        </Overlay>
-      );
+      return <b style={{ color: "red" }}>{errMessage}</b>;
     }
   }
 
@@ -98,9 +76,11 @@ function Signup({ setLogIn }) {
         </Form.Group>
         <Form.Group size="lg" controlId="phone">
           <PhoneInput
+            defaultCountry="US"
             placeholder="Phone Number"
             value={phone}
             onChange={setPhone}
+            
           />
         </Form.Group>
         <Form.Group size="lg" controlId="password">
@@ -121,6 +101,7 @@ function Signup({ setLogIn }) {
         >
           Sign Up
         </Button>
+        <Button size="lg" variant="secondary" onClick={() => history.push("/")}>Back</Button>
       </Form>
     </div>
   );

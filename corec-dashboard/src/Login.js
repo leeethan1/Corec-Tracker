@@ -1,16 +1,8 @@
-import { React, useState } from "react";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useHistory,
-} from "react-router-dom";
-import Form from "react-bootstrap/Form";
+import { React, useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
+import { Form, FormCheck } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
-import Overlay from "react-overlays/esm/Overlay";
 import GoogleLogin from "react-google-login";
-import FacebookLogin from "react-facebook-login";
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
@@ -22,6 +14,7 @@ function Login({ setLogIn }) {
   const [name, setName] = useState("test");
   const [googleData, setGoogleData] = useState([]);
   const [loginFail, setLoginFail] = useState(false);
+  const [remember, setRemember] = useState(false);
   const history = useHistory();
 
   function validateForm() {
@@ -32,6 +25,30 @@ function Login({ setLogIn }) {
     event.preventDefault();
   }
 
+  async function handleGetLogin() {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: localStorage.getItem("access"),
+      },
+    };
+    const response = await fetch("/login/get", requestOptions);
+    if (response.ok) {
+      //const res = await response.json();
+      history.push("/dashboard");
+      //setEmail(res.email);
+      //setPassword(res.password);
+    } else {
+      const res = await response.json();
+      console.log(res);
+    }
+  }
+
+  useEffect(() => {
+    handleGetLogin();
+  }, []);
+
   async function checkLogin(res) {
     const requestOptions = {
       method: "POST",
@@ -39,15 +56,20 @@ function Login({ setLogIn }) {
       body: JSON.stringify({
         email: email,
         password: password,
+        remember: remember,
       }),
     };
     const response = await fetch("/login/submit", requestOptions);
-
     if (response.ok) {
       setLogIn();
+      const tokens = await response.json();
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
       history.push("/dashboard", { user: "test" });
     } else {
       setLoginFail(true);
+      const res = await response.json();
+      console.log(res);
     }
   }
 
@@ -55,7 +77,7 @@ function Login({ setLogIn }) {
     if (loginFail) {
       return (
         <div>
-          <Overlay show={loginFail} placement="right">
+          {/* <Overlay show={loginFail} placement="right">
             {({ placement, arrowProps, show: _show, popper, ...props }) => (
               <div
                 {...props}
@@ -70,7 +92,8 @@ function Login({ setLogIn }) {
                 {"Email or password is incorrect"}
               </div>
             )}
-          </Overlay>
+          </Overlay> */}
+          <b style={{ color: "red" }}>Email or password is incorrect</b>
         </div>
       );
     }
@@ -86,8 +109,13 @@ function Login({ setLogIn }) {
       }),
     };
     const response = await fetch("/googlelogin", requestOptions);
-    console.log(response.json());
-    history.push("/dashboard", { user: res.profileObj.name });
+    if (response.ok) {
+      setLogIn();
+      const tokens = await response.json();
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
+      history.push("/dashboard", { user: res.profileObj.name });
+    }
   }
 
   function redirectToSignup(res) {
@@ -107,7 +135,7 @@ function Login({ setLogIn }) {
   // }
 
   return (
-    <div className="Login">
+    <div className="Login" style={{ margin: 10 }}>
       <h1>Login</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group size="lg" controlId="email">
@@ -128,6 +156,11 @@ function Login({ setLogIn }) {
           />
           {formFailure()}
         </Form.Group>
+        <FormCheck
+          label={<p>Remember Me</p>}
+          onChange={() => setRemember(!remember)}
+          checked={remember}
+        />
         <Button
           block
           size="lg"
@@ -137,13 +170,35 @@ function Login({ setLogIn }) {
         >
           Login
         </Button>
-        <Button block size="lg" type="submit" onClick={redirectToSignup}>
+        <Button
+          block
+          size="lg"
+          type="submit"
+          variant="secondary"
+          onClick={(e) => {
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            history.push("/dashboard");
+          }}
+        >
           Continue as Guest
         </Button>
-        <Button block size="lg" type="submit" onClick={(e)=>history.push('/roompage')}>
+        <Button
+          block
+          size="lg"
+          type="submit"
+          variant="secondary"
+          onClick={redirectToSignup}
+        >
           Create Account
         </Button>
-        <Button block size="lg" type="submit" onClick={redirectForgotPassword}>
+        <Button
+          block
+          size="lg"
+          type="submit"
+          variant="secondary"
+          onClick={redirectForgotPassword}
+        >
           Forgot Password
         </Button>
         <GoogleLogin

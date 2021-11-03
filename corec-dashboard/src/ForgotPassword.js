@@ -1,22 +1,20 @@
 import { React, useState } from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
   useHistory,
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Overlay from "react-overlays/esm/Overlay";
+import { Spinner } from "react-bootstrap";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState(false);
   const [errMessage, setErrMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
 
   async function handleForgotPassword(res) {
+    setIsLoading(true);
     const response = await fetch("/forgot-password/submit", {
       method: "POST",
       headers: {
@@ -32,8 +30,10 @@ function ForgotPassword() {
     if (response.ok) {
       redirectToEmailSent();
     } else {
+      setIsLoading(false);
       setError(true);
       setErrMessage(r.message);
+      
     }
   }
 
@@ -51,24 +51,13 @@ function ForgotPassword() {
 
   function displayError() {
     if (error) {
-      return (
-        <Overlay show={error} placement="right">
-          {({ placement, arrowProps, show: _show, popper, ...props }) => (
-            <div
-              {...props}
-              style={{
-                backgroundColor: "rgba(255, 100, 100, 0.85)",
-                padding: "2px 10px",
-                color: "white",
-                borderRadius: 3,
-                ...props.style,
-              }}
-            >
-              {errMessage}
-            </div>
-          )}
-        </Overlay>
-      );
+      return <b style={{ color: "red" }}>{errMessage}</b>;
+    }
+  }
+
+  function loading() {
+    if (isLoading) {
+      return <Spinner animation="border"/>;
     }
   }
 
@@ -87,8 +76,10 @@ function ForgotPassword() {
         </Form.Group>
         <Button block size="lg" type="submit" onClick={handleForgotPassword}>
           Send Email
-        </Button> 
+        </Button>
+        <Button size="lg" variant="secondary" onClick={() => history.push("/")}>Back</Button>
       </Form>
+      {loading()}
     </div>
   );
 }

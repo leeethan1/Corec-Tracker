@@ -1,14 +1,7 @@
 import { React, useState } from "react";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useHistory,
-} from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Overlay from "react-overlays/esm/Overlay";
 
 function VerifyAccount() {
   const [emailCode, setEmailCode] = useState("");
@@ -29,12 +22,21 @@ function VerifyAccount() {
       }),
     });
 
-    if (response.status == 200) {
-      history.push("/");
+    if (response.ok) {
+      const tokens = await response.json();
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
+      history.push("/dashboard");
     } else {
       setError(true);
       const res = await response.json();
       setErrMessage(res.message);
+    }
+  }
+
+  function displayError() {
+    if (error) {
+      return <b style={{ color: "red" }}>{errMessage}</b>;
     }
   }
 
@@ -62,25 +64,13 @@ function VerifyAccount() {
             onChange={(e) => setPhoneCode(e.target.value)}
           />
         </Form.Group>
-        <Button block size="lg" type="submit" onClick={handleVerifySuccess}>
+        <Button block size="lg" type="submit" onClick={handleVerifySuccess} disabled={phoneCode.length == 0 || emailCode.length == 0}>
           Verify
         </Button>
-        <Overlay show={error} placement="right">
-          {({ placement, arrowProps, show: _show, popper, ...props }) => (
-            <div
-              {...props}
-              style={{
-                backgroundColor: "rgba(255, 100, 100, 0.85)",
-                padding: "2px 10px",
-                color: "white",
-                borderRadius: 3,
-                ...props.style,
-              }}
-            >
-              {errMessage}
-            </div>
-          )}
-        </Overlay>
+        <Button variant="secondary" onClick={() => history.push("/signup")}>
+          Back
+        </Button>
+        {displayError()}
       </Form>
     </div>
   );

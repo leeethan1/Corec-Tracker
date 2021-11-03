@@ -1,3 +1,4 @@
+from numpy.lib.type_check import imag
 import cv2
 import numpy as np
 import imutils
@@ -18,9 +19,9 @@ def count_people_in_image(path):
     image = cv2.imread(path)
     image = imutils.resize(image, width=600)
 
-    (h, w) = image.shape[:2]
+    (H, W) = image.shape[:2]
 
-    blob = cv2.dnn.blobFromImage(image, 0.007843, (w, h), 127.5)
+    blob = cv2.dnn.blobFromImage(image, 0.007843, (W, H), 127.5)
     detector.setInput(blob)
 
     person_detections = detector.forward()
@@ -32,7 +33,11 @@ def count_people_in_image(path):
             index = int(person_detections[0, 0, i, 1])
             if index == PERSON_INDEX:
                 people += 1
+                person_box = person_detections[0, 0, i, 3:7] * np.array([W, H, W, H])
+                (startX, startY, endX, endY) = person_box.astype("int")
+                cv2.rectangle(image, (startX, startY), (endX, endY), (0, 255, 0), 2)
 
+    #image = cv2.addWeighted(image, 0.7, image, 0, 0)
     print(str(people) + " people counted")
     cv2.destroyAllWindows()
     return people
