@@ -55,6 +55,14 @@ def token_required(f):
     return decorated
 
 
+@user_service.route('/auth', methods=['POST'])
+@token_required
+def authenticate(user):
+    if user:
+        return "Authenticated", 200
+    return "Not authorized", 400
+
+
 @user_service.route('/login/get', methods=['POST'])
 @token_required
 def get_user_login(user):

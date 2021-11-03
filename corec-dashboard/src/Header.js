@@ -7,6 +7,21 @@ import { useHistory } from "react-router";
 
 function Header() {
   const history = useHistory();
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  async function authenticate() {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: localStorage.getItem("access"),
+      },
+    };
+    const response = await fetch("/auth", requestOptions);
+    if (response.ok) {
+      setLoggedIn(true);
+    }
+  }
 
   async function signOut() {
     const requestOptions = {
@@ -22,6 +37,7 @@ function Header() {
       //console.log(occupancies);
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
+      setLoggedIn(false);
       history.push("/");
     }
   }
@@ -35,6 +51,10 @@ function Header() {
     history.push("/settings");
   }
 
+  useEffect(() => {
+    authenticate();
+  }, [])
+
   return (
     <Navbar bg="light" variant="light">
       <Container>
@@ -43,13 +63,17 @@ function Header() {
         </Navbar.Brand>
         <Nav className="core-nav">
           <Nav.Link href="/dashboard">Home</Nav.Link>
-          <Nav.Link href="/">Log In</Nav.Link>
-          <Nav.Link href="/signup">Sign Up</Nav.Link>
+          {loggedIn ? "" : <Nav.Link href="/">Log In</Nav.Link>}
+          {loggedIn ? "" : <Nav.Link href="/signup">Sign Up</Nav.Link>}
 
           {/* <Nav.Link href="/">Settings</Nav.Link> */}
-          <Nav.Link>
-            <span onClick={() => signOut()}>Logout</span>
-          </Nav.Link>
+          {loggedIn ? (
+            <Nav.Link>
+              <span onClick={() => signOut()}>Logout</span>
+            </Nav.Link>
+          ) : (
+            ""
+          )}
           <Nav.Link href="/settings">
             <span>Settings</span>
           </Nav.Link>

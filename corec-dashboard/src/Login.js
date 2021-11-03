@@ -68,6 +68,8 @@ function Login({ setLogIn }) {
       history.push("/dashboard", { user: "test" });
     } else {
       setLoginFail(true);
+      const res = await response.json();
+      console.log(res);
     }
   }
 
