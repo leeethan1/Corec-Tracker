@@ -42,6 +42,7 @@ function Roompage() {
   const [tick, setTick] = useState(0);
   const [weekBoundaries, setWeekBoundaries] = useState([0, 6]);
   const updateInterval = 5;
+  const [weekIndex, setWeekIndex] = useState(0);
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -214,6 +215,16 @@ function Roompage() {
     console.log(res);
   }
 
+  function getSunday(index) {
+
+    var curr = new Date; // get current date
+    var first = curr.getDate() - curr.getDay(); // First day is the day of the month - the day of the week
+    // first.setDate(first. - 7 * index);
+    var firstday = new Date(curr.setDate(first - 7 * index));
+
+    return `${firstday.getMonth()+1}/${firstday.getDate().toString()}`;
+  }
+
   function renderLoading() {
     if (loading) {
       return <Spinner animation="border" size="sm" />;
@@ -221,9 +232,9 @@ function Roompage() {
   }
 
   function updateBoundaries(index, value) {
-   let newBoundaries = [...weekBoundaries];
-   newBoundaries[index] = value;
-   setWeekBoundaries(newBoundaries); 
+    let newBoundaries = [...weekBoundaries];
+    newBoundaries[index] = value;
+    setWeekBoundaries(newBoundaries);
   }
 
   function renderFilterOption() {
@@ -231,7 +242,7 @@ function Roompage() {
       <div >
         <select class="form-select" aria-label="Default select example" onChange={(e) => {
           e.preventDefault();
-          updateBoundaries(0, parseInt(e.target.value)); 
+          updateBoundaries(0, parseInt(e.target.value));
           console.log(e.target.value, weekBoundaries);
         }}>
           {days.map((day, index) => {
@@ -240,13 +251,19 @@ function Roompage() {
             }
           })}
         </select>
-        <select class="form-select" aria-label="Default select example" onChange={(e) => { 
+        <select class="form-select" aria-label="Default select example" onChange={(e) => {
           e.preventDefault();
-          updateBoundaries(1, parseInt(e.target.value)); 
-          console.log(e.target.value, weekBoundaries) }}>
+          updateBoundaries(1, parseInt(e.target.value));
+          console.log(e.target.value, weekBoundaries)
+        }}>
           {days.map((day, index) => {
             if (index > weekBoundaries[0])
               return (<option value={index}>{day}</option>);
+          })}
+        </select>
+        <select onChange={(e) => setWeekIndex(e.target.value)}>
+          {[0, 1, 2].map((week, index) => {
+            return (<option value={index}>Week of {getSunday(index)}</option>);
           })}
         </select>
       </div>
