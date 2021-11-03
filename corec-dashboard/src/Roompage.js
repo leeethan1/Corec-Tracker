@@ -133,7 +133,11 @@ function Roompage() {
     handleGetLiveOccupancy();
     updateWeeklyOccupancies();
     //console.log("sleeping");
-  }, [tick, roomName, weekBoundaries]);
+  }, [tick, roomName]);
+
+  useEffect(() => {
+    updateWeeklyOccupancies();
+  }, [tick, weekIndex, weekBoundaries]);
 
   async function getAdvancedStatistics() {
     //console.log("fetching advanced stats...");
@@ -181,7 +185,7 @@ function Roompage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         room: roomName,
-
+        week: weekIndex,
       }),
     };
     const response = await fetch("/records/week", requestOptions);
@@ -207,7 +211,7 @@ function Roompage() {
       const occupancy = res.occupancy;
       //console.log(averages);
       setLiveOccupancy(occupancy);
-      console.log(occupancy);
+      //console.log(occupancy);
     }
   }
 
@@ -222,7 +226,7 @@ function Roompage() {
     // first.setDate(first. - 7 * index);
     var firstday = new Date(curr.setDate(first - 7 * index));
 
-    return `${firstday.getMonth()+1}/${firstday.getDate().toString()}`;
+    return `${firstday.getMonth() + 1}/${firstday.getDate().toString()}`;
   }
 
   function renderLoading() {
@@ -261,7 +265,7 @@ function Roompage() {
               return (<option value={index}>{day}</option>);
           })}
         </select>
-        <select onChange={(e) => setWeekIndex(e.target.value)}>
+        <select onChange={(e) => setWeekIndex(parseInt(e.target.value))}>
           {[0, 1, 2].map((week, index) => {
             return (<option value={index}>Week of {getSunday(index)}</option>);
           })}

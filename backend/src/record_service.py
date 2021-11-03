@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from flask import Flask, Blueprint, session, jsonify, request
 import database_service as ds
 import notification_service as ns
@@ -75,9 +75,21 @@ def get_occupancies_by_day():
 @record_service.route('/records/week', methods=["POST", "GET"])
 def get_occupancies_in_week():
     room = request.json['room']
+    week = request.json['week']
+
+    #snap to sunday
+    today = datetime.today()
+    start = today - timedelta(days=today.weekday()+1 + week * 7)
+    #start = start.isoformat()
+    end = start + timedelta(days=7)
+    #end = end.isoformat()
+    print(start, end)
     occupancies = []
     for day in range(0, 7):
-        record_list = list(records.find({'$and': [{'day': day}, {'room': room}]}))
+        try:
+            record_list = list(records.find({'$and': [{'day': day}, {'room': room}, {'time':{'$gte': start, '$lt': end}}]}))
+        except Exception as e:
+            print(e)
         stats = [record['occupancy'] for record in record_list]
         if not stats:
             average = 0
