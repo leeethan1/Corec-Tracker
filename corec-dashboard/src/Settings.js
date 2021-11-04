@@ -16,8 +16,6 @@ import Header from "./Header";
 import RangeSlider from "rsuite/RangeSlider";
 //import Slider from "rsuite/Slider"
 
-
-
 function Settings() {
   const [emailsOn, setEmailsOn] = useState(true);
   const [smsOn, setSmsOn] = useState(true);
@@ -27,7 +25,7 @@ function Settings() {
   const [startTime, setStartTime] = useState("Start Time");
   const [endTime, setEndTime] = useState("End Time");
   const [startTimeIndex, setStartTimeIndex] = useState(0);
-  const [timeBoundaries, setTimeBoundaries] = useState([5, 23]);
+  const [timeBoundaries, setTimeBoundaries] = useState([5, 24]);
   //const Slider = require("rc-slider");
   //const sliderWithTooltip = Slider.createSliderWithTooltip;
   const [notificationSettings, setNotificationSettings] = useState([
@@ -52,6 +50,10 @@ function Settings() {
       threshold: 10,
     },
   ]);
+
+  const timeFrame = [
+    5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+  ];
 
   function toggleRoom(roomName) {
     const roomNumber = parseInt(roomName.substring(5));
@@ -103,6 +105,9 @@ function Settings() {
 
   async function handleSubmitNotifications() {
     let notifications = {};
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     notificationSettings.forEach((notification) => {
       if (notification.on) {
         notifications[notification.room] = notification.threshold;
@@ -112,7 +117,7 @@ function Settings() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: localStorage.getItem("access"),
+        access: token,
       },
       body: JSON.stringify({
         notifications: notifications,
@@ -137,11 +142,14 @@ function Settings() {
   }
 
   async function handleGetSettings() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: localStorage.getItem("access"),
+        access: token,
       },
     };
     const response = await fetch("/settings/get", requestOptions);
@@ -156,12 +164,12 @@ function Settings() {
         setting.threshold = res.notifications[setting.room];
       });
       setNotificationSettings(newNotifications);
-      if ("startTime" in res) {
+      if ("startTime" in res && "endTime" in res) {
         console.log(res.startTime);
+        const newBoundaries = [res.startTime, res.endTime];
         setStartTime(convertTo12HourTime(res.startTime));
-      }
-      if ("endTime" in res) {
-        setEndTime(convertTo12HourTime(res.endTime));
+        setTimeBoundaries([, timeBoundaries[1]]);
+        setTimeBoundaries(newBoundaries);
       }
     } else {
       const res = await response.json();
@@ -218,7 +226,7 @@ function Settings() {
   function displaySettings() {
     if (!authError) {
       return (
-        <div>
+        <div className="margins">
           {/* {displayError()} */}
           {showSuccessful()}
 
@@ -234,13 +242,12 @@ function Settings() {
             onChange={() => setSmsOn(!smsOn)}
             checked={smsOn}
           />
-          {/* <ReactSwitch
-        onChange={(e) => toggleRoom("Room 1")}
-        checked={!notificationSettings[0].on}
-      /> */}
-          <p>Receive notifications for...</p>
+          <hr />
+          <p><b>Receive notifications for...</b></p>
           {renderNotifications}
-
+          <hr />
+          {renderTimeSlider()}
+          <hr />
           <Button
             onClick={(e) => {
               e.preventDefault();
@@ -258,6 +265,9 @@ function Settings() {
 
   function convertTo12HourTime(hour) {
     let timeString = "";
+    if (hour == 24) {
+      return `12 AM`;
+    }
     if (hour < 12) {
       timeString = `${hour} AM`;
     } else {
@@ -270,76 +280,31 @@ function Settings() {
     return timeString;
   }
 
-  // function RenderTimeFrame() {
-  //   const timeFrame = [
-  //     5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-  //   ];
-
-  //   return (
-  //     <>
-  //       <DropdownButton as={ButtonGroup} title={startTime}>
-  //         {timeFrame.map((element, index) => (
-  //           <Dropdown.Item
-  //             onClick={() => {
-  //               setDisableEndTime(false);
-  //               setStartTime(convertTo12HourTime(element));
-  //               setStartTimeIndex(index)
-  //               setTimeBoundaries([element, timeBoundaries[1]])
-  //             }}
-  //           >
-  //             {convertTo12HourTime(element)}
-  //           </Dropdown.Item>
-  //         ))}
-  //       </DropdownButton>
-
-  //       <DropdownButton
-  //         as={ButtonGroup}
-  //         title={endTime}
-  //         disabled={disableEndTime}
-  //       >
-  //         {timeFrame.map((element, index) => (
-  //           <Dropdown.Item
-  //             onClick={() => {setEndTime(convertTo12HourTime(element));
-  //             setTimeBoundaries([timeBoundaries[0], element]);}}
-  //             disabled={startTimeIndex > index - 1}
-  //           >
-  //             {convertTo12HourTime(element)}
-  //           </Dropdown.Item>
-  //         ))}
-  //       </DropdownButton>
-  //     </>
-  //   );
-  // }
-
-
   const { createSliderWithTooltip } = Slider;
   const Range = createSliderWithTooltip(Slider.Range);
 
-  function updateTimeBoundaries(value) {
-    setTimeBoundaries(value);
-    //timeBoundaries = value
-  }
-  
-  function RenderTimeFrame() {
-    const timeFrame = [
-      5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23
-    ];
+  function renderTimeSlider() {
     return (
-      <div className="sliderArea">
+      <div
+        className="range-slider"
+        style={{ margin : '30px' , marginBottom: '50px'}}
+      >
+        <p><b>Receive notifications from</b></p>
         <Range
           marks={{
             5: `5 AM`,
-            23: convertTo12HourTime(23)
+            24: convertTo12HourTime(24),
           }}
           min={5}
-          max={23}
-          defaultValue={[timeBoundaries[0], timeBoundaries[1]]}
-          tipFormatter={value => convertTo12HourTime(value)}
+          max={24}
+          defaultValue={timeBoundaries}
+          tipFormatter={(value) => convertTo12HourTime(value)}
           tipProps={{
             placement: "top",
-            visible: true
+            visible: true,
           }}
-          onAfterChange={(e) => updateTimeBoundaries(e)}
+          onAfterChange={(e) => setTimeBoundaries(e)}
+          disabled={!emailsOn && !smsOn}
         />
       </div>
     );
@@ -348,10 +313,9 @@ function Settings() {
   return (
     <div>
       <Header />
-      <div style={{ margin: 10 }}>
-        <h1>Settings</h1>
+      <div style={{ margin: 10 }} className='settings'>
+        <h1><b>Settings</b></h1>
         {displaySettings()}
-        {RenderTimeFrame()}
       </div>
     </div>
   );
