@@ -43,7 +43,8 @@ def token_required(f):
         if not token:
             raise exceptions.NotLoggedIn
         try:
-            data = jwt.decode(token, my_secret)
+            header_data = jwt.get_unverified_header(token)
+            data = jwt.decode(token, key=my_secret, algorithms=[header_data['alg'], ])
             user = users.find_one({"email": data['email']})
             if not user:
                 raise exceptions.NotLoggedIn
