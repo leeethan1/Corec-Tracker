@@ -77,22 +77,6 @@ function Login({ setLogIn }) {
     if (loginFail) {
       return (
         <div>
-          {/* <Overlay show={loginFail} placement="right">
-            {({ placement, arrowProps, show: _show, popper, ...props }) => (
-              <div
-                {...props}
-                style={{
-                  backgroundColor: "rgba(255, 100, 100, 0.85)",
-                  padding: "2px 10px",
-                  color: "white",
-                  borderRadius: 3,
-                  ...props.style,
-                }}
-              >
-                {"Email or password is incorrect"}
-              </div>
-            )}
-          </Overlay> */}
           <b style={{ color: "red" }}>Email or password is incorrect</b>
         </div>
       );
@@ -130,9 +114,6 @@ function Login({ setLogIn }) {
     console.log(res);
   }
 
-  // function responseFacebook(res) {
-  //   console.log(res);
-  // }
 
   return (
     <div className="Login" style={{ margin: 10 }}>
@@ -206,6 +187,7 @@ function Login({ setLogIn }) {
           buttonText="Log in with Google"
           onSuccess={handleGoogleSuccess}
           onFailure={handleFailure}
+          disabled={false}
           cookiePolicy={"single_host_origin"}
         />
         {/* <FacebookLogin

@@ -53,7 +53,7 @@ function Header() {
 
   useEffect(() => {
     authenticate();
-  }, [])
+  }, []);
 
   return (
     <Navbar bg="light" variant="light">
@@ -65,8 +65,6 @@ function Header() {
           <Nav.Link href="/dashboard">Home</Nav.Link>
           {loggedIn ? "" : <Nav.Link href="/">Log In</Nav.Link>}
           {loggedIn ? "" : <Nav.Link href="/signup">Sign Up</Nav.Link>}
-
-          {/* <Nav.Link href="/">Settings</Nav.Link> */}
           {loggedIn ? (
             <Nav.Link>
               <span onClick={() => signOut()}>Logout</span>
