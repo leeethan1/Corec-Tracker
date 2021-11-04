@@ -1,8 +1,6 @@
-import { React, useState } from "react";
-import {
-  useHistory,
-} from "react-router-dom";
-import Form from "react-bootstrap/Form";
+import { React, useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
+import { Form, FormCheck } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
 
@@ -16,6 +14,7 @@ function Login({ setLogIn }) {
   const [name, setName] = useState("test");
   const [googleData, setGoogleData] = useState([]);
   const [loginFail, setLoginFail] = useState(false);
+  const [remember, setRemember] = useState(false);
   const history = useHistory();
 
   function validateForm() {
@@ -26,6 +25,30 @@ function Login({ setLogIn }) {
     event.preventDefault();
   }
 
+  async function handleGetLogin() {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: localStorage.getItem("access"),
+      },
+    };
+    const response = await fetch("/login/get", requestOptions);
+    if (response.ok) {
+      //const res = await response.json();
+      history.push("/dashboard");
+      //setEmail(res.email);
+      //setPassword(res.password);
+    } else {
+      const res = await response.json();
+      console.log(res);
+    }
+  }
+
+  useEffect(() => {
+    handleGetLogin();
+  }, []);
+
   async function checkLogin(res) {
     const requestOptions = {
       method: "POST",
@@ -33,6 +56,7 @@ function Login({ setLogIn }) {
       body: JSON.stringify({
         email: email,
         password: password,
+        remember: remember,
       }),
     };
     const response = await fetch("/login/submit", requestOptions);
@@ -44,6 +68,8 @@ function Login({ setLogIn }) {
       history.push("/dashboard", { user: "test" });
     } else {
       setLoginFail(true);
+      const res = await response.json();
+      console.log(res);
     }
   }
 
@@ -51,22 +77,6 @@ function Login({ setLogIn }) {
     if (loginFail) {
       return (
         <div>
-          {/* <Overlay show={loginFail} placement="right">
-            {({ placement, arrowProps, show: _show, popper, ...props }) => (
-              <div
-                {...props}
-                style={{
-                  backgroundColor: "rgba(255, 100, 100, 0.85)",
-                  padding: "2px 10px",
-                  color: "white",
-                  borderRadius: 3,
-                  ...props.style,
-                }}
-              >
-                {"Email or password is incorrect"}
-              </div>
-            )}
-          </Overlay> */}
           <b style={{ color: "red" }}>Email or password is incorrect</b>
         </div>
       );
@@ -104,9 +114,6 @@ function Login({ setLogIn }) {
     console.log(res);
   }
 
-  // function responseFacebook(res) {
-  //   console.log(res);
-  // }
 
   return (
     <div className="Login" style={{ margin: 10 }}>
@@ -130,6 +137,11 @@ function Login({ setLogIn }) {
           />
           {formFailure()}
         </Form.Group>
+        <FormCheck
+          label={<p>Remember Me</p>}
+          onChange={() => setRemember(!remember)}
+          checked={remember}
+        />
         <Button
           block
           size="lg"
@@ -144,7 +156,11 @@ function Login({ setLogIn }) {
           size="lg"
           type="submit"
           variant="secondary"
-          onClick={(e) => history.push("/dashboard")}
+          onClick={(e) => {
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            history.push("/dashboard");
+          }}
         >
           Continue as Guest
         </Button>
@@ -171,6 +187,7 @@ function Login({ setLogIn }) {
           buttonText="Log in with Google"
           onSuccess={handleGoogleSuccess}
           onFailure={handleFailure}
+          disabled={false}
           cookiePolicy={"single_host_origin"}
         />
         {/* <FacebookLogin
