@@ -12,6 +12,7 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./Header";
+import { rememberUser } from "./Login";
 
 function Settings() {
   const timeFrame = [
@@ -107,11 +108,14 @@ function Settings() {
         notifications[notification.room] = notification.threshold;
       }
     });
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: localStorage.getItem("access"),
+        access: token,
       },
       body: JSON.stringify({
         notifications: notifications,
@@ -136,11 +140,14 @@ function Settings() {
   }
 
   async function handleGetSettings() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: localStorage.getItem("access"),
+        access: token,
       },
     };
     const response = await fetch("/settings/get", requestOptions);

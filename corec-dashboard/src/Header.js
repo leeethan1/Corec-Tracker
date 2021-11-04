@@ -10,11 +10,14 @@ function Header() {
   const [loggedIn, setLoggedIn] = useState(false);
 
   async function authenticate() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: localStorage.getItem("access"),
+        access: token,
       },
     };
     const response = await fetch("/auth", requestOptions);
@@ -24,11 +27,14 @@ function Header() {
   }
 
   async function signOut() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: localStorage.getItem("access"),
+        access: token,
       },
     };
     const response = await fetch(`/logout`, requestOptions);
@@ -37,6 +43,9 @@ function Header() {
       //console.log(occupancies);
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
+      localStorage.removeItem("remember");
+      sessionStorage.removeItem("access");
+      sessionStorage.removeItem("refresh");
       setLoggedIn(false);
       history.push("/");
     }

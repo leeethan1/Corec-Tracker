@@ -5,6 +5,7 @@ import Header from "./Header";
 import { Alert } from "react-bootstrap";
 //import Star from "react-star-rating-component";
 import Star from "./Star";
+import { rememberUser } from "./Login";
 
 function Dashboard() {
   //const [rooms, setRooms] = useState([]);
@@ -17,11 +18,15 @@ function Dashboard() {
   const history = useHistory();
 
   async function handleGetFavorites() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+    console.log(token);
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: `${localStorage.getItem("access")}`,
+        access: token,
       },
     };
     const response = await fetch(`/favorites/get`, requestOptions);
