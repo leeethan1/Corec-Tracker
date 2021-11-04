@@ -32,7 +32,9 @@ function Roompage() {
     [...new Array(19)].map(() => [0, 0, 0, 0, 0, 0, 0])
   );
 
-  const [weeklyOccupancies, setWeeklyOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
+  const [weeklyOccupancies, setWeeklyOccupancies] = useState([
+    0, 0, 0, 0, 0, 0, 0,
+  ]);
   const [maxOccupancies, setMaxOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [minOccupancies, setMinOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [averages, setAverages] = useState([0, 0, 0, 0, 0, 0, 0]);
@@ -86,9 +88,9 @@ function Roompage() {
 
   function createWeeklyData(index) {
     return {
-      "day": days[index],
-      "occupancy": weeklyOccupancies[index]
-    }
+      day: days[index],
+      occupancy: weeklyOccupancies[index],
+    };
   }
 
   const times = [
@@ -115,7 +117,9 @@ function Roompage() {
 
   const graphData = times.map((element, index) => createData(element, index));
 
-  const weeklyGraphData = weeklyOccupancies.map((element, index) => createWeeklyData(index))
+  const weeklyGraphData = weeklyOccupancies.map((element, index) =>
+    createWeeklyData(index)
+  );
 
   useEffect(() => {
     let interval = null;
@@ -220,8 +224,7 @@ function Roompage() {
   }
 
   function getSunday(index) {
-
-    var curr = new Date; // get current date
+    var curr = new Date(); // get current date
     var first = curr.getDate() - curr.getDay(); // First day is the day of the month - the day of the week
     // first.setDate(first. - 7 * index);
     var firstday = new Date(curr.setDate(first - 7 * index));
@@ -243,31 +246,46 @@ function Roompage() {
 
   function renderFilterOption() {
     return (
-      <div >
-        <select class="form-select" aria-label="Default select example" onChange={(e) => {
-          e.preventDefault();
-          updateBoundaries(0, parseInt(e.target.value));
-          console.log(e.target.value, weekBoundaries);
-        }}>
+      <div>
+        <select
+          defaultValue={0}
+          class="form-select"
+          aria-label="Default select example"
+          onChange={(e) => {
+            e.preventDefault();
+            updateBoundaries(0, parseInt(e.target.value));
+            console.log(e.target.value, weekBoundaries);
+          }}
+        >
           {days.map((day, index) => {
-            if (index < weekBoundaries[1]) {
-              return (<option value={index} >{day}</option>);
-            }
+            return (
+              <option value={index} disabled={index >= weekBoundaries[1]}>
+                {day}
+              </option>
+            );
           })}
         </select>
-        <select class="form-select" aria-label="Default select example" onChange={(e) => {
-          e.preventDefault();
-          updateBoundaries(1, parseInt(e.target.value));
-          console.log(e.target.value, weekBoundaries)
-        }}>
+        <select
+          defaultValue={6}
+          class="form-select"
+          aria-label="Default select example"
+          onChange={(e) => {
+            e.preventDefault();
+            updateBoundaries(1, parseInt(e.target.value));
+            console.log(e.target.value, weekBoundaries);
+          }}
+        >
           {days.map((day, index) => {
-            if (index > weekBoundaries[0])
-              return (<option value={index}>{day}</option>);
+            return (
+              <option value={index} disabled={index <= weekBoundaries[0]}>
+                {day}
+              </option>
+            );
           })}
         </select>
         <select onChange={(e) => setWeekIndex(parseInt(e.target.value))}>
           {[0, 1, 2].map((week, index) => {
-            return (<option value={index}>Week of {getSunday(index)}</option>);
+            return <option value={index}>Week of {getSunday(index)}</option>;
           })}
         </select>
       </div>
@@ -300,7 +318,7 @@ function Roompage() {
                   <Legend height={36} />
                   {days.map((day, index) => (
                     <Line
-                      type="monotone"
+                      type="monotoneX"
                       dataKey={day}
                       stroke="#8884d8"
                       activeDot={{ r: 5 }}
@@ -317,7 +335,10 @@ function Roompage() {
                 <LineChart
                   width={1200}
                   height={300}
-                  data={weeklyGraphData.slice(weekBoundaries[0], weekBoundaries[1] + 1)}
+                  data={weeklyGraphData.slice(
+                    weekBoundaries[0],
+                    weekBoundaries[1] + 1
+                  )}
                   margin={{
                     top: 5,
                     right: 30,
@@ -330,7 +351,7 @@ function Roompage() {
                   <YAxis />
                   <Tooltip />
                   <Legend height={36} />
-                  <Line dataKey="occupancy" />
+                  <Line dataKey="occupancy" type="monotoneX"/>
                 </LineChart>
               </Accordion.Body>
             </Accordion.Item>
@@ -439,10 +460,10 @@ function Roompage() {
           <Tabs
             id="chart tabs"
             defaultActiveKey="Line Graph"
-          // onSelect={(k) => {
-          //   setChartType(k);
-          //   console.log(chartType);
-          // }}
+            // onSelect={(k) => {
+            //   setChartType(k);
+            //   console.log(chartType);
+            // }}
           >
             {["Line Graph", "Bar Chart"].map((element, index) => (
               <Tab eventKey={element} title={element}>
