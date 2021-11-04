@@ -54,7 +54,7 @@ function Signup(props) {
   }
 
   return (
-    <div className="Signup">
+    <div className="margins">
       <h1>Sign Up</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group size="lg" controlId="email">

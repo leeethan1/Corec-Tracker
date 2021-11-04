@@ -49,11 +49,14 @@ function Dashboard() {
   }
 
   async function handleAddFavorite(roomName) {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: `${localStorage.getItem("access")}`,
+        access: token,
       },
       body: JSON.stringify({
         room: roomName,
@@ -71,12 +74,15 @@ function Dashboard() {
   }
 
   async function handleRemoveFavorite(roomName) {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     console.log(roomName);
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: `${localStorage.getItem("access")}`,
+        access: token,
       },
       body: JSON.stringify({
         room: roomName,
