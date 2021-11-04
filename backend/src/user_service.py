@@ -1,19 +1,18 @@
 import datetime
+import os
 import random
 import re
+import secrets
+from functools import wraps
 
-from flask import Blueprint, request, session, json, jsonify, redirect
 import bcrypt
+import jwt
+from dotenv import load_dotenv
+from flask import Blueprint, request, session, json, jsonify
+
 import database_service
 import exceptions
 import notification_service as ns
-import secrets
-import jwt
-import datetime
-from dotenv import load_dotenv
-import os
-from functools import wraps
-import time
 
 base_url = "https://127.0.0.1:3000"
 days_until_expire = 2
@@ -38,13 +37,14 @@ my_secret = os.getenv("SECRET_KEY")
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = None;
-        if 'token' in request.headers:
-            token = request.headers['token']
+        token = None
+        if 'access' in request.headers:
+            token = request.headers['access']
         if not token:
             raise exceptions.NotLoggedIn
         try:
-            data = jwt.decode(token, my_secret)
+            header_data = jwt.get_unverified_header(token)
+            data = jwt.decode(token, key=my_secret, algorithms=[header_data['alg'], ])
             user = users.find_one({"email": data['email']})
             if not user:
                 raise exceptions.NotLoggedIn
@@ -54,6 +54,45 @@ def token_required(f):
         return f(user, *args, **kwargs)
 
     return decorated
+
+
+@user_service.route('/auth', methods=['POST'])
+@token_required
+def authenticate(user):
+    if user:
+        return "Authenticated", 200
+    return "Not authorized", 400
+
+
+@user_service.route('/login/get', methods=['POST'])
+@token_required
+def get_user_login(user):
+    if 'remember' in user and user['remember']:
+        return "redirect", 200
+    return "User info isn't remembered", 400
+
+
+@user_service.route('/settings/get', methods=['POST'])
+@token_required
+def get_user_settings(user):
+    if 'startTime' in user and 'endTime' in user:
+        return json.dumps(
+            {
+                "emailNotifications": user['emailNotifications'],
+                "smsNotifications": user['smsNotifications'],
+                "notifications": user['notifications'],
+                "startTime": user['startTime'],
+                "endTime": user['endTime']
+            }
+        ), 200
+    else:
+        return json.dumps(
+            {
+                "emailNotifications": user['emailNotifications'],
+                "smsNotifications": user['smsNotifications'],
+                "notifications": user['notifications'],
+            }
+        ), 200
 
 
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
@@ -81,9 +120,11 @@ def create_account():
         # Uncomment this section when database is established
         unverified_user = unverified_accounts.find_one({"email": email})
         user = users.find_one({"email": email})
-        if unverified_user or user:
+        if user:
             # email already taken
             raise exceptions.DuplicateEmailError
+        if unverified_user:
+            unverified_accounts.delete_many({'email': email})
 
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user_input = {'email': email,
@@ -92,6 +133,8 @@ def create_account():
         unverified_accounts.insert_one(user_input)
 
         # generate and send verification codes
+        email_verification_codes.delete_many({'email': email})
+        phone_verification_codes.delete_many({'phone': phone})
         email_code = generate_email_verification_code(email)
         phone_code = generate_phone_verification_code(phone)
         ns.send_email(email, "Verify your email", "Your email verification code is {}".format(email_code))
@@ -115,7 +158,7 @@ def verify_account():
         if not account:
             raise exceptions.UserNotFound
 
-        emailNotificationsOn = True;
+        emailNotificationsOn = True
         smsNotificationsOn = True
         notifications = {}
 
@@ -129,15 +172,32 @@ def verify_account():
         users.insert_one(user_input)
 
         # remove user from unverified collection
-        unverified_accounts.find_one_and_delete({'$and': [{'email': email}, {'phone': phone}]})
+        unverified_accounts.delete_many({'email': email})
         # remove verification codes for user
-        email_verification_codes.find_one_and_delete({'email': email})
-        phone_verification_codes.find_one_and_delete({'phone': phone})
+        email_verification_codes.delete_many({'email': email})
+        phone_verification_codes.delete_many({'phone': phone})
 
-        session['email'] = email
         ns.send_email(email, "Welcome to Corec Tracker",
                       "Glad to have you on board! Enjoy all this app has to offer!")
-        return "Signed up successfully", 200
+        access_payload = {
+            "email": email,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        }
+        access_token = jwt.encode(
+            payload=access_payload,
+            key=my_secret
+        )
+        refresh_payload = {
+            "email": email,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
+        }
+        refresh_token = jwt.encode(
+            payload=refresh_payload,
+            key=my_secret
+        )
+        # session["email"] = user_email
+        return json.dumps(
+            {'access_token': access_token.decode("UTF-8"), 'refresh_token': refresh_token.decode("UTF-8")}), 200
     else:
         return json.dumps(
             {'message': "Could not verify email or phone number.\nCheck that your verification codes are correct"}), 400
@@ -150,6 +210,7 @@ def login():
 
     email = request.json["email"]
     password = request.json["password"]
+    remember = request.json["remember"]
 
     unverified = unverified_accounts.find_one({'email': email})
     if unverified:
@@ -164,6 +225,7 @@ def login():
         user_email = user['email']
         user_password = user['password']
         if bcrypt.checkpw(password.encode('utf-8'), user_password):
+            users.find_one_and_update({"email": email}, {"$set": {'remember': remember}})
             access_payload = {
                 "email": user_email,
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
@@ -182,7 +244,7 @@ def login():
             )
             # session["email"] = user_email
             return json.dumps(
-                {'access_token': access_token.decode("utf-8"), 'user_token': refresh_token.decode("utf-8")}), 200
+                {'access_token': access_token.decode("utf-8"), 'refresh_token': refresh_token.decode("utf-8")}), 200
         else:
             raise exceptions.AuthError
     else:
@@ -204,37 +266,38 @@ def googleLogin():
             smsNotificationsOn = True
             notifications = {}
             user_input = {'email': email,
+                          'phone': None,
                           'emailNotifications': emailNotificationsOn,
                           'smsNotifications': smsNotificationsOn,
                           'notifications': notifications,
                           'favoriteRooms': []}
             users.insert_one(user_input)
-            access_payload = {
-                "email": email,
-                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
-            }
-            access_token = jwt.encode(
-                payload=access_payload,
-                key=my_secret
-            )
-            refresh_payload = {
-                "email": email,
-                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
-            }
-            refresh_token = jwt.encode(
-                payload=refresh_payload,
-                key=my_secret
-            )
-            # session["email"] = user_email
-            return {'access_token': access_token, 'user_token': refresh_token}, 200
+        access_payload = {
+            "email": email,
+            "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
+        }
+        access_token = jwt.encode(
+            payload=access_payload,
+            key=my_secret
+        )
+        refresh_payload = {
+            "email": email,
+            "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
+        }
+        refresh_token = jwt.encode(
+            payload=refresh_payload,
+            key=my_secret
+        )
+        # session["email"] = user_email
+        return {'access_token': access_token, 'refresh_token': refresh_token}, 200
 
     raise exceptions.AuthError
 
 
 @user_service.route('/logout', methods=['POST', "GET"])
-def logout():
-    # if 'email' in session:
-    #     session.pop('email', None)
+@token_required
+def logout(user):
+    users.find_one_and_update({'email': user['email']}, {"$set": {"remember": False}})
     return "Logged out successfully", 200
 
 
@@ -307,13 +370,15 @@ def update_notifications(user):
     users.find_one_and_update({'email': email},
                               {'$set': {'notifications': updated_notifications,
                                         'emailNotifications': emailNotifications,
-                                        'smsNotifications': smsNotifications}})
+                                        'smsNotifications': smsNotifications,
+                                        'startTime': request.json['startTime'],
+                                        'endTime': request.json['endTime']}})
     return "Notifications updated", 200
 
 
 @user_service.route('/forgot-password/submit', methods=['POST'])
-def forgot_password(user):
-    email = user['email']
+def forgot_password():
+    email = request.json['email']
     if not re.fullmatch(email_regex, email):
         return json.dumps({'message': 'Not a valid email'}), 400
     user = users.find_one({'email': email})
@@ -380,7 +445,7 @@ def get_favorites(user):
 @user_service.route('/favorites/add', methods=['POST'])
 @token_required
 def add_to_favorites(user):
-    room = request.json["room"]
+    room = request.json['room']
     user_email = user['email']
     query = {'email': user_email}
     room_list = user["favoriteRooms"]
@@ -391,13 +456,13 @@ def add_to_favorites(user):
         room_list.append(room)
         new_entry = {"favoriteRooms": room_list}
         users.update_one(query, {'$set': new_entry})
-        return jsonify("{} added to favorites".format(room))
+        return json.dumps({"rooms": room_list}), 200
 
 
 @user_service.route('/favorites/remove', methods=['POST'])
 @token_required
 def remove_favorite(user):
-    room = request.json["room"]
+    room = request.json['room']
     # user is logged in
     user_email = user['email']
     query = {'email': user_email}
@@ -410,7 +475,7 @@ def remove_favorite(user):
     else:
         room_list.remove(room)
         users.update_one(query, {'$set': {'favoriteRooms': room_list}})
-        return jsonify("Removed {} from favorites".format(room))
+        return json.dumps({"rooms": room_list}), 200
 
 
 def generate_email_verification_code(email):

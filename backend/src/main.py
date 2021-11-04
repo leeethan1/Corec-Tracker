@@ -3,14 +3,14 @@ import json
 from flask import Flask, jsonify
 from record_service import record_service
 from user_service import user_service
-# from camera_service import camera_service
+from camera_service import camera_service
 import os
 from dotenv import load_dotenv
 
 app = Flask(__name__)
 app.register_blueprint(record_service)
 app.register_blueprint(user_service)
-# app.register_blueprint(camera_service)
+app.register_blueprint(camera_service)
 
 load_dotenv()
 app.secret_key = os.getenv('SECRET_KEY')
@@ -23,8 +23,8 @@ def handle_exception(e):
     message = str(e)
     if hasattr(e, "code"):
         code = e.code
-    if hasattr(e, "message"):
-        message = e.message
+    if hasattr(e, "description"):
+        message = e.description
     return json.dumps({'message': message}), code
 
 

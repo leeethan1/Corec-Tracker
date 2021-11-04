@@ -1,9 +1,5 @@
 import { React, useState } from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
   useHistory,
 } from "react-router-dom";
 import Form from "react-bootstrap/Form";
@@ -11,7 +7,7 @@ import Button from "react-bootstrap/Button";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 
-function Signup({ setLogIn }) {
+function Signup(props) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -80,9 +76,11 @@ function Signup({ setLogIn }) {
         </Form.Group>
         <Form.Group size="lg" controlId="phone">
           <PhoneInput
+            defaultCountry="US"
             placeholder="Phone Number"
             value={phone}
             onChange={setPhone}
+            
           />
         </Form.Group>
         <Form.Group size="lg" controlId="password">
@@ -103,6 +101,7 @@ function Signup({ setLogIn }) {
         >
           Sign Up
         </Button>
+        <Button size="lg" variant="secondary" onClick={() => history.push("/")}>Back</Button>
       </Form>
     </div>
   );
