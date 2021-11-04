@@ -45,6 +45,7 @@ function Roompage() {
   const [weekBoundaries, setWeekBoundaries] = useState([0, 6]);
   const updateInterval = 5;
   const [weekIndex, setWeekIndex] = useState(0);
+  const [leastAndMostBusyDays, setLeastAndMostBusyDays] = useState([0, 0]);
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -198,6 +199,14 @@ function Roompage() {
       const averages = res.occupancies;
       console.log(averages);
       setWeeklyOccupancies(averages);
+      let max = weeklyOccupancies.reduce(function (a, b) {
+        return Math.max(a, b);
+      }, 0);
+      let min = weeklyOccupancies.reduce(function (a, b) {
+        return Math.min(a, b);
+      }, 0);
+      setLeastAndMostBusyDays([min, max]);
+      console.log(leastAndMostBusyDays);
     }
   }
 
@@ -386,12 +395,7 @@ function Roompage() {
   }
 
   function displayAdvancedStats() {
-    let max = averages.reduce(function (a, b) {
-      return Math.max(a, b);
-    }, 0);
-    let min = averages.reduce(function (a, b) {
-      return Math.min(a, b);
-    }, 0);
+    
     return (
       <Accordion>
         <Accordion.Item eventKey="0">
@@ -406,8 +410,8 @@ function Roompage() {
               </p>
             ))}
             <p>
-              It seems like <b>{days[averages.indexOf(max)]}</b> is the busiest
-              day while <b>{days[averages.indexOf(min)]}</b> is the least
+              It seems like <b>{days[weeklyOccupancies.indexOf(leastAndMostBusyDays[1])]}</b> is the busiest
+              day while <b>{days[weeklyOccupancies.indexOf(leastAndMostBusyDays[0])]}</b> is the least
               busiest day
             </p>
             <div className="horizontal">
