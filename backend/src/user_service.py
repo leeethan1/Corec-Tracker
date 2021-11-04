@@ -265,29 +265,30 @@ def googleLogin():
             smsNotificationsOn = True
             notifications = {}
             user_input = {'email': email,
+                          'phone': None,
                           'emailNotifications': emailNotificationsOn,
                           'smsNotifications': smsNotificationsOn,
                           'notifications': notifications,
                           'favoriteRooms': []}
             users.insert_one(user_input)
-            access_payload = {
-                "email": email,
-                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
-            }
-            access_token = jwt.encode(
-                payload=access_payload,
-                key=my_secret
-            )
-            refresh_payload = {
-                "email": email,
-                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
-            }
-            refresh_token = jwt.encode(
-                payload=refresh_payload,
-                key=my_secret
-            )
-            # session["email"] = user_email
-            return {'access_token': access_token, 'refresh_token': refresh_token}, 200
+        access_payload = {
+            "email": email,
+            "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
+        }
+        access_token = jwt.encode(
+            payload=access_payload,
+            key=my_secret
+        )
+        refresh_payload = {
+            "email": email,
+            "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
+        }
+        refresh_token = jwt.encode(
+            payload=refresh_payload,
+            key=my_secret
+        )
+        # session["email"] = user_email
+        return {'access_token': access_token, 'refresh_token': refresh_token}, 200
 
     raise exceptions.AuthError
 
