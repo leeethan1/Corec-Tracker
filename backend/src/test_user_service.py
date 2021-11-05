@@ -21,9 +21,10 @@ test_user = {
 }
 my_secret = os.getenv("SECRET_KEY")
 
+
 class TestUserService(unittest.TestCase):
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUp(cls):
         users.insert_one(test_user)
 
     def testCreate(self):
@@ -31,16 +32,16 @@ class TestUserService(unittest.TestCase):
         user = users.find_one(query)
         assert user
 
-    # def testUpdateSettings(self):
-    #     query = {'email': "email"}
-    #     user = users.find_one(query)
-    #     notifications = user['notifications']
-    #     initial_size = len(notifications)
-    #     notifications['new room'] = random.randrange(30)
-    #     users.find_one_and_update(query, {'$set': {'notifications': notifications}})
-    #     user = users.find_one(query)
-    #     new_notifications = user['notifications']
-    #     assert len(new_notifications) == initial_size + 1
+    def testUpdateSettings(self):
+        query = {'email': "email"}
+        user = users.find_one(query)
+        notifications = user['notifications']
+        initial_size = len(notifications)
+        notifications['new room'] = random.randrange(30)
+        users.find_one_and_update(query, {'$set': {'notifications': notifications}})
+        user = users.find_one(query)
+        new_notifications = user['notifications']
+        assert len(new_notifications) == initial_size + 1
 
     def testCreateToken(self):
         access_payload = {
@@ -68,7 +69,7 @@ class TestUserService(unittest.TestCase):
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
         }
         dummy = jwt.encode(
-            payload=access_payload,
+            payload=dummy_payload,
             key=my_secret
         )
         header_data = jwt.get_unverified_header(dummy)
@@ -109,7 +110,7 @@ class TestUserService(unittest.TestCase):
         assert True
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDown(cls):
         users.delete_many({})
         tokens.delete_many({})
 

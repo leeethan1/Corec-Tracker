@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 from twilio.rest import Client
 import database_service as ds
+from urllib.parse import quote
 
 EMAIL = 'corec-tracker@outlook.com'
 load_dotenv()
@@ -60,7 +61,7 @@ def send_email_alert(email, occupancy, room):
     if recent_emails.count() > 0:
         print("Email already sent within the last 10 minutes")
     else:
-        body = "{} is at {} people, time to get those gains up!\nhttps://localhost:3000/{}".format(room, occupancy, room)
+        body = "{} is at {} people, time to get those gains up!\nhttps://127.0.0.1:3000/room/{}".format(room, occupancy, quote(room))
         send_email(email, "Let's work out!", body)
         notifications.delete_many({"email" : email})
         notifications.insert_one({
