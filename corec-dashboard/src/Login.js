@@ -1,9 +1,11 @@
 import { React, useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { Form, FormCheck } from "react-bootstrap";
+import { Form, FormCheck, InputGroup } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
 import axios from "axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCoffee } from '@fortawesome/fontawesome-free-solid'
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
@@ -159,12 +161,13 @@ function Login({ setLogIn }) {
     history.push("/forgot-password");
   }
 
-  function handleFailure(res) {
+  function handleGoogleFailure(res) {
     console.log(res);
   }
 
   return (
-    <div className="Login">
+    <div>
+      <div id="Login-Panel">
       <h1>Login</h1>
       <Form onSubmit={handleLogin}>
         <Form.Group size="lg" controlId="email">
@@ -175,30 +178,59 @@ function Login({ setLogIn }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+      <Form onSubmit={handleLogin}>
+        <Form.Group size="lg" controlId="email" className="mb-3">
+          <InputGroup>
+              <InputGroup.Text>
+              <FontAwesomeIcon icon="envelope" />
+              </InputGroup.Text>
+              <Form.Control
+                autoFocus
+                placeholder="Email Address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+          </InputGroup>
         </Form.Group>
-        <Form.Group size="lg" controlId="password">
-          <Form.Label>Password</Form.Label>
+        <Form.Group size="lg" controlId="password" className="mb-3">
+        <InputGroup>
+              <InputGroup.Text>
+              <FontAwesomeIcon icon="key" />
+              </InputGroup.Text>
           <Form.Control
             type="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           {formFailure()}
+          </InputGroup>
         </Form.Group>
-        <FormCheck
-          label={<p>Remember Me</p>}
-          onChange={() => setRemember(!remember)}
-          checked={remember}
-        />
+        <div id="Remember-Forgot">
+          <FormCheck
+            label={<p>Remember Me</p>}
+            onChange={() => setRemember(!remember)}
+            checked={remember}
+          />
+          <a id="Forgot" href="/forgot-password">Forgot Password</a>
+        </div>
+        <div id="Login-Aree">
         <Button
+          id="Login-Button"
           block
           size="lg"
           type="submit"
           onClick={handleLogin}
           disabled={!validateForm()}
         >
-          Login
+          Log In
         </Button>
+        </div>
+        <a href="/signup" id="Signup-Link">
+          Don't have an account? Sign up
+        </a>
+        <div id="Other-Options">
         <Button
           block
           size="lg"
@@ -212,32 +244,21 @@ function Login({ setLogIn }) {
         >
           Continue as Guest
         </Button>
-        <Button
-          block
-          size="lg"
-          type="submit"
-          variant="secondary"
-          onClick={redirectToSignup}
-        >
-          Create Account
-        </Button>
-        <Button
-          block
-          size="lg"
-          type="submit"
-          variant="secondary"
-          onClick={redirectForgotPassword}
-        >
-          Forgot Password
-        </Button>
         <GoogleLogin
+          // render={(renderProps) => {
+          //   return (
+          //   <Button onClick={renderProps.onClick} disabled={renderProps.disabled}>
+          //     <FontAwesomeIcon icon="google" />
+          //   </Button>)
+          // }}
+          theme="dark"
           clientId={cID}
           buttonText="Log in with Google"
           onSuccess={handleGoogleSuccess}
-          onFailure={handleFailure}
-          disabled={false}
+          onFailure={handleGoogleFailure}
           cookiePolicy={"single_host_origin"}
         />
+        </div>
         {/* <FacebookLogin
           appId={facebookID}
           autoLoad={true}
@@ -247,6 +268,7 @@ function Login({ setLogIn }) {
           icon="fa-facebook"
         /> */}
       </Form>
+      </div>
     </div>
   );
 }
