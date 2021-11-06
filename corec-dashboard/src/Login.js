@@ -133,7 +133,7 @@ function Login({ setLogIn }) {
   }
 
   return (
-    <div className="Login" style={{ margin: 10 }}>
+    <div className="Login">
       <h1>Login</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group size="lg" controlId="email">

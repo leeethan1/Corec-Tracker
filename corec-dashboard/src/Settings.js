@@ -313,7 +313,7 @@ function Settings() {
   return (
     <div>
       <Header />
-      <div style={{ margin: 10 }} className='settings'>
+      <div className='settings'>
         <h1><b>Settings</b></h1>
         {displaySettings()}
       </div>
