@@ -272,6 +272,7 @@ def googleLogin():
                           'notifications': notifications,
                           'favoriteRooms': []}
             users.insert_one(user_input)
+
         access_payload = {
             "email": email,
             "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
@@ -288,8 +289,7 @@ def googleLogin():
             payload=refresh_payload,
             key=my_secret
         )
-        # session["email"] = user_email
-        return {'access_token': access_token, 'refresh_token': refresh_token}, 200
+        return {'access_token': str(access_token, encoding='utf-8'), 'refresh_token': str(refresh_token, encoding='utf-8')}, 200
 
     raise exceptions.AuthError
 
