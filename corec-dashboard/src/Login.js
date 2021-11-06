@@ -78,7 +78,8 @@ function Login({ setLogIn }) {
         //sessionStorage.setItem("access", localStorage.getItem("access"));
         //sessionStorage.setItem("refresh", localStorage.getItem("refresh"));
       }
-
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
       history.push("/dashboard", { user: "test" });
     } else {
       setLoginFail(true);
@@ -113,7 +114,10 @@ function Login({ setLogIn }) {
       if (remember) {
         localStorage.setItem("access", tokens.access_token);
         localStorage.setItem("refresh", tokens.refresh_token);
+        localStorage.setItem("remember", true);
       }
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
       sessionStorage.setItem("access", tokens.access_token);
       sessionStorage.setItem("refresh", tokens.refresh_token);
       history.push("/dashboard", { user: res.profileObj.name });
@@ -128,7 +132,7 @@ function Login({ setLogIn }) {
     history.push("/forgot-password");
   }
 
-  function handleFailure(res) {
+  function handleGoogleFailure(res) {
     console.log(res);
   }
 
@@ -205,8 +209,7 @@ function Login({ setLogIn }) {
           clientId={cID}
           buttonText="Log in with Google"
           onSuccess={handleGoogleSuccess}
-          onFailure={handleFailure}
-          disabled={false}
+          onFailure={handleGoogleFailure}
           cookiePolicy={"single_host_origin"}
         />
         {/* <FacebookLogin
