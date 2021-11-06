@@ -2,31 +2,49 @@ import { React, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Header from "./Header";
-import { Alert } from "react-bootstrap";
+import { Alert, FormCheck } from "react-bootstrap";
 //import Star from "react-star-rating-component";
 import Star from "./Star";
-import { rememberUser } from "./Login";
 
 function Dashboard() {
-  //const [rooms, setRooms] = useState([]);
+  const [rooms, setRooms] = useState({
+    "Room 1": 0,
+    "Room 2": 0,
+    "Room 3": 0,
+    "Room 4": 0,
+  });
   //const [user, setUser] = useState("");
   //const [showFavOnly, setShowFavOnly] = useState(false);
   const [favoriteRooms, setFavoriteRooms] = useState([]);
   const [authError, setAuthError] = useState(false);
+  const [tick, setTick] = useState(0);
+  const [sorted, setSorted] = useState(false);
 
-  const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
+  //const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
   const history = useHistory();
 
+  useEffect(() => {
+    let interval = null;
+    //console.log(tick);
+    interval = setInterval(() => {
+      setTick((tick) => tick + 1);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [tick]);
+
+  useEffect(() => {
+    Object.keys(rooms).forEach((room) => {
+      handleGetRecent(room);
+    });
+  }, [tick, sorted]);
+
   async function handleGetFavorites() {
-    const token = localStorage.getItem("remember")
-      ? localStorage.getItem("access")
-      : sessionStorage.getItem("access");
-    console.log(token);
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: token,
+        "access": localStorage.getItem("access"),
       },
     };
     const response = await fetch(`/favorites/get`, requestOptions);
@@ -48,15 +66,48 @@ function Dashboard() {
     return 0;
   }
 
-  async function handleAddFavorite(roomName) {
-    const token = localStorage.getItem("remember")
-      ? localStorage.getItem("access")
-      : sessionStorage.getItem("access");
+  async function handleGetRecent(roomName) {
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: token,
+        access: `${localStorage.getItem("access")}`,
+      },
+      body: JSON.stringify({
+        room: roomName.toLowerCase(),
+      }),
+    };
+    const response = await fetch(`/process-room`, requestOptions);
+    if (response.ok) {
+      const res = await response.json();
+      let newRooms = Object.assign({}, rooms);
+      newRooms[roomName] = res.occupancy;
+      if (sorted) {
+        newRooms = Object.entries(rooms)
+          .sort(([, a], [, b]) => a - b)
+          .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+      } else {
+        newRooms = Object.keys(rooms)
+          .sort()
+          .reduce((obj, key) => {
+            obj[key] = rooms[key];
+            return obj;
+          }, {});
+      }
+      console.log(newRooms);
+      setRooms(newRooms);
+    } else {
+      const res = await response.json();
+      console.log(res);
+    }
+  }
+
+  async function handleAddFavorite(roomName) {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: `${localStorage.getItem("access")}`,
       },
       body: JSON.stringify({
         room: roomName,
@@ -66,7 +117,6 @@ function Dashboard() {
     if (response.ok) {
       const res = await response.json();
       setFavoriteRooms(res.rooms);
-      console.log(favoriteRooms);
     } else {
       const res = await response.json();
       console.log(res);
@@ -74,15 +124,12 @@ function Dashboard() {
   }
 
   async function handleRemoveFavorite(roomName) {
-    const token = localStorage.getItem("remember")
-      ? localStorage.getItem("access")
-      : sessionStorage.getItem("access");
     console.log(roomName);
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: token,
+        access: `${localStorage.getItem("access")}`,
       },
       body: JSON.stringify({
         room: roomName,
@@ -108,7 +155,6 @@ function Dashboard() {
   }
 
   function renderStar(item) {
-    //console.log(item);
     if (!authError) {
       return (
         <Star
@@ -122,18 +168,19 @@ function Dashboard() {
 
   function renderRooms() {
     let rowsToRender = [];
-    rooms.forEach((item) => {
+    Object.keys(rooms).forEach((item) => {
       rowsToRender.push(
-        <div className="room-row" key={item.name}>
+        <div className="room-row" key={item}>
           <hr />
           <Link
             to={{
               pathname: "/room/" + encodeURIComponent(item),
             }}
           >
-            {item}
+            <h3>{item}</h3>
           </Link>
           {renderStar(item)}
+          <p>Most recent occupancy: {rooms[item]}</p>
           <hr />
         </div>
       );
@@ -146,6 +193,18 @@ function Dashboard() {
       <Header />
       <div style={{ margin: 10 }}>
         <h1> Dashboard </h1>
+        {/* {displayError()} */}
+
+        {/* <Button
+        block
+        size="lg"
+        type="submit"
+        onClick={() => setShowFavOnly(false)}
+        disabled={!showFavOnly}
+      >
+        Show all
+      </Button> */}
+
         {renderRooms()}
         <Button
           block
@@ -156,6 +215,12 @@ function Dashboard() {
         >
           Show favorites only
         </Button>
+        <FormCheck
+          type="switch"
+          label={<p>Sort by Occupancy</p>}
+          onChange={() => setSorted(!sorted)}
+          checked={sorted}
+        />
       </div>
     </div>
   );
