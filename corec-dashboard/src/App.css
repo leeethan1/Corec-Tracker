@@ -1,3 +1,41 @@
 .star-selected svg{
   fill: yellow;
 }
+
+#Login-Panel {
+  left: 50%;
+  top: 50%;
+  position: absolute;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  width: 35%;
+  height: 60%;
+  box-shadow: 10px -10px 5px #CCC;
+  border-radius: 30px;
+  border: 1px solid black;
+  padding: 30px;
+}
+
+#Login-Panel h1 {
+  text-align: center;
+}
+
+#Remember-Forgot{
+  display: flex;
+  justify-content: space-between;
+}
+
+#Forgot, #Signup-Link  {
+  text-decoration: none;
+}
+
+#Login-Button {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#Other-Options {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+}

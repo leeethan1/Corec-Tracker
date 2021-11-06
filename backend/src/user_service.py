@@ -436,6 +436,7 @@ def reset_password():
 def get_favorites(user):
     # email = user['email']
     # user = users.find_one({'email': email})
+    print(user)
     if user is None:
         raise exceptions.UserNotFound
     favorite_rooms = user['favoriteRooms']
