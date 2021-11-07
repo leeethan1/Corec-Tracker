@@ -238,7 +238,13 @@ function Roompage() {
     var curr = new Date(); // get current date
     var first = curr.getDate() - curr.getDay(); // First day is the day of the month - the day of the week
     // first.setDate(first. - 7 * index);
-    var firstday = new Date(curr.setDate(first - 7 * index));
+
+    if (curr.getDay() == 0) {
+      var firstday = new Date(curr.setDate(first - 7 * (index + 1)));
+    } else {
+      var firstday = new Date(curr.setDate(first - 7 * index));
+    }
+    
 
     return `${firstday.getMonth() + 1}/${firstday.getDate().toString()}`;
   }
@@ -252,18 +258,20 @@ function Roompage() {
   function renderGraphsLoading() {
     if (loading) {
       return (
-        <Container>
-          <Row>
-            <h3>
-              <i>Loading Graphs...</i>
-            </h3>
-          </Row>
-          <Row>
-            <div className="center">
-              <Spinner animation="border" size="lg" />
-            </div>
-          </Row>
-        </Container>
+        <div style={{ padding: "10rem" }}>
+          <Container>
+            <Row>
+              <h3>
+                <i>Loading Graphs...</i>
+              </h3>
+            </Row>
+            <Row>
+              <div className="center">
+                <Spinner animation="border" size="lg" />
+              </div>
+            </Row>
+          </Container>
+        </div>
       );
     }
   }

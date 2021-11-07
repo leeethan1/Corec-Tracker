@@ -79,6 +79,8 @@ def get_occupancies_in_week():
 
     #snap to sunday
     today = datetime.today()
+    if today.day == 0:
+        today = today - timedelta(weeks=1)
     start = today - timedelta(days=today.weekday()+1 + week * 7)
     #start = start.isoformat()
     end = start + timedelta(days=7)

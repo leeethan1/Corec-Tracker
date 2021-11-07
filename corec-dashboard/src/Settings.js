@@ -94,6 +94,8 @@ function Settings() {
               <b>{notification.threshold}</b>
             </p>
             <Slider
+              defaultValue={notification.threshold}
+              value={notification.threshold}
               onChange={(e) => changeThreshold(notification.room, e)}
               disabled={!notification.on || (!emailsOn && !smsOn)}
             />
