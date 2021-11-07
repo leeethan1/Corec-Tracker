@@ -1,13 +1,11 @@
 import { React, useEffect, useState } from "react";
-import {
-  Link,
-  useHistory,
-} from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Header from "./Header";
 import { Alert } from "react-bootstrap";
 //import Star from "react-star-rating-component";
 import Star from "./Star";
+import { rememberUser } from "./Login";
 
 function Dashboard() {
   //const [rooms, setRooms] = useState([]);
@@ -20,11 +18,15 @@ function Dashboard() {
   const history = useHistory();
 
   async function handleGetFavorites() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+    console.log(token);
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: `${localStorage.getItem("access")}`,
+        access: token,
       },
     };
     const response = await fetch(`/favorites/get`, requestOptions);
@@ -47,11 +49,14 @@ function Dashboard() {
   }
 
   async function handleAddFavorite(roomName) {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: `${localStorage.getItem("access")}`,
+        access: token,
       },
       body: JSON.stringify({
         room: roomName,
@@ -69,12 +74,15 @@ function Dashboard() {
   }
 
   async function handleRemoveFavorite(roomName) {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     console.log(roomName);
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: `${localStorage.getItem("access")}`,
+        access: token,
       },
       body: JSON.stringify({
         room: roomName,
@@ -90,31 +98,6 @@ function Dashboard() {
   useEffect(() => {
     handleGetFavorites();
   }, []);
-
-  function displayError() {
-    if (authError) {
-      return (
-        <div>
-          <Alert
-            onClose={() => setAuthError(false)}
-            dismissible
-            show={authError}
-            key={0}
-            variant="danger"
-          >
-            <Alert.Heading>
-              Oops! It seems like you're not logged in.
-            </Alert.Heading>
-            <p>
-              You can <Alert.Link href="/">log in</Alert.Link> if you already
-              have an account or{" "}
-              <Alert.Link href="/signup">create an account</Alert.Link>.
-            </p>
-          </Alert>
-        </div>
-      );
-    }
-  }
 
   function changeRoomFav(name) {
     if (favoriteRooms.includes(name)) {
@@ -163,18 +146,6 @@ function Dashboard() {
       <Header />
       <div style={{ margin: 10 }}>
         <h1> Dashboard </h1>
-        {/* {displayError()} */}
-
-        {/* <Button
-        block
-        size="lg"
-        type="submit"
-        onClick={() => setShowFavOnly(false)}
-        disabled={!showFavOnly}
-      >
-        Show all
-      </Button> */}
-
         {renderRooms()}
         <Button
           block

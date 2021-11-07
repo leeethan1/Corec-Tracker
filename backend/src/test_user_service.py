@@ -5,6 +5,8 @@ import user_service
 import bcrypt
 import database_service
 import unittest
+import jwt
+import os
 
 db = database_service.connect_to_database("test")
 users = db['users']
@@ -17,11 +19,12 @@ test_user = {
     'notifications': {"room 1": 6},
     'favoriteRooms': ["room 2", "room 3"]
 }
+my_secret = os.getenv("SECRET_KEY")
 
 
 class TestUserService(unittest.TestCase):
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUp(cls):
         users.insert_one(test_user)
 
     def testCreate(self):
@@ -39,6 +42,40 @@ class TestUserService(unittest.TestCase):
         user = users.find_one(query)
         new_notifications = user['notifications']
         assert len(new_notifications) == initial_size + 1
+
+    def testCreateToken(self):
+        access_payload = {
+            "email": "email",
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        }
+        access_token = jwt.encode(
+            payload=access_payload,
+            key=my_secret
+        )
+        refresh_payload = {
+            "email": "email",
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
+        }
+        refresh_token = jwt.encode(
+            payload=refresh_payload,
+            key=my_secret
+        )
+        assert access_token
+        assert refresh_token
+
+    def testAuthToken(self):
+        dummy_payload = {
+            "email": "email",
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        }
+        dummy = jwt.encode(
+            payload=dummy_payload,
+            key=my_secret
+        )
+        header_data = jwt.get_unverified_header(dummy)
+        data = jwt.decode(dummy, key=my_secret, algorithms=[header_data['alg'], ])
+        user = users.find_one({"email": data['email']})
+        assert user
 
     def testRemove(self):
         query = {'email': "email"}
@@ -73,7 +110,7 @@ class TestUserService(unittest.TestCase):
         assert True
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDown(cls):
         users.delete_many({})
         tokens.delete_many({})
 

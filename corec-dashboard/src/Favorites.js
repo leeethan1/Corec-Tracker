@@ -4,6 +4,7 @@ import Header from "./Header";
 import { Alert, Button } from "react-bootstrap";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { rememberUser } from "./Login";
 
 function Favorites() {
   const [favoriteRooms, setFavoriteRooms] = useState([]);
@@ -11,11 +12,15 @@ function Favorites() {
   const history = useHistory();
 
   async function handleGetFavorites() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+    console.log(token);
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: localStorage.getItem("access"),
+        access: token,
       },
     };
     const response = await fetch(`/favorites/get`, requestOptions);

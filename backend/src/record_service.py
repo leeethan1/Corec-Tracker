@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from flask import Flask, Blueprint, session, jsonify, request
 import database_service as ds
 import notification_service as ns
@@ -11,9 +11,9 @@ users = db["users"]
 
 
 @record_service.route("/records/notify", methods=['POST'])
-def create_and_notify(room, occupancy):
-    #room = request.json['room']
-    #occupancy = request.json['occupancy']
+def create_and_notify(room, occupancy, records):
+    # room = request.json['room']
+    # occupancy = request.json['occupancy']
     create_record(room, occupancy, records)
     userList = list(users.find({}))
 
@@ -54,16 +54,6 @@ def create_record(room, occupancy, col):
     # col.delete_many({'time': {'$lt': datetime.utcnow() - timedelta(days=7)}})
 
 
-@record_service.route('/records/recent', methods=['POST'])
-def get_recent_occupancy():
-    room = request.json['room']
-    record = records.find({'room': room}).sort([('time', -1)]).limit(1)
-    occupancy = 0
-    if record:
-        occupancy = record[0]['occupancy']
-    return json.dumps({'occupancy': occupancy}), 200
-
-
 @record_service.route('/records/get-by-day', methods=['POST', 'GET'])
 def get_occupancies_by_day():
     room = request.json['room']
@@ -85,9 +75,23 @@ def get_occupancies_by_day():
 @record_service.route('/records/week', methods=["POST", "GET"])
 def get_occupancies_in_week():
     room = request.json['room']
+    week = request.json['week']
+
+    #snap to sunday
+    today = datetime.today()
+    if today.day == 0:
+        today = today - timedelta(weeks=1)
+    start = today - timedelta(days=today.weekday()+1 + week * 7)
+    #start = start.isoformat()
+    end = start + timedelta(days=7)
+    #end = end.isoformat()
+    print(start, end)
     occupancies = []
     for day in range(0, 7):
-        record_list = list(records.find({'$and': [{'day': day}, {'room': room}]}))
+        try:
+            record_list = list(records.find({'$and': [{'day': day}, {'room': room}, {'time':{'$gte': start, '$lt': end}}]}))
+        except Exception as e:
+            print(e)
         stats = [record['occupancy'] for record in record_list]
         if not stats:
             average = 0
@@ -155,3 +159,4 @@ def get_advanced_stats():
         maxes.append(maximum)
         averages.append(round(average, 1))
     return json.dumps({'minimums': mins, 'maximums': maxes, 'averages': averages}), 200
+

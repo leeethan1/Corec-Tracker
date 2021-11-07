@@ -43,7 +43,8 @@ def token_required(f):
         if not token:
             raise exceptions.NotLoggedIn
         try:
-            data = jwt.decode(token, my_secret)
+            header_data = jwt.get_unverified_header(token)
+            data = jwt.decode(token, key=my_secret, algorithms=[header_data['alg'], ])
             user = users.find_one({"email": data['email']})
             if not user:
                 raise exceptions.NotLoggedIn
@@ -53,6 +54,22 @@ def token_required(f):
         return f(user, *args, **kwargs)
 
     return decorated
+
+
+@user_service.route('/auth', methods=['POST'])
+@token_required
+def authenticate(user):
+    if user:
+        return "Authenticated", 200
+    return "Not authorized", 400
+
+
+@user_service.route('/login/get', methods=['POST'])
+@token_required
+def get_user_login(user):
+    if 'remember' in user and user['remember']:
+        return "redirect", 200
+    return "User info isn't remembered", 400
 
 
 @user_service.route('/settings/get', methods=['POST'])
@@ -141,7 +158,7 @@ def verify_account():
         if not account:
             raise exceptions.UserNotFound
 
-        emailNotificationsOn = True;
+        emailNotificationsOn = True
         smsNotificationsOn = True
         notifications = {}
 
@@ -180,7 +197,7 @@ def verify_account():
         )
         # session["email"] = user_email
         return json.dumps(
-            {'access_token': access_token.decode("utf-8"), 'refresh_token': refresh_token.decode("utf-8")}), 200
+            {'access_token': access_token.decode("UTF-8"), 'refresh_token': refresh_token.decode("UTF-8")}), 200
     else:
         return json.dumps(
             {'message': "Could not verify email or phone number.\nCheck that your verification codes are correct"}), 400
@@ -193,6 +210,7 @@ def login():
 
     email = request.json["email"]
     password = request.json["password"]
+    remember = request.json["remember"]
 
     unverified = unverified_accounts.find_one({'email': email})
     if unverified:
@@ -207,6 +225,7 @@ def login():
         user_email = user['email']
         user_password = user['password']
         if bcrypt.checkpw(password.encode('utf-8'), user_password):
+            users.find_one_and_update({"email": email}, {"$set": {'remember': remember}})
             access_payload = {
                 "email": user_email,
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
@@ -247,37 +266,38 @@ def googleLogin():
             smsNotificationsOn = True
             notifications = {}
             user_input = {'email': email,
+                          'phone': None,
                           'emailNotifications': emailNotificationsOn,
                           'smsNotifications': smsNotificationsOn,
                           'notifications': notifications,
                           'favoriteRooms': []}
             users.insert_one(user_input)
-            access_payload = {
-                "email": email,
-                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
-            }
-            access_token = jwt.encode(
-                payload=access_payload,
-                key=my_secret
-            )
-            refresh_payload = {
-                "email": email,
-                "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
-            }
-            refresh_token = jwt.encode(
-                payload=refresh_payload,
-                key=my_secret
-            )
-            # session["email"] = user_email
-            return {'access_token': access_token, 'refresh_token': refresh_token}, 200
+
+        access_payload = {
+            "email": email,
+            "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
+        }
+        access_token = jwt.encode(
+            payload=access_payload,
+            key=my_secret
+        )
+        refresh_payload = {
+            "email": email,
+            "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
+        }
+        refresh_token = jwt.encode(
+            payload=refresh_payload,
+            key=my_secret
+        )
+        return {'access_token': str(access_token, encoding='utf-8'), 'refresh_token': str(refresh_token, encoding='utf-8')}, 200
 
     raise exceptions.AuthError
 
 
 @user_service.route('/logout', methods=['POST', "GET"])
-def logout():
-    # if 'email' in session:
-    #     session.pop('email', None)
+@token_required
+def logout(user):
+    users.find_one_and_update({'email': user['email']}, {"$set": {"remember": False}})
     return "Logged out successfully", 200
 
 

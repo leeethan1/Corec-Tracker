@@ -13,11 +13,10 @@ import "rc-slider/assets/index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./Header";
 
-function Settings() {
-  const timeFrame = [
-    5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24
-  ];
+import RangeSlider from "rsuite/RangeSlider";
+//import Slider from "rsuite/Slider"
 
+function Settings() {
   const [emailsOn, setEmailsOn] = useState(true);
   const [smsOn, setSmsOn] = useState(true);
   const [authError, setAuthError] = useState(false);
@@ -26,9 +25,9 @@ function Settings() {
   const [startTime, setStartTime] = useState("Start Time");
   const [endTime, setEndTime] = useState("End Time");
   const [startTimeIndex, setStartTimeIndex] = useState(0);
-  const [endTimeIndex, setEndTimeIndex] = useState(timeFrame.length - 1);
-  const [timeBoundaries, setTimeBoundaries] = useState([null, null]);
-
+  const [timeBoundaries, setTimeBoundaries] = useState([5, 24]);
+  //const Slider = require("rc-slider");
+  //const sliderWithTooltip = Slider.createSliderWithTooltip;
   const [notificationSettings, setNotificationSettings] = useState([
     {
       room: "Room 1",
@@ -51,6 +50,10 @@ function Settings() {
       threshold: 10,
     },
   ]);
+
+  const timeFrame = [
+    5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+  ];
 
   function toggleRoom(roomName) {
     const roomNumber = parseInt(roomName.substring(5));
@@ -91,6 +94,8 @@ function Settings() {
               <b>{notification.threshold}</b>
             </p>
             <Slider
+              defaultValue={notification.threshold}
+              value={notification.threshold}
               onChange={(e) => changeThreshold(notification.room, e)}
               disabled={!notification.on || (!emailsOn && !smsOn)}
             />
@@ -102,6 +107,9 @@ function Settings() {
 
   async function handleSubmitNotifications() {
     let notifications = {};
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     notificationSettings.forEach((notification) => {
       if (notification.on) {
         notifications[notification.room] = notification.threshold;
@@ -111,7 +119,7 @@ function Settings() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: localStorage.getItem("access"),
+        access: token,
       },
       body: JSON.stringify({
         notifications: notifications,
@@ -136,11 +144,14 @@ function Settings() {
   }
 
   async function handleGetSettings() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: localStorage.getItem("access"),
+        access: token,
       },
     };
     const response = await fetch("/settings/get", requestOptions);
@@ -157,14 +168,11 @@ function Settings() {
       setNotificationSettings(newNotifications);
       if ("startTime" in res && "endTime" in res) {
         console.log(res.startTime);
+        const newBoundaries = [res.startTime, res.endTime];
         setStartTime(convertTo12HourTime(res.startTime));
-        setStartTimeIndex(timeFrame.indexOf(res.startTime));
-        setEndTime(convertTo12HourTime(res.endTime));
-        setEndTimeIndex(timeFrame.indexOf(res.endTime));
-        setDisableEndTime(false);
-        setTimeBoundaries([res.startTime, res.endTime]);
+        setTimeBoundaries([, timeBoundaries[1]]);
+        setTimeBoundaries(newBoundaries);
       }
-      //console.log(startTimeIndex, endTimeIndex);
     } else {
       const res = await response.json();
       console.log(res);
@@ -220,7 +228,7 @@ function Settings() {
   function displaySettings() {
     if (!authError) {
       return (
-        <div>
+        <div className="margins">
           {/* {displayError()} */}
           {showSuccessful()}
 
@@ -236,18 +244,17 @@ function Settings() {
             onChange={() => setSmsOn(!smsOn)}
             checked={smsOn}
           />
-
-          <p>Receive notifications for...</p>
+          <hr />
+          <p><b>Receive notifications for...</b></p>
           {renderNotifications}
-
-          {renderTimeFrame()}
-
+          <hr />
+          {renderTimeSlider()}
+          <hr />
           <Button
             onClick={(e) => {
               e.preventDefault();
               handleSubmitNotifications();
             }}
-            size="lg"
           >
             Save
           </Button>
@@ -260,59 +267,47 @@ function Settings() {
 
   function convertTo12HourTime(hour) {
     let timeString = "";
-    if (hour == 12) {
-      return "12 PM";
+    if (hour == 24) {
+      return `12 AM`;
     }
     if (hour < 12) {
       timeString = `${hour} AM`;
     } else {
       hour = hour % 12;
       if (hour == 0) {
-        return `12 AM`;
+        return `12 PM`;
       }
       timeString = `${hour % 12} PM`;
     }
     return timeString;
   }
 
-  function renderTimeFrame() {
+  const { createSliderWithTooltip } = Slider;
+  const Range = createSliderWithTooltip(Slider.Range);
+
+  function renderTimeSlider() {
     return (
-      <div>
-        <p>Only receive notifications from:</p>
-        <DropdownButton as={ButtonGroup} title={startTime} disabled={!emailsOn && !smsOn}>
-          {timeFrame.map((element, index) => (
-            <Dropdown.Item
-              onClick={() => {
-                setDisableEndTime(false);
-                setStartTime(convertTo12HourTime(element));
-                setStartTimeIndex(index);
-                setTimeBoundaries([element, timeBoundaries[1]]);
-              }}
-              disabled={index + 1 > endTimeIndex}
-            >
-              {convertTo12HourTime(element)}
-            </Dropdown.Item>
-          ))}
-        </DropdownButton>
-        <p>to</p>
-        <DropdownButton
-          as={ButtonGroup}
-          title={endTime}
-          disabled={disableEndTime || (!emailsOn && !smsOn)}
-        >
-          {timeFrame.map((element, index) => (
-            <Dropdown.Item
-              onClick={() => {
-                setEndTime(convertTo12HourTime(element));
-                setEndTimeIndex(index);
-                setTimeBoundaries([timeBoundaries[0], element]);
-              }}
-              disabled={startTimeIndex > index - 1}
-            >
-              {convertTo12HourTime(element)}
-            </Dropdown.Item>
-          ))}
-        </DropdownButton>
+      <div
+        className="range-slider"
+        style={{ margin : '30px' , marginBottom: '50px'}}
+      >
+        <p><b>Receive notifications from</b></p>
+        <Range
+          marks={{
+            5: `5 AM`,
+            24: convertTo12HourTime(24),
+          }}
+          min={5}
+          max={24}
+          defaultValue={timeBoundaries}
+          tipFormatter={(value) => convertTo12HourTime(value)}
+          tipProps={{
+            placement: "top",
+            visible: true,
+          }}
+          onAfterChange={(e) => setTimeBoundaries(e)}
+          disabled={!emailsOn && !smsOn}
+        />
       </div>
     );
   }
@@ -320,8 +315,8 @@ function Settings() {
   return (
     <div>
       <Header />
-      <div style={{ margin: 10 }}>
-        <h1>Settings</h1>
+      <div className='settings'>
+        <h1><b>Settings</b></h1>
         {displaySettings()}
       </div>
     </div>

@@ -7,7 +7,7 @@ import Button from "react-bootstrap/Button";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 
-function Signup({ setLogIn }) {
+function Signup(props) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -54,7 +54,7 @@ function Signup({ setLogIn }) {
   }
 
   return (
-    <div className="Signup">
+    <div className="margins">
       <h1>Sign Up</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group size="lg" controlId="email">
@@ -101,7 +101,7 @@ function Signup({ setLogIn }) {
         >
           Sign Up
         </Button>
-        <Button variant="secondary" onClick={() => history.push("/")}>Back</Button>
+        <Button size="lg" variant="secondary" onClick={() => history.push("/")}>Back</Button>
       </Form>
     </div>
   );
