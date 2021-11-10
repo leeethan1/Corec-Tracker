@@ -2,7 +2,7 @@ import { React, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Header from "./Header";
-import { Alert, FormCheck } from "react-bootstrap";
+import { Alert, FormCheck, Spinner } from "react-bootstrap";
 //import Star from "react-star-rating-component";
 import Star from "./Star";
 
@@ -13,12 +13,14 @@ function Dashboard() {
     "Room 3": 0,
     "Room 4": 0,
   });
+
   //const [user, setUser] = useState("");
   //const [showFavOnly, setShowFavOnly] = useState(false);
   const [favoriteRooms, setFavoriteRooms] = useState([]);
   const [authError, setAuthError] = useState(false);
   const [tick, setTick] = useState(0);
   const [sorted, setSorted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   //const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
   const history = useHistory();
@@ -34,17 +36,30 @@ function Dashboard() {
   }, [tick]);
 
   useEffect(() => {
-    Object.keys(rooms).forEach((room) => {
-      handleGetRecent(room);
-    });
-  }, [tick, sorted]);
+    sortRooms();
+  }, [sorted]);
+
+  useEffect(() => {
+    handleGetFavorites();
+    getOccupancies();
+  }, []);
+
+  const getOccupancies = async (_) => {
+    setLoading(true);
+    await handleGetRecent();
+    setLoading(false);
+  };
 
   async function handleGetFavorites() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+    //console.log(token);
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "access": localStorage.getItem("access"),
+        access: token,
       },
     };
     const response = await fetch(`/favorites/get`, requestOptions);
@@ -59,55 +74,65 @@ function Dashboard() {
     }
   }
 
-  function isSelected(room) {
-    if (favoriteRooms.includes(room)) {
-      return 1;
+  function sortRooms() {
+    let newRooms = {};
+    if (sorted) {
+      let sorted = Object.entries(rooms).sort((a, b) => a[1] - b[1]);
+      //console.log("Sorted = " + sorted);
+      for (var entry of sorted) {
+        newRooms[entry[0]] = entry[1];
+      }
+    } else {
+      newRooms = Object.keys(rooms)
+        .sort()
+        .reduce((obj, key) => {
+          obj[key] = rooms[key];
+          return obj;
+        }, {});
     }
-    return 0;
+    setRooms(newRooms);
+    //console.log("Sorted rooms " + newRooms);
   }
 
-  async function handleGetRecent(roomName) {
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        access: `${localStorage.getItem("access")}`,
-      },
-      body: JSON.stringify({
-        room: roomName.toLowerCase(),
-      }),
-    };
-    const response = await fetch(`/process-room`, requestOptions);
-    if (response.ok) {
-      const res = await response.json();
-      let newRooms = Object.assign({}, rooms);
-      newRooms[roomName] = res.occupancy;
-      if (sorted) {
-        newRooms = Object.entries(rooms)
-          .sort(([, a], [, b]) => a - b)
-          .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+  async function handleGetRecent() {
+    let newRooms = {};
+    for (const [roomName, occupancy] of Object.entries(rooms)) {
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          room: roomName,
+        }),
+      };
+      const response = await fetch(`/process-room`, requestOptions);
+      if (response.ok) {
+        const res = await response.json();
+        //handleChangeRooms(roomName, res.occupancy);
+        //let newRooms = Object.assign({}, rooms);
+        newRooms[roomName] = res.occupancy;
+        //setRooms(newRooms);
+        //console.log(newRooms);
+        //console.log(rooms);
       } else {
-        newRooms = Object.keys(rooms)
-          .sort()
-          .reduce((obj, key) => {
-            obj[key] = rooms[key];
-            return obj;
-          }, {});
+        const res = await response.json();
+        console.log(res);
       }
-      console.log(newRooms);
-      setRooms(newRooms);
-    } else {
-      const res = await response.json();
-      console.log(res);
     }
+    //console.log(newRooms);
+    setRooms(newRooms);
   }
 
   async function handleAddFavorite(roomName) {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: `${localStorage.getItem("access")}`,
+        access: token,
       },
       body: JSON.stringify({
         room: roomName,
@@ -117,6 +142,7 @@ function Dashboard() {
     if (response.ok) {
       const res = await response.json();
       setFavoriteRooms(res.rooms);
+      console.log(favoriteRooms);
     } else {
       const res = await response.json();
       console.log(res);
@@ -124,12 +150,15 @@ function Dashboard() {
   }
 
   async function handleRemoveFavorite(roomName) {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
     console.log(roomName);
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access: `${localStorage.getItem("access")}`,
+        access: token,
       },
       body: JSON.stringify({
         room: roomName,
@@ -142,10 +171,6 @@ function Dashboard() {
     }
   }
 
-  useEffect(() => {
-    handleGetFavorites();
-  }, []);
-
   function changeRoomFav(name) {
     if (favoriteRooms.includes(name)) {
       handleRemoveFavorite(name);
@@ -155,6 +180,7 @@ function Dashboard() {
   }
 
   function renderStar(item) {
+    //console.log(item);
     if (!authError) {
       return (
         <Star
@@ -191,37 +217,33 @@ function Dashboard() {
   return (
     <div>
       <Header />
-      <div style={{ margin: 10 }}>
-        <h1> Dashboard </h1>
-        {/* {displayError()} */}
+      <h1> Dashboard </h1>
 
-        {/* <Button
-        block
-        size="lg"
-        type="submit"
-        onClick={() => setShowFavOnly(false)}
-        disabled={!showFavOnly}
-      >
-        Show all
-      </Button> */}
-
-        {renderRooms()}
-        <Button
-          block
-          size="lg"
-          type="submit"
-          onClick={() => history.push("/favorites")}
-          disabled={authError}
-        >
-          Show favorites only
-        </Button>
-        <FormCheck
-          type="switch"
-          label={<p>Sort by Occupancy</p>}
-          onChange={() => setSorted(!sorted)}
-          checked={sorted}
-        />
-      </div>
+      {loading ? (
+        <div>
+          <h2>Fetching Occupancies...</h2>
+          <Spinner size="lg" animation="border" />
+        </div>
+      ) : (
+        <div>
+          {renderRooms()}
+          <Button
+            block
+            size="lg"
+            type="submit"
+            onClick={() => history.push("/favorites")}
+            disabled={authError}
+          >
+            Show favorites only
+          </Button>
+          <FormCheck
+            type="switch"
+            label={<p>Sort by Occupancy</p>}
+            onChange={() => setSorted(!sorted)}
+            checked={sorted}
+          />
+        </div>
+      )}
     </div>
   );
 }
