@@ -3,11 +3,11 @@ import { useHistory } from "react-router-dom";
 import { Form, FormCheck } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
+import axios from "axios";
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
 const facebookID = "294054042557801";
-
 
 var rememberUser = false;
 export { rememberUser };
@@ -25,8 +25,37 @@ function Login({ setLogIn }) {
     return email.length > 0 && password.length > 0;
   }
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const authHeader = {
+      "Private-Key": "b35df4a0-b81b-45d0-b331-0b077b14d0bc",
+    };
+    const authObject = {
+      "Project-ID": "9e45fcff-6309-40db-b521-4ef91549ccd2",
+      "User-Name": email,
+      "User-Secret": password,
+    };
+    try {
+      await axios.put(
+        "https://api.chatengine.io/users",
+        {
+          username: email,
+          secret: password,
+        },
+        {
+          headers: authHeader,
+        }
+      );
+      sessionStorage.setItem("username", email);
+      sessionStorage.setItem("password", password);
+      if (remember) {
+        localStorage.setItem("username", email);
+        localStorage.setItem("password", password);
+      }
+    } catch (error) {
+      console.log(error);
+      //setLoginFail(true);
+    }
   }
 
   async function handleGetLogin() {
@@ -53,7 +82,8 @@ function Login({ setLogIn }) {
     handleGetLogin();
   }, []);
 
-  async function handleLogin() {
+  async function handleLogin(e) {
+    e.preventDefault();
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -78,6 +108,7 @@ function Login({ setLogIn }) {
         //sessionStorage.setItem("access", localStorage.getItem("access"));
         //sessionStorage.setItem("refresh", localStorage.getItem("refresh"));
       }
+      handleSubmit(e);
 
       history.push("/dashboard", { user: "test" });
     } else {
@@ -135,7 +166,7 @@ function Login({ setLogIn }) {
   return (
     <div className="Login">
       <h1>Login</h1>
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleLogin}>
         <Form.Group size="lg" controlId="email">
           <Form.Label>Email</Form.Label>
           <Form.Control
@@ -174,10 +205,8 @@ function Login({ setLogIn }) {
           type="submit"
           variant="secondary"
           onClick={(e) => {
-            localStorage.removeItem("access");
-            localStorage.removeItem("refresh");
-            sessionStorage.removeItem("access");
-            sessionStorage.removeItem("refresh");
+            localStorage.clear();
+            sessionStorage.clear();
             history.push("/dashboard");
           }}
         >

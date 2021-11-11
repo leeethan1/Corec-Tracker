@@ -1,9 +1,9 @@
-import {React, useCallback, useState} from "react";
-import {BrowserRouter as Router, Switch,Route,Link} from "react-router-dom";
+import { React, useCallback, useState } from "react";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import Login from "./Login";
 import Roompage from "./Roompage";
-import Dashboard from "./Dashboard"
+import Dashboard from "./Dashboard";
 import Signup from "./Signup";
 import VerifyAccount from "./VerifyAccount";
 import ForgotPassword from "./ForgotPassword";
@@ -11,23 +11,29 @@ import PasswordResetEmailSent from "./PasswordResetEmailSent";
 import ResetPassword from "./ResetPassword";
 import Settings from "./Settings";
 import Favorites from "./Favorites";
+import Chat from "./Chat";
 import "./App.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   const [log, setLog] = useState(false);
-  const logIn = useCallback(
-    () => {
-      console.log("logged in!");
-      setLog(true);
-    }
-  );
+  const logIn = useCallback(() => {
+    console.log("logged in!");
+    setLog(true);
+  });
   return (
     <Router>
       <div className="margin">
         <Switch>
-          <Route exact path="/" render={props => <Login setLogIn={logIn}/>}/>
-          <Route path="/signup" render={props => <Signup setLogIn={logIn}/>}/>
+          <Route
+            exact
+            path="/"
+            render={(props) => <Login setLogIn={logIn} />}
+          />
+          <Route
+            path="/signup"
+            render={(props) => <Signup setLogIn={logIn} />}
+          />
           <Route exact path="/account/verify">
             <VerifyAccount />
           </Route>
@@ -47,6 +53,7 @@ function App() {
           <Route exact path="/dashboard" component={Dashboard} />
           <Route exact path="/room/:roomName" component={Roompage} />
           <Route exact path="/favorites" component={Favorites} />
+          <Route exact path="/chat" component={Chat} />
         </Switch>
       </div>
     </Router>
@@ -54,4 +61,3 @@ function App() {
 }
 
 export default App;
-

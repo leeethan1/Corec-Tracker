@@ -41,11 +41,8 @@ function Header() {
     if (response.ok) {
       //console.log(averages);
       //console.log(occupancies);
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      localStorage.removeItem("remember");
-      sessionStorage.removeItem("access");
-      sessionStorage.removeItem("refresh");
+      localStorage.clear();
+      sessionStorage.clear();
       setLoggedIn(false);
       history.push("/");
     }
@@ -74,6 +71,11 @@ function Header() {
           <Nav className="core-nav">
             <Nav.Link href="/dashboard">Home</Nav.Link>
             {loggedIn ? "" : <Nav.Link href="/">Log In</Nav.Link>}
+            {loggedIn ? (
+              <Nav.Link href="/chat">Chat with an Admin</Nav.Link>
+            ) : (
+              ""
+            )}
             {loggedIn ? "" : <Nav.Link href="/signup">Sign Up</Nav.Link>}
             {loggedIn ? (
               <Nav.Link>
