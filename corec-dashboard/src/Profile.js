@@ -158,7 +158,7 @@ function Profile() {
       },
       body: JSON.stringify({
         phone: newPhone,
-        code: emailCode,
+        code: phoneCode,
       }),
     };
     const response = await fetch("/phone/update/verify", requestOptions);
@@ -223,7 +223,9 @@ function Profile() {
           value={newPhone}
           onChange={setNewPhone}
         />
-        <Button disabled={newPhone.length == 0} onClick={handleSendEmailCode}>
+        <Button //disabled={newPhone.length == 0}
+          onClick={handleSendPhoneCode}
+        >
           Update
         </Button>
       </InputGroup>

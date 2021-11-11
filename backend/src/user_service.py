@@ -371,9 +371,9 @@ def update_phone(user):
     token = phone_verification_codes.find_one({'$and': [{'code': code}, {'phone': new_phone}]})
     if token:
         phone = token['phone']
-        users.find_one_and_update({'phone': phone},
+        users.find_one_and_update({'phone': user['phone']},
                                   {'$set': {
-                                      'phone': new_phone
+                                      'phone': phone
                                   }})
         phone_verification_codes.delete_many({'phone': new_phone})
         return "Phone updated", 200
@@ -384,8 +384,8 @@ def update_phone(user):
 @user_service.route('/phone/send-code', methods=['POST'])
 @token_required
 def send_phone_code(user):
-    old_phone = user['email']
-    new_phone = request.json['email']
+    old_phone = user['phone']
+    new_phone = request.json['phone']
     if new_phone == old_phone:
         raise exceptions.DuplicateEmailError
     else:
