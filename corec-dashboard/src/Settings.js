@@ -11,6 +11,7 @@ import {
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import NotLoggedIn from "./NotLoggedIn";
 import Header from "./Header";
 
 import RangeSlider from "rsuite/RangeSlider";
@@ -203,33 +204,17 @@ function Settings() {
   }
 
   function displayError() {
-    return (
-      <div>
-        <Alert
-          onClose={() => setAuthError(false)}
-          dismissible={false}
-          show={authError}
-          key={0}
-          variant="danger"
-        >
-          <Alert.Heading>
-            Oops! It seems like you're not logged in.
-          </Alert.Heading>
-          <p>
-            You can <Alert.Link href="/">log in</Alert.Link> if you already have
-            an account or{" "}
-            <Alert.Link href="/signup">create an account</Alert.Link>.
-          </p>
-        </Alert>
-      </div>
-    );
+    return <NotLoggedIn />;
   }
 
   function displaySettings() {
     if (!authError) {
       return (
-        <div className="margins">
+        <div>
           {/* {displayError()} */}
+          <h1>
+            <b>Settings</b>
+          </h1>
           {showSuccessful()}
 
           <FormCheck
@@ -245,7 +230,9 @@ function Settings() {
             checked={smsOn}
           />
           <hr />
-          <p><b>Receive notifications for...</b></p>
+          <p>
+            <b>Receive notifications for...</b>
+          </p>
           {renderNotifications}
           <hr />
           {renderTimeSlider()}
@@ -289,9 +276,11 @@ function Settings() {
     return (
       <div
         className="range-slider"
-        style={{ margin : '30px' , marginBottom: '50px'}}
+        style={{ margin: "30px", marginBottom: "50px" }}
       >
-        <p><b>Receive notifications from</b></p>
+        <p>
+          <b>Receive notifications from</b>
+        </p>
         <Range
           marks={{
             5: `5 AM`,
@@ -315,10 +304,7 @@ function Settings() {
   return (
     <div>
       <Header />
-      <div className='settings'>
-        <h1><b>Settings</b></h1>
-        {displaySettings()}
-      </div>
+      <div className="settings">{displaySettings()}</div>
     </div>
   );
 }

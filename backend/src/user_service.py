@@ -44,7 +44,7 @@ def token_required(f):
             raise exceptions.NotLoggedIn
         try:
             header_data = jwt.get_unverified_header(token)
-            data = jwt.decode(token, key=my_secret, algorithms=[header_data['alg'], ])
+            data = jwt.decode(token, key=my_secret, algorithms=[header_data['alg']])
             user = users.find_one({"email": data['email']})
             if not user:
                 raise exceptions.NotLoggedIn
@@ -62,6 +62,12 @@ def authenticate(user):
     if user:
         return "Authenticated", 200
     return "Not authorized", 400
+
+
+@user_service.route('/user/info', methods=['POST'])
+@token_required
+def get_user_profile(user):
+    return json.dumps({'email': user['email'], 'phone': user['phone']}), 200
 
 
 @user_service.route('/login/get', methods=['POST'])
@@ -137,8 +143,8 @@ def create_account():
         phone_verification_codes.delete_many({'phone': phone})
         email_code = generate_email_verification_code(email)
         phone_code = generate_phone_verification_code(phone)
-        ns.send_email(email, "Verify your email", "Your email verification code is {}".format(email_code))
-        ns.send_text(phone, "Your phone number verification code is {}".format(phone_code))
+        # ns.send_email(email, "Verify your email", "Your email verification code is {}".format(email_code))
+        # ns.send_text(phone, "Your phone number verification code is {}".format(phone_code))
 
         return "Redirect to verification page to verify email and phone", 200
     return json.dumps({'message': "Could not create account"}), 400
@@ -199,8 +205,7 @@ def verify_account():
         return json.dumps(
             {'access_token': access_token.decode("UTF-8"), 'refresh_token': refresh_token.decode("UTF-8")}), 200
     else:
-        return json.dumps(
-            {'message': "Could not verify email or phone number.\nCheck that your verification codes are correct"}), 400
+        raise exceptions.VerificationCodeError
 
 
 @user_service.route('/login/submit', methods=['post', 'get'])
@@ -289,7 +294,8 @@ def googleLogin():
             payload=refresh_payload,
             key=my_secret
         )
-        return {'access_token': str(access_token, encoding='utf-8'), 'refresh_token': str(refresh_token, encoding='utf-8')}, 200
+        return {'access_token': str(access_token, encoding='utf-8'),
+                'refresh_token': str(refresh_token, encoding='utf-8')}, 200
 
     raise exceptions.AuthError
 
@@ -301,30 +307,90 @@ def logout(user):
     return "Logged out successfully", 200
 
 
-@user_service.route('/account/delete', methods=["POST"])
+@user_service.route('/account/delete', methods=["POST", "DELETE"])
 @token_required
 def delete_account(user):
-    email = user['email']
-    users.delete_one({'email': email})
+    password = request.json['password']
+    if bcrypt.checkpw(password.encode('utf-8'), user['password']):
+        users.delete_one({'email': user['email']})
+        return "account deleted", 200
+    raise exceptions.AuthError
 
 
-@user_service.route('/settings/email/update', methods=['PUT', 'GET'])
+@user_service.route('/email/update/verify', methods=['POST', 'GET'])
 @token_required
 def update_email(user):
-    old_email = user['email']
+    old_email = request.json['oldEmail']
+    new_email = request.json['newEmail']
+    code = request.json['code']
+    token = email_verification_codes.find_one({'$and': [{'code': code}, {'email': new_email}]})
+    if token:
+        email = token['email']
+        users.find_one_and_update({'email': old_email},
+                                  {'$set': {
+                                      'email': new_email
+                                  }})
+        email_verification_codes.delete_many({'email': new_email})
+        access_payload = {
+            "email": new_email,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        }
+        access_token = jwt.encode(
+            payload=access_payload,
+            key=my_secret
+        )
+        refresh_payload = {
+            "email": new_email,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
+        }
+        refresh_token = jwt.encode(
+            payload=refresh_payload,
+            key=my_secret
+        )
+        # session["email"] = user_email
+        return json.dumps(
+            {'access_token': access_token.decode("utf-8"), 'refresh_token': refresh_token.decode("utf-8")}), 200
+    else:
+        raise exceptions.VerificationCodeError
+
+
+@user_service.route('/email/send-code', methods=['POST'])
+def send_email_code():
     new_email = request.json['email']
-    if new_email == old_email:
+    if users.find_one({'email': new_email}):
+        raise exceptions.DuplicateEmailError
+    generate_email_verification_code(new_email)
+    return "email sent", 200
+
+
+@user_service.route('/phone/update/verify', methods=['POST', 'GET'])
+@token_required
+def update_phone(user):
+    new_phone = request.json['phone']
+    code = request.json['code']
+    token = phone_verification_codes.find_one({'$and': [{'code': code}, {'phone': new_phone}]})
+    if token:
+        phone = token['phone']
+        users.find_one_and_update({'phone': phone},
+                                  {'$set': {
+                                      'phone': new_phone
+                                  }})
+        phone_verification_codes.delete_many({'phone': new_phone})
+        return "Phone updated", 200
+    else:
+        raise exceptions.VerificationCodeError
+
+
+@user_service.route('/phone/send-code', methods=['POST'])
+@token_required
+def send_phone_code(user):
+    old_phone = user['email']
+    new_phone = request.json['email']
+    if new_phone == old_phone:
         raise exceptions.DuplicateEmailError
     else:
-        existing_user = users.find_one({'email': new_email})
-        if not existing_user:
-            users.find_one_and_update({'email': old_email},
-                                      {'$set': {
-                                          'email': new_email
-                                      }})
-            return "Email updated", 200
-        else:
-            raise exceptions.DuplicateEmailError
+        generate_phone_verification_code(new_phone)
+    return "text sent", 200
 
 
 @user_service.route('/settings/password/update', methods=['POST', 'GET'])
@@ -342,22 +408,6 @@ def update_password(user):
                                       'password': hashed
                                   }})
         return "Password updated", 200
-
-
-@user_service.route('/settings/phone/update', methods=['POST', 'GET'])
-@token_required
-def update_phone(user):
-    # user = users.find_one({'email': session['email']})
-    old_phone = user['phone']
-    new_phone = request.json['phone']
-    if old_phone == new_phone:
-        return json.dumps("new phone number can't be same as old phone number")
-    else:
-        users.find_one_and_update({'email': session['email']},
-                                  {'$set': {
-                                      'phone': new_phone
-                                  }})
-        return "Phone updated", 200
 
 
 @user_service.route('/settings/notifications/update', methods=['POST'])
@@ -480,16 +530,21 @@ def remove_favorite(user):
 
 
 def generate_email_verification_code(email):
+    email_verification_codes.delete_many({'email': email})
     code = str(random.randint(0, 999999))
     code = code.zfill(6)
     while email_verification_codes.find({'code': code}).count() > 0:
         code = str(random.randint(0, 999999))
         code = code.zfill(6)
-    email_verification_codes.insert_one({
-        'code': code,
-        'email': email
-    })
-    return code
+    token = email_verification_codes.find_one({'email': email})
+    if not token:
+        email_verification_codes.insert_one({
+            'code': code,
+            'email': email
+        })
+        ns.send_email(email, "Verify your new email", "Your verification code is {}".format(code))
+        return code
+    return token['code']
 
 
 def generate_phone_verification_code(phone):
@@ -498,8 +553,12 @@ def generate_phone_verification_code(phone):
     while phone_verification_codes.find({'code': code}).count() > 0:
         code = str(random.randint(0, 999999))
         code = code.zfill(6)
-    phone_verification_codes.insert_one({
-        'code': code,
-        'phone': phone
-    })
-    return code
+    token = phone_verification_codes.find_one({'phone': phone})
+    if not token:
+        phone_verification_codes.insert_one({
+            'code': code,
+            'phone': phone
+        })
+        ns.send_text(phone, "Your verification code is {}".format(code))
+        return code
+    return token['code']

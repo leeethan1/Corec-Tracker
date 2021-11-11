@@ -41,11 +41,8 @@ function Header() {
     if (response.ok) {
       //console.log(averages);
       //console.log(occupancies);
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      localStorage.removeItem("remember");
-      sessionStorage.removeItem("access");
-      sessionStorage.removeItem("refresh");
+      localStorage.clear()
+      sessionStorage.clear();
       setLoggedIn(false);
       history.push("/");
     }
@@ -77,11 +74,12 @@ function Header() {
             {loggedIn ? "" : <Nav.Link href="/signup">Sign Up</Nav.Link>}
             {loggedIn ? (
               <Nav.Link>
-                <span onClick={() => signOut()}>Logout</span>
+                <span onClick={() => signOut()}>Log Out</span>
               </Nav.Link>
             ) : (
               ""
             )}
+            {loggedIn ? <Nav.Link href="/profile">Profile</Nav.Link> : ""}
             <Nav.Link href="/settings">
               <span>Settings</span>
             </Nav.Link>
