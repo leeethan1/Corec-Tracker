@@ -3,6 +3,7 @@ import { useHistory } from "react-router-dom";
 import Header from "./Header";
 import { ChatEngine } from "react-chat-engine";
 import ChatFeed from "./chat components/ChatFeed";
+import NotLoggedIn from "./NotLoggedIn";
 
 const projectID = "9e45fcff-6309-40db-b521-4ef91549ccd2";
 
@@ -19,23 +20,26 @@ function Chat() {
     ? localStorage.getItem("password")
     : sessionStorage.getItem("password");
 
-  if (!username && !secret) {
-    history.push("/");
-    return null;
-  } else {
-    return (
-      <div>
-        <Header />
-        <ChatEngine
-          height="100vh"
-          projectID={projectID}
-          userName={username}
-          userSecret={secret}
-          renderChatFeed={(chatAppProps) => <ChatFeed {...chatAppProps} />}
-        />
-      </div>
-    );
-  }
+  let component = (
+    <div>
+      <Header />
+      {!username && !secret ? (
+        <NotLoggedIn />
+      ) : (
+        <div>
+          <ChatEngine
+            height="100vh"
+            projectID={projectID}
+            userName={username}
+            userSecret={secret}
+            renderChatFeed={(chatAppProps) => <ChatFeed {...chatAppProps} />}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  return component;
 }
 
 export default Chat;

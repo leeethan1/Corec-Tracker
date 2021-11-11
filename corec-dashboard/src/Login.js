@@ -3,9 +3,9 @@ import { useHistory } from "react-router-dom";
 import { Form, FormCheck, InputGroup } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+//import { faCoffee } from "@fortawesome/fontawesome-free-solid";
 import axios from "axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCoffee } from '@fortawesome/fontawesome-free-solid'
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
@@ -27,7 +27,7 @@ function Login({ setLogIn }) {
     return email.length > 0 && password.length > 0;
   }
 
-  async function handleSubmit(e) {
+  async function handleChatLogin(e) {
     e.preventDefault();
     const authHeader = {
       "Private-Key": "b35df4a0-b81b-45d0-b331-0b077b14d0bc",
@@ -110,8 +110,7 @@ function Login({ setLogIn }) {
         //sessionStorage.setItem("access", localStorage.getItem("access"));
         //sessionStorage.setItem("refresh", localStorage.getItem("refresh"));
       }
-      handleSubmit(e);
-
+      handleChatLogin(e);
       history.push("/dashboard", { user: "test" });
     } else {
       setLoginFail(true);
@@ -142,20 +141,23 @@ function Login({ setLogIn }) {
       if (remember) {
         localStorage.setItem("access", tokens.access_token);
         localStorage.setItem("refresh", tokens.refresh_token);
+        localStorage.setItem("remember", true);
       }
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
       sessionStorage.setItem("access", tokens.access_token);
       sessionStorage.setItem("refresh", tokens.refresh_token);
       history.push("/dashboard", { user: res.profileObj.name });
     }
   }
 
-  function redirectToSignup(res) {
-    history.push("/signup");
-  }
+  // function redirectToSignup(res) {
+  //   history.push("/signup");
+  // }
 
-  function redirectForgotPassword(res) {
-    history.push("/forgot-password");
-  }
+  // function redirectForgotPassword(res) {
+  //   history.push("/forgot-password");
+  // }
 
   function handleGoogleFailure(res) {
     console.log(res);
@@ -163,22 +165,14 @@ function Login({ setLogIn }) {
 
   return (
     <div>
-      <div id="Login-Panel">
-      <h1>Login</h1>
-      <Form onSubmit={handleLogin}>
-        <Form.Group size="lg" controlId="email">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            autoFocus
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-      <Form onSubmit={handleLogin}>
-        <Form.Group size="lg" controlId="email" className="mb-3">
-          <InputGroup>
+      <div id="Login-Panel" style={{ height: "400px" }}>
+        <h1>Login</h1>
+        <Form onSubmit={handleLogin}>
+          <Form.Group size="lg" controlId="email" className="mb-3">
+            <InputGroup>
               <InputGroup.Text>
-              <FontAwesomeIcon icon="envelope" />
+                <FontAwesomeIcon icon="envelope" />
+              </InputGroup.Text>
               <Form.Control
                 autoFocus
                 placeholder="Email Address"
@@ -190,7 +184,9 @@ function Login({ setLogIn }) {
           </Form.Group>
           <Form.Group size="lg" controlId="password" className="mb-3">
             <InputGroup>
-              <FontAwesomeIcon icon="key" />
+              <InputGroup.Text>
+                <FontAwesomeIcon icon="key" />
+              </InputGroup.Text>
               <Form.Control
                 type="password"
                 placeholder="Password"
@@ -228,7 +224,7 @@ function Login({ setLogIn }) {
           <div id="Other-Options">
             <Button
               block
-              size="lg"
+              size="md"
               type="submit"
               variant="secondary"
               onClick={(e) => {
