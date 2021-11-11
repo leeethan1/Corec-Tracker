@@ -11,10 +11,11 @@ import PasswordResetEmailSent from "./PasswordResetEmailSent";
 import ResetPassword from "./ResetPassword";
 import Settings from "./Settings";
 import Favorites from "./Favorites";
+import Profile from "./Profile";
 import Chat from "./Chat";
 import "./App.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'font-awesome/css/font-awesome.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+//import 'font-awesome/css/font-awesome.min.css';
 function App() {
   const [log, setLog] = useState(false);
   const logIn = useCallback(() => {
@@ -54,6 +55,7 @@ function App() {
           <Route exact path="/room/:roomName" component={Roompage} />
           <Route exact path="/favorites" component={Favorites} />
           <Route exact path="/chat" component={Chat} />
+          <Route exact path="/profile" component={Profile} />
         </Switch>
       </div>
     </Router>

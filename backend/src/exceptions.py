@@ -13,6 +13,11 @@ class SamePasswordError(Exception):
     description = "New password cannot be the same as old password"
 
 
+class VerificationCodeError(Exception):
+    code = 401
+    description = "Could not verify email or phone number.\nCheck that your verification codes are correct"
+
+
 class NotLoggedIn(Exception):
     code = 403
     description = "You are not logged in"

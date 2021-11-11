@@ -122,11 +122,7 @@ function Login({ setLogIn }) {
 
   function formFailure() {
     if (loginFail) {
-      return (
-        <div>
-          <b style={{ color: "red" }}>Email or password is incorrect</b>
-        </div>
-      );
+      return <div style={{ color: "red" }}>Email or password is incorrect</div>;
     }
   }
 
@@ -183,7 +179,6 @@ function Login({ setLogIn }) {
           <InputGroup>
               <InputGroup.Text>
               <FontAwesomeIcon icon="envelope" />
-              </InputGroup.Text>
               <Form.Control
                 autoFocus
                 placeholder="Email Address"
@@ -191,75 +186,77 @@ function Login({ setLogIn }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-          </InputGroup>
-        </Form.Group>
-        <Form.Group size="lg" controlId="password" className="mb-3">
-        <InputGroup>
-              <InputGroup.Text>
+            </InputGroup>
+          </Form.Group>
+          <Form.Group size="lg" controlId="password" className="mb-3">
+            <InputGroup>
               <FontAwesomeIcon icon="key" />
-              </InputGroup.Text>
-          <Form.Control
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {formFailure()}
-          </InputGroup>
-        </Form.Group>
-        <div id="Remember-Forgot">
-          <FormCheck
-            label={<p>Remember Me</p>}
-            onChange={() => setRemember(!remember)}
-            checked={remember}
-          />
-          <a id="Forgot" href="/forgot-password">Forgot Password</a>
-        </div>
-        <div id="Login-Aree">
-        <Button
-          id="Login-Button"
-          block
-          size="lg"
-          type="submit"
-          onClick={handleLogin}
-          disabled={!validateForm()}
-        >
-          Log In
-        </Button>
-        </div>
-        <a href="/signup" id="Signup-Link">
-          Don't have an account? Sign up
-        </a>
-        <div id="Other-Options">
-        <Button
-          block
-          size="lg"
-          type="submit"
-          variant="secondary"
-          onClick={(e) => {
-            localStorage.clear();
-            sessionStorage.clear();
-            history.push("/dashboard");
-          }}
-        >
-          Continue as Guest
-        </Button>
-        <GoogleLogin
-          // render={(renderProps) => {
-          //   return (
-          //   <Button onClick={renderProps.onClick} disabled={renderProps.disabled}>
-          //     <FontAwesomeIcon icon="google" />
-          //   </Button>)
-          // }}
-          theme="dark"
-          clientId={cID}
-          buttonText="Log in with Google"
-          onSuccess={handleGoogleSuccess}
-          onFailure={handleGoogleFailure}
-          cookiePolicy={"single_host_origin"}
-        />
-        </div>
-        {/* <FacebookLogin
+              <Form.Control
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              {formFailure()}
+            </InputGroup>
+          </Form.Group>
+          <div id="Remember-Forgot">
+            <FormCheck
+              label={<p>Remember Me</p>}
+              onChange={() => setRemember(!remember)}
+              checked={remember}
+            />
+            <a id="Forgot" href="/forgot-password">
+              Forgot Password
+            </a>
+          </div>
+          <div id="Login-Aree">
+            <Button
+              id="Login-Button"
+              block
+              size="lg"
+              type="submit"
+              onClick={handleLogin}
+              disabled={!validateForm()}
+            >
+              Log In
+            </Button>
+          </div>
+          <a href="/signup" id="Signup-Link">
+            Don't have an account? Sign up
+          </a>
+          <div id="Other-Options">
+            <Button
+              block
+              size="lg"
+              type="submit"
+              variant="secondary"
+              onClick={(e) => {
+                localStorage.removeItem("access");
+                localStorage.removeItem("refresh");
+                sessionStorage.removeItem("access");
+                sessionStorage.removeItem("refresh");
+                history.push("/dashboard");
+              }}
+            >
+              Continue as Guest
+            </Button>
+            <GoogleLogin
+              // render={(renderProps) => {
+              //   return (
+              //   <Button onClick={renderProps.onClick} disabled={renderProps.disabled}>
+              //     <FontAwesomeIcon icon="google" />
+              //   </Button>)
+              // }}
+              theme="dark"
+              clientId={cID}
+              buttonText="Log in with Google"
+              onSuccess={handleGoogleSuccess}
+              onFailure={handleGoogleFailure}
+              cookiePolicy={"single_host_origin"}
+            />
+          </div>
+          {/* <FacebookLogin
           appId={facebookID}
           autoLoad={true}
           fields="name,email,picture"
@@ -267,7 +264,7 @@ function Login({ setLogIn }) {
           cssClass="my-facebook-button-class"
           icon="fa-facebook"
         /> */}
-      </Form>
+        </Form>
       </div>
     </div>
   );
