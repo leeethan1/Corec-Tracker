@@ -4,7 +4,7 @@ import { Form, FormCheck, InputGroup } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-//import { faCoffee } from "@fortawesome/fontawesome-free-solid";
+import { faCoffee } from "@fortawesome/fontawesome-free-solid";
 import axios from "axios";
 
 const cID =
