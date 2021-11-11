@@ -2,26 +2,59 @@ import { React, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Header from "./Header";
-import { Alert } from "react-bootstrap";
+import { Alert, FormCheck, Spinner } from "react-bootstrap";
 //import Star from "react-star-rating-component";
 import Star from "./Star";
-import { rememberUser } from "./Login";
 
 function Dashboard() {
-  //const [rooms, setRooms] = useState([]);
+  const [rooms, setRooms] = useState({
+    "Room 1": 0,
+    "Room 2": 0,
+    "Room 3": 0,
+    "Room 4": 0,
+  });
+
   //const [user, setUser] = useState("");
   //const [showFavOnly, setShowFavOnly] = useState(false);
   const [favoriteRooms, setFavoriteRooms] = useState([]);
   const [authError, setAuthError] = useState(false);
+  const [tick, setTick] = useState(0);
+  const [sorted, setSorted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
+  //const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
   const history = useHistory();
+
+  useEffect(() => {
+    let interval = null;
+    //console.log(tick);
+    interval = setInterval(() => {
+      setTick((tick) => tick + 1);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [tick]);
+
+  useEffect(() => {
+    sortRooms();
+  }, [sorted]);
+
+  useEffect(() => {
+    handleGetFavorites();
+    getOccupancies();
+  }, []);
+
+  const getOccupancies = async (_) => {
+    setLoading(true);
+    await handleGetRecent();
+    setLoading(false);
+  };
 
   async function handleGetFavorites() {
     const token = localStorage.getItem("remember")
       ? localStorage.getItem("access")
       : sessionStorage.getItem("access");
-    console.log(token);
+    //console.log(token);
     const requestOptions = {
       method: "POST",
       headers: {
@@ -41,11 +74,54 @@ function Dashboard() {
     }
   }
 
-  function isSelected(room) {
-    if (favoriteRooms.includes(room)) {
-      return 1;
+  function sortRooms() {
+    let newRooms = {};
+    if (sorted) {
+      let sorted = Object.entries(rooms).sort((a, b) => a[1] - b[1]);
+      //console.log("Sorted = " + sorted);
+      for (var entry of sorted) {
+        newRooms[entry[0]] = entry[1];
+      }
+    } else {
+      newRooms = Object.keys(rooms)
+        .sort()
+        .reduce((obj, key) => {
+          obj[key] = rooms[key];
+          return obj;
+        }, {});
     }
-    return 0;
+    setRooms(newRooms);
+    //console.log("Sorted rooms " + newRooms);
+  }
+
+  async function handleGetRecent() {
+    let newRooms = {};
+    for (const [roomName, occupancy] of Object.entries(rooms)) {
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          room: roomName,
+        }),
+      };
+      const response = await fetch(`/process-room`, requestOptions);
+      if (response.ok) {
+        const res = await response.json();
+        //handleChangeRooms(roomName, res.occupancy);
+        //let newRooms = Object.assign({}, rooms);
+        newRooms[roomName] = res.occupancy;
+        //setRooms(newRooms);
+        //console.log(newRooms);
+        //console.log(rooms);
+      } else {
+        const res = await response.json();
+        console.log(res);
+      }
+    }
+    //console.log(newRooms);
+    setRooms(newRooms);
   }
 
   async function handleAddFavorite(roomName) {
@@ -95,10 +171,6 @@ function Dashboard() {
     }
   }
 
-  useEffect(() => {
-    handleGetFavorites();
-  }, []);
-
   function changeRoomFav(name) {
     if (favoriteRooms.includes(name)) {
       handleRemoveFavorite(name);
@@ -122,18 +194,19 @@ function Dashboard() {
 
   function renderRooms() {
     let rowsToRender = [];
-    rooms.forEach((item) => {
+    Object.keys(rooms).forEach((item) => {
       rowsToRender.push(
-        <div className="room-row" key={item.name}>
+        <div className="room-row" key={item}>
           <hr />
           <Link
             to={{
               pathname: "/room/" + encodeURIComponent(item),
             }}
           >
-            {item}
+            <h3>{item}</h3>
           </Link>
           {renderStar(item)}
+          <p>Most recent occupancy: {rooms[item]}</p>
           <hr />
         </div>
       );
@@ -144,19 +217,33 @@ function Dashboard() {
   return (
     <div>
       <Header />
-      <div style={{ margin: 10 }}>
-        <h1> Dashboard </h1>
-        {renderRooms()}
-        <Button
-          block
-          size="lg"
-          type="submit"
-          onClick={() => history.push("/favorites")}
-          disabled={authError}
-        >
-          Show favorites only
-        </Button>
-      </div>
+      <h1> Dashboard </h1>
+
+      {loading ? (
+        <div>
+          <h2>Fetching Occupancies...</h2>
+          <Spinner size="lg" animation="border" />
+        </div>
+      ) : (
+        <div>
+          {renderRooms()}
+          <Button
+            block
+            size="lg"
+            type="submit"
+            onClick={() => history.push("/favorites")}
+            disabled={authError}
+          >
+            Show favorites only
+          </Button>
+          <FormCheck
+            type="switch"
+            label={<p>Sort by Occupancy</p>}
+            onChange={() => setSorted(!sorted)}
+            checked={sorted}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,13 +1,15 @@
 import { React, useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { Form, FormCheck } from "react-bootstrap";
+import { Form, FormCheck, InputGroup } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
-import axios from "axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCoffee } from '@fortawesome/fontawesome-free-solid'
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
 const facebookID = "294054042557801";
+
 
 var rememberUser = false;
 export { rememberUser };
@@ -25,37 +27,8 @@ function Login({ setLogIn }) {
     return email.length > 0 && password.length > 0;
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const authHeader = {
-      "Private-Key": "b35df4a0-b81b-45d0-b331-0b077b14d0bc",
-    };
-    const authObject = {
-      "Project-ID": "9e45fcff-6309-40db-b521-4ef91549ccd2",
-      "User-Name": email,
-      "User-Secret": password,
-    };
-    try {
-      await axios.put(
-        "https://api.chatengine.io/users",
-        {
-          username: email,
-          secret: password,
-        },
-        {
-          headers: authHeader,
-        }
-      );
-      sessionStorage.setItem("username", email);
-      sessionStorage.setItem("password", password);
-      if (remember) {
-        localStorage.setItem("username", email);
-        localStorage.setItem("password", password);
-      }
-    } catch (error) {
-      console.log(error);
-      //setLoginFail(true);
-    }
+  function handleSubmit(event) {
+    event.preventDefault();
   }
 
   async function handleGetLogin() {
@@ -82,8 +55,7 @@ function Login({ setLogIn }) {
     handleGetLogin();
   }, []);
 
-  async function handleLogin(e) {
-    e.preventDefault();
+  async function handleLogin() {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -108,8 +80,8 @@ function Login({ setLogIn }) {
         //sessionStorage.setItem("access", localStorage.getItem("access"));
         //sessionStorage.setItem("refresh", localStorage.getItem("refresh"));
       }
-      handleSubmit(e);
-
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
       history.push("/dashboard", { user: "test" });
     } else {
       setLoginFail(true);
@@ -144,100 +116,115 @@ function Login({ setLogIn }) {
       if (remember) {
         localStorage.setItem("access", tokens.access_token);
         localStorage.setItem("refresh", tokens.refresh_token);
+        localStorage.setItem("remember", true);
       }
+      localStorage.setItem("access", tokens.access_token);
+      localStorage.setItem("refresh", tokens.refresh_token);
       sessionStorage.setItem("access", tokens.access_token);
       sessionStorage.setItem("refresh", tokens.refresh_token);
       history.push("/dashboard", { user: res.profileObj.name });
     }
   }
 
-  function redirectToSignup(res) {
-    history.push("/signup");
-  }
+  // function redirectToSignup(res) {
+  //   history.push("/signup");
+  // }
 
-  function redirectForgotPassword(res) {
-    history.push("/forgot-password");
-  }
+  // function redirectForgotPassword(res) {
+  //   history.push("/forgot-password");
+  // }
 
-  function handleFailure(res) {
+  function handleGoogleFailure(res) {
     console.log(res);
   }
 
   return (
-    <div className="Login">
+    <div>
+      <div id="Login-Panel">
       <h1>Login</h1>
-      <Form onSubmit={handleLogin}>
-        <Form.Group size="lg" controlId="email">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            autoFocus
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+      <Form onSubmit={handleSubmit}>
+        <Form.Group size="lg" controlId="email" className="mb-3">
+          <InputGroup>
+              <InputGroup.Text>
+              <FontAwesomeIcon icon="envelope" />
+              </InputGroup.Text>
+              <Form.Control
+                autoFocus
+                placeholder="Email Address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+          </InputGroup>
         </Form.Group>
-        <Form.Group size="lg" controlId="password">
-          <Form.Label>Password</Form.Label>
+        <Form.Group size="lg" controlId="password" className="mb-3">
+        <InputGroup>
+              <InputGroup.Text>
+              <FontAwesomeIcon icon="key" />
+              </InputGroup.Text>
           <Form.Control
             type="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           {formFailure()}
+          </InputGroup>
         </Form.Group>
-        <FormCheck
-          label={<p>Remember Me</p>}
-          onChange={() => setRemember(!remember)}
-          checked={remember}
-        />
+        <div id="Remember-Forgot">
+          <FormCheck
+            label={<p>Remember Me</p>}
+            onChange={() => setRemember(!remember)}
+            checked={remember}
+          />
+          <a id="Forgot" href="/forgot-password">Forgot Password</a>
+        </div>
+        <div id="Login-Aree">
         <Button
+          id="Login-Button"
           block
           size="lg"
           type="submit"
           onClick={handleLogin}
           disabled={!validateForm()}
         >
-          Login
+          Log In
         </Button>
+        </div>
+        <a href="/signup" id="Signup-Link">
+          Don't have an account? Sign up
+        </a>
+        <div id="Other-Options">
         <Button
           block
           size="lg"
           type="submit"
           variant="secondary"
           onClick={(e) => {
-            localStorage.clear();
-            sessionStorage.clear();
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            sessionStorage.removeItem("access");
+            sessionStorage.removeItem("refresh");
             history.push("/dashboard");
           }}
         >
           Continue as Guest
         </Button>
-        <Button
-          block
-          size="lg"
-          type="submit"
-          variant="secondary"
-          onClick={redirectToSignup}
-        >
-          Create Account
-        </Button>
-        <Button
-          block
-          size="lg"
-          type="submit"
-          variant="secondary"
-          onClick={redirectForgotPassword}
-        >
-          Forgot Password
-        </Button>
         <GoogleLogin
+          // render={(renderProps) => {
+          //   return (
+          //   <Button onClick={renderProps.onClick} disabled={renderProps.disabled}>
+          //     <FontAwesomeIcon icon="google" />
+          //   </Button>)
+          // }}
+          theme="dark"
           clientId={cID}
           buttonText="Log in with Google"
           onSuccess={handleGoogleSuccess}
-          onFailure={handleFailure}
-          disabled={false}
+          onFailure={handleGoogleFailure}
           cookiePolicy={"single_host_origin"}
         />
+        </div>
         {/* <FacebookLogin
           appId={facebookID}
           autoLoad={true}
@@ -247,6 +234,7 @@ function Login({ setLogIn }) {
           icon="fa-facebook"
         /> */}
       </Form>
+      </div>
     </div>
   );
 }
