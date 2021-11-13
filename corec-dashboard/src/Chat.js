@@ -17,8 +17,8 @@ function Chat() {
     : sessionStorage.getItem("username");
 
   secret = localStorage.getItem("remember")
-    ? localStorage.getItem("password")
-    : sessionStorage.getItem("password");
+    ? localStorage.getItem("access")
+    : sessionStorage.getItem("access");
 
   let component = (
     <div>

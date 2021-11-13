@@ -27,7 +27,7 @@ function Login({ setLogIn }) {
     return email.length > 0 && password.length > 0;
   }
 
-  async function handleChatLogin(e) {
+  async function handleChatLogin(e, secret) {
     e.preventDefault();
     const authHeader = {
       "Private-Key": "b35df4a0-b81b-45d0-b331-0b077b14d0bc",
@@ -42,17 +42,17 @@ function Login({ setLogIn }) {
         "https://api.chatengine.io/users",
         {
           username: email,
-          secret: password,
+          secret: secret,
         },
         {
           headers: authHeader,
         }
       );
       sessionStorage.setItem("username", email);
-      sessionStorage.setItem("password", password);
+      //sessionStorage.setItem("password", secret);
       if (remember) {
         localStorage.setItem("username", email);
-        localStorage.setItem("password", password);
+        //localStorage.setItem("password", secret);
       }
     } catch (error) {
       console.log(error);
@@ -110,7 +110,7 @@ function Login({ setLogIn }) {
         //sessionStorage.setItem("access", localStorage.getItem("access"));
         //sessionStorage.setItem("refresh", localStorage.getItem("refresh"));
       }
-      handleChatLogin(e);
+      handleChatLogin(e, tokens.access_token);
       history.push("/dashboard", { user: "test" });
     } else {
       setLoginFail(true);
