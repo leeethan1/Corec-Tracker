@@ -20,7 +20,7 @@ app.secret_key = os.getenv('SECRET_KEY')
 @app.errorhandler(Exception)
 def handle_exception(e):
     code = 400
-    message = str(e)
+    message = repr(e)
     if hasattr(e, "code"):
         code = e.code
     if hasattr(e, "description"):

@@ -19,6 +19,7 @@ import {
   Accordion,
   Dropdown,
   DropdownButton,
+  Container,
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.css";
 import Tabs from "react-bootstrap/Tabs";
@@ -32,7 +33,9 @@ function Roompage() {
     [...new Array(19)].map(() => [0, 0, 0, 0, 0, 0, 0])
   );
 
-  const [weeklyOccupancies, setWeeklyOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
+  const [weeklyOccupancies, setWeeklyOccupancies] = useState([
+    0, 0, 0, 0, 0, 0, 0,
+  ]);
   const [maxOccupancies, setMaxOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [minOccupancies, setMinOccupancies] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [averages, setAverages] = useState([0, 0, 0, 0, 0, 0, 0]);
@@ -41,8 +44,9 @@ function Roompage() {
   const [loading, setLoading] = useState(false);
   const [tick, setTick] = useState(0);
   const [weekBoundaries, setWeekBoundaries] = useState([0, 6]);
-  const updateInterval = 5;
+  const updateInterval = 10;
   const [weekIndex, setWeekIndex] = useState(0);
+  const [graphsLoading, setGraphsLoading] = useState(true);
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -86,9 +90,9 @@ function Roompage() {
 
   function createWeeklyData(index) {
     return {
-      "day": days[index],
-      "occupancy": weeklyOccupancies[index]
-    }
+      day: days[index],
+      occupancy: weeklyOccupancies[index],
+    };
   }
 
   const times = [
@@ -115,7 +119,9 @@ function Roompage() {
 
   const graphData = times.map((element, index) => createData(element, index));
 
-  const weeklyGraphData = weeklyOccupancies.map((element, index) => createWeeklyData(index))
+  const weeklyGraphData = weeklyOccupancies.map((element, index) =>
+    createWeeklyData(index)
+  );
 
   useEffect(() => {
     let interval = null;
@@ -129,34 +135,31 @@ function Roompage() {
 
   useEffect(() => {
     updateOccupancies();
-    getAdvancedStatistics();
     handleGetLiveOccupancy();
-    updateWeeklyOccupancies();
-    //console.log("sleeping");
   }, [tick, roomName]);
 
   useEffect(() => {
     updateWeeklyOccupancies();
-  }, [tick, weekIndex, weekBoundaries]);
+  }, [weekIndex, weekBoundaries, roomName]);
 
-  async function getAdvancedStatistics() {
-    //console.log("fetching advanced stats...");
-    //await sleep(10000);
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        room: roomName,
-      }),
-    };
-    const response = await fetch(`/records/advanced`, requestOptions);
-    if (response.ok) {
-      const res = await response.json();
-      setMaxOccupancies(res.maximums);
-      setMinOccupancies(res.minimums);
-      setAverages(res.averages);
-    }
-  }
+  // async function getAdvancedStatistics() {
+  //   //console.log("fetching advanced stats...");
+  //   //await sleep(10000);
+  //   const requestOptions = {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       room: roomName,
+  //     }),
+  //   };
+  //   const response = await fetch(`/records/advanced`, requestOptions);
+  //   if (response.ok) {
+  //     const res = await response.json();
+  //     setMaxOccupancies(res.maximums);
+  //     setMinOccupancies(res.minimums);
+  //     setAverages(res.averages);
+  //   }
+  // }
 
   async function updateOccupancies() {
     //console.log("fetching graph data...");
@@ -174,9 +177,43 @@ function Roompage() {
       const res = await response.json();
       const o = res.occupancies;
       setOccupancies(o);
+      getAdvancedStatistics(occupancies);
       //console.log(o);
     }
     setLoading(false);
+    setGraphsLoading(false);
+  }
+
+  function getAdvancedStatistics(occupancies) {
+    let o = occupancies[0].map((_, colIndex) =>
+      occupancies.map((row) => row[colIndex])
+    );
+    setAverages(
+      o.map((day, index) =>
+        (day.reduce((a, b) => a + b, 0) / day.length).toFixed(2)
+      )
+    );
+    setMinOccupancies(o.map((day, index) => Math.min(...day)));
+    //console.log(minOccupancies);
+    setMaxOccupancies(o.map((day, index) => Math.max(...day)));
+  }
+
+  async function updateWeeklyOccupancies() {
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        room: roomName,
+        week: weekIndex,
+      }),
+    };
+    const response = await fetch("/records/week", requestOptions);
+    if (response.ok) {
+      const res = await response.json();
+      const averages = res.occupancies;
+      //console.log(averages);
+      setWeeklyOccupancies(averages);
+    }
   }
 
   async function updateWeeklyOccupancies() {
@@ -215,8 +252,13 @@ function Roompage() {
     }
   }
 
-  function logout(res) {
-    console.log(res);
+  function getSunday(index) {
+    var curr = new Date(); // get current date
+    var first = curr.getDate() - curr.getDay(); // First day is the day of the month - the day of the week
+    // first.setDate(first. - 7 * index);
+    var firstday = new Date(curr.setDate(first - 7 * index));
+
+    return `${firstday.getMonth() + 1}/${firstday.getDate().toString()}`;
   }
 
   function getSunday(index) {
@@ -235,6 +277,25 @@ function Roompage() {
     }
   }
 
+  function renderGraphsLoading() {
+    if (loading) {
+      return (
+        <Container>
+          <Row>
+            <h3>
+              <i>Loading Graphs...</i>
+            </h3>
+          </Row>
+          <Row>
+            <div className="center">
+              <Spinner animation="border" size="lg" />
+            </div>
+          </Row>
+        </Container>
+      );
+    }
+  }
+
   function updateBoundaries(index, value) {
     let newBoundaries = [...weekBoundaries];
     newBoundaries[index] = value;
@@ -243,31 +304,46 @@ function Roompage() {
 
   function renderFilterOption() {
     return (
-      <div >
-        <select class="form-select" aria-label="Default select example" onChange={(e) => {
-          e.preventDefault();
-          updateBoundaries(0, parseInt(e.target.value));
-          console.log(e.target.value, weekBoundaries);
-        }}>
+      <div>
+        <select
+          defaultValue={0}
+          class="form-select"
+          aria-label="Default select example"
+          onChange={(e) => {
+            e.preventDefault();
+            updateBoundaries(0, parseInt(e.target.value));
+            console.log(e.target.value, weekBoundaries);
+          }}
+        >
           {days.map((day, index) => {
-            if (index < weekBoundaries[1]) {
-              return (<option value={index} >{day}</option>);
-            }
+            return (
+              <option value={index} disabled={index >= weekBoundaries[1]}>
+                {day}
+              </option>
+            );
           })}
         </select>
-        <select class="form-select" aria-label="Default select example" onChange={(e) => {
-          e.preventDefault();
-          updateBoundaries(1, parseInt(e.target.value));
-          console.log(e.target.value, weekBoundaries)
-        }}>
+        <select
+          defaultValue={6}
+          class="form-select"
+          aria-label="Default select example"
+          onChange={(e) => {
+            e.preventDefault();
+            updateBoundaries(1, parseInt(e.target.value));
+            console.log(e.target.value, weekBoundaries);
+          }}
+        >
           {days.map((day, index) => {
-            if (index > weekBoundaries[0])
-              return (<option value={index}>{day}</option>);
+            return (
+              <option value={index} disabled={index <= weekBoundaries[0]}>
+                {day}
+              </option>
+            );
           })}
         </select>
         <select onChange={(e) => setWeekIndex(parseInt(e.target.value))}>
           {[0, 1, 2].map((week, index) => {
-            return (<option value={index}>Week of {getSunday(index)}</option>);
+            return <option value={index}>Week of {getSunday(index)}</option>;
           })}
         </select>
       </div>
@@ -275,6 +351,9 @@ function Roompage() {
   }
 
   function renderChart(chart) {
+    if (graphsLoading) {
+      return renderGraphsLoading();
+    }
     switch (chart) {
       case "Line Graph":
         return (
@@ -300,7 +379,7 @@ function Roompage() {
                   <Legend height={36} />
                   {days.map((day, index) => (
                     <Line
-                      type="monotone"
+                      type="monotoneX"
                       dataKey={day}
                       stroke="#8884d8"
                       activeDot={{ r: 5 }}
@@ -317,7 +396,10 @@ function Roompage() {
                 <LineChart
                   width={1200}
                   height={300}
-                  data={weeklyGraphData.slice(weekBoundaries[0], weekBoundaries[1] + 1)}
+                  data={weeklyGraphData.slice(
+                    weekBoundaries[0],
+                    weekBoundaries[1] + 1
+                  )}
                   margin={{
                     top: 5,
                     right: 30,
@@ -330,7 +412,7 @@ function Roompage() {
                   <YAxis />
                   <Tooltip />
                   <Legend height={36} />
-                  <Line dataKey="occupancy" />
+                  <Line dataKey="occupancy" type="monotoneX" />
                 </LineChart>
               </Accordion.Body>
             </Accordion.Item>
@@ -364,13 +446,23 @@ function Roompage() {
     }
   }
 
+  function indexOfSmallest(a) {
+    var lowest = 0;
+    for (var i = 1; i < a.length; i++) {
+      if (a[i] < a[lowest]) lowest = i;
+    }
+    return lowest;
+  }
+
+  function indexOfLargest(a) {
+    var highest = 0;
+    for (var i = 1; i < a.length; i++) {
+      if (a[i] > a[highest]) highest = i;
+    }
+    return highest;
+  }
+
   function displayAdvancedStats() {
-    let max = averages.reduce(function (a, b) {
-      return Math.max(a, b);
-    }, 0);
-    let min = averages.reduce(function (a, b) {
-      return Math.min(a, b);
-    }, 0);
     return (
       <Accordion>
         <Accordion.Item eventKey="0">
@@ -378,16 +470,16 @@ function Roompage() {
           <Accordion.Body>
             {days.map((day, index) => (
               <p>
-                The average occupancy on <b>{day}</b> was around{" "}
+                The average occupancy on <b>{day}</b> is around{" "}
                 <b>{averages[index]}</b> people with a max occupancy of{" "}
                 <b>{maxOccupancies[index]}</b> people and a minimum of{" "}
                 <b>{minOccupancies[index]}</b> people
               </p>
             ))}
             <p>
-              It seems like <b>{days[averages.indexOf(max)]}</b> is the busiest
-              day while <b>{days[averages.indexOf(min)]}</b> is the least
-              busiest day
+              It seems like <b>{days[indexOfLargest(averages)]}</b> is the
+              busiest day while <b>{days[indexOfSmallest(averages)]}</b> is the
+              least busiest day
             </p>
             <div className="horizontal">
               The predicted occupancy for{" "}
