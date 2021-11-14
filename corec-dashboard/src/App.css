@@ -39,3 +39,26 @@
   display: flex;
   justify-content: space-between;
 }
+
+#RoomDataCard {
+  width: 15rem;
+  margin-left: 30px;
+  text-align: center;
+  height: 12rem;
+  font-family: Roboto;
+  font-size: larger;
+}
+
+.flexSpace {
+  display: flex;
+  justify-content: space-around;
+}
+
+.dayRange {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filterSelect {
+  width: 15% !important;
+}

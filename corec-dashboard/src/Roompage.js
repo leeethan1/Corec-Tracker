@@ -10,6 +10,7 @@ import {
   CartesianGrid,
   Bar,
   Legend,
+  ResponsiveContainer
 } from "recharts";
 import Header from "./Header";
 import {
@@ -24,6 +25,7 @@ import {
 import "bootstrap/dist/css/bootstrap.css";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
+import Card from 'react-bootstrap/Card'
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
@@ -66,14 +68,14 @@ function Roompage() {
 
   const { roomName } = useParams();
 
-  function convertTo12HourTime(hour) {
-    let time = "";
-    if (hour < 12) {
-      return `${hour} AM`;
-    } else {
-      return `${hour % 12} PM`;
-    }
-  }
+  // function convertTo12HourTime(hour) {
+  //   let time = "";
+  //   if (hour < 12) {
+  //     return `${hour} AM`;
+  //   } else {
+  //     return `${hour % 12} PM`;
+  //   }
+  // }
 
   function createData(t, index) {
     return {
@@ -243,6 +245,28 @@ function Roompage() {
     return `${firstday.getMonth() + 1}/${firstday.getDate().toString()}`;
   }
 
+  function displayMoreStats() {
+    var curr = new Date();
+    let month = curr.getMonth() + 1;
+    let day = curr.getDate();
+    let year = curr.getFullYear();
+    let date = month + "/" + day + "/" + year;
+    return (
+      <Card border="primary" id="RoomDataCard">
+      <Card.Header>{date}</Card.Header>
+      <Card.Body>
+        <Card.Text>
+          Current: {liveOccupancy} {" "} 
+          <Spinner variant="danger" animation="grow" size="sm" />
+          <br />
+          Max: {maxOccupancies[curr.getDay()]} <br />
+          Min: {minOccupancies[curr.getDay()]} 
+        </Card.Text>
+      </Card.Body>
+      </Card>
+    );
+  }
+
   function renderLoading() {
     if (loading) {
       return <Spinner animation="border" size="sm" />;
@@ -253,11 +277,11 @@ function Roompage() {
     if (loading) {
       return (
         <Container>
-          <Row>
+          {/* <Row>
             <h3>
               <i>Loading Graphs...</i>
             </h3>
-          </Row>
+          </Row> */}
           <Row>
             <div className="center">
               <Spinner animation="border" size="lg" />
@@ -277,9 +301,10 @@ function Roompage() {
   function renderFilterOption() {
     return (
       <div>
+        <div className="dayRange">
         <select
           defaultValue={0}
-          class="form-select"
+          className="form-select filterSelect"
           aria-label="Default select example"
           onChange={(e) => {
             e.preventDefault();
@@ -297,7 +322,7 @@ function Roompage() {
         </select>
         <select
           defaultValue={6}
-          class="form-select"
+          className="form-select filterSelect"
           aria-label="Default select example"
           onChange={(e) => {
             e.preventDefault();
@@ -313,6 +338,7 @@ function Roompage() {
             );
           })}
         </select>
+        </div>
         <select onChange={(e) => setWeekIndex(parseInt(e.target.value))}>
           {[0, 1, 2].map((week, index) => {
             return <option value={index}>Week of {getSunday(index)}</option>;
@@ -333,59 +359,63 @@ function Roompage() {
             <Accordion.Item eventKey="0">
               <Accordion.Header>View by time</Accordion.Header>
               <Accordion.Body>
-                <LineChart
-                  width={1200}
-                  height={300}
-                  data={graphData}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend height={36} />
-                  {days.map((day, index) => (
-                    <Line
-                      type="monotoneX"
-                      dataKey={day}
-                      stroke="#8884d8"
-                      activeDot={{ r: 5 }}
-                      stroke={chartColors[index]}
-                    />
-                  ))}
-                </LineChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart
+                    // width={1200}
+                    // height={300}
+                    data={graphData}
+                    margin={{
+                      top: 5,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="time" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend height={36} />
+                    {days.map((day, index) => (
+                      <Line
+                        type="monotoneX"
+                        dataKey={day}
+                        stroke="#8884d8"
+                        activeDot={{ r: 5 }}
+                        stroke={chartColors[index]}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
               </Accordion.Body>
             </Accordion.Item>
             <Accordion.Item eventKey="1">
               <Accordion.Header>View by day</Accordion.Header>
               <Accordion.Body>
                 {renderFilterOption()}
-                <LineChart
-                  width={1200}
-                  height={300}
-                  data={weeklyGraphData.slice(
-                    weekBoundaries[0],
-                    weekBoundaries[1] + 1
-                  )}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend height={36} />
-                  <Line dataKey="occupancy" type="monotoneX" />
-                </LineChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart
+                    // width={1200}
+                    // height={300}
+                    data={weeklyGraphData.slice(
+                      weekBoundaries[0],
+                      weekBoundaries[1] + 1
+                    )}
+                    margin={{
+                      top: 5,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend height={36} />
+                    <Line dataKey="occupancy" type="monotoneX" />
+                  </LineChart>
+                </ResponsiveContainer>
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
@@ -393,25 +423,27 @@ function Roompage() {
         break;
       case "Bar Chart":
         return (
-          <BarChart
-            width={1000}
-            height={300}
-            data={graphData}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <XAxis dataKey="time" />
-            <YAxis />
-            <Tooltip />
-            <Legend height={36} />
-            {days.map((day, index) => (
-              <Bar dataKey={day} fill={chartColors[index]}></Bar>
-            ))}
-          </BarChart>
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart
+              // width={1200}
+              // height={300}
+              data={graphData}
+              margin={{
+                top: 5,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+              <XAxis dataKey="time" />
+              <YAxis />
+              <Tooltip />
+              <Legend height={36} />
+              {days.map((day, index) => (
+                <Bar dataKey={day} fill={chartColors[index]}></Bar>
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
         );
       default:
         return <h1>NA</h1>;
@@ -436,7 +468,7 @@ function Roompage() {
 
   function displayAdvancedStats() {
     return (
-      <Accordion>
+      <Accordion style={{marginTop: '30px', marginBottom: "15px"}}>
         <Accordion.Item eventKey="0">
           <Accordion.Header>View Advanced Stats</Accordion.Header>
           <Accordion.Body>
@@ -454,7 +486,7 @@ function Roompage() {
               least busiest day
             </p>
             <div className="horizontal">
-              The predicted occupancy for{" "}
+              The predicted occupancy for {" "}
               <DropdownButton
                 title={days[forecastDay]}
                 size="sm"
@@ -493,13 +525,13 @@ function Roompage() {
       <Header />
       <h1 className="center">{roomName}</h1>
       <h2 className="center">
-        <Col>
+        {/* <Col>
           Live Occupancy: <b>{liveOccupancy}</b>{" "}
           <Spinner variant="danger" animation="grow" size="sm" />
-        </Col>
+        </Col> */}
       </h2>
-      <span className="center">
-        <span className="vertical">
+      <div className="flexSpace">
+        <span className="vertical" style={{width: '80%'}}>
           <Tabs
             id="chart tabs"
             defaultActiveKey="Line Graph"
@@ -516,20 +548,20 @@ function Roompage() {
             ))}
           </Tabs>
         </span>
-
+        {displayMoreStats()}
         {/* {renderChart(0)}
         {renderChart(1)} */}
-      </span>
+      </div>
       {displayAdvancedStats()}
       {/* <GoogleLogout
         clientId={cID}
         buttonText="Logout"
         onLogoutSuccess={logout}
       /> */}
-      <p className="center">
-        <i>Occupancy statistics are updated every {updateInterval} seconds</i>
-        <span>{renderLoading()}</span>
-      </p>
+      <div className="center">
+        <i>Occupancy statistics are updated every {updateInterval} seconds</i> {" "}
+        {/* <span>{renderLoading()}</span> */}
+      </div>
     </div>
   );
 }
