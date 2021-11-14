@@ -13,7 +13,7 @@ import Settings from "./Settings";
 import Favorites from "./Favorites";
 import "./App.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import 'font-awesome/css/font-awesome.min.css';
 function App() {
   const [log, setLog] = useState(false);
   const logIn = useCallback(
