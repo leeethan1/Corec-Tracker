@@ -49,6 +49,7 @@ function Roompage() {
   const updateInterval = 10;
   const [weekIndex, setWeekIndex] = useState(0);
   const [graphsLoading, setGraphsLoading] = useState(true);
+  const [cardLoading, setCardLoading] = useState(true);
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -198,6 +199,7 @@ function Roompage() {
     setMinOccupancies(o.map((day, index) => Math.min(...day)));
     //console.log(minOccupancies);
     setMaxOccupancies(o.map((day, index) => Math.max(...day)));
+    setCardLoading(false);
   }
 
   async function updateWeeklyOccupancies() {
@@ -251,20 +253,44 @@ function Roompage() {
     let day = curr.getDate();
     let year = curr.getFullYear();
     let date = month + "/" + day + "/" + year;
+    let fontColor = "";
+    if (liveOccupancy >= maxOccupancies[curr.getDay()]) {
+      fontColor = "textGreen";
+    }
+    else if (liveOccupancy <= minOccupancies[curr.getDay()]) {
+      fontColor = "textRed";
+    }
+    else {
+      fontColor = "textBlack"
+    }
     return (
       <Card border="primary" id="RoomDataCard">
       <Card.Header>{date}</Card.Header>
       <Card.Body>
-        <Card.Text>
+        <Card.Text className={fontColor}>
+          {renderCardText()}
+        </Card.Text>
+      </Card.Body>
+      </Card>
+    );
+  }
+  
+  function renderCardText() {
+    if (cardLoading) {
+      return <Spinner animation="border" className="textBlack vCenter"/>
+    }
+    else {
+      var curr = new Date();
+      return (
+        <div>
           Current: {liveOccupancy} {" "} 
           <Spinner variant="danger" animation="grow" size="sm" />
           <br />
           Max: {maxOccupancies[curr.getDay()]} <br />
           Min: {minOccupancies[curr.getDay()]} 
-        </Card.Text>
-      </Card.Body>
-      </Card>
-    );
+        </div>
+      )
+    }
   }
 
   function renderLoading() {

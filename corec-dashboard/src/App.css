@@ -41,6 +41,7 @@
 }
 
 #RoomDataCard {
+
   width: 15rem;
   margin-left: 30px;
   text-align: center;
@@ -61,4 +62,23 @@
 
 .filterSelect {
   width: 15% !important;
+}
+
+.textRed {
+  color: red;
+}
+
+.textGreen {
+  color: green;
+}
+
+.textBlack {
+  color: black;
+}
+
+.vCenter {
+  margin: 0;
+  margin-top: 35px;
+  /* position: absolute;
+  top: 50%; */
 }
