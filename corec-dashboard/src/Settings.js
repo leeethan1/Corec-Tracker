@@ -7,6 +7,7 @@ import {
   Dropdown,
   DropdownButton,
   ButtonGroup,
+  Modal,
 } from "react-bootstrap";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -215,7 +216,6 @@ function Settings() {
           <h1>
             <b>Settings</b>
           </h1>
-          {showSuccessful()}
 
           <FormCheck
             type="switch"
@@ -303,6 +303,11 @@ function Settings() {
 
   return (
     <div>
+      {settingsSaved && (
+        <Modal show={settingsSaved} onHide={() => setSettingsSaved(false)}>
+          <Modal.Header closeButton>Settings Saved</Modal.Header>
+        </Modal>
+      )}
       <Header />
       <div className="settings">{displaySettings()}</div>
     </div>

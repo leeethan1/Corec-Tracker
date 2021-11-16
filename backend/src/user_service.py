@@ -114,9 +114,7 @@ def create_account():
         if not re.fullmatch(email_regex, email):
             return json.dumps({"message": "Not a valid email"}), 400
         if not re.search(password_regex, password):
-            return json.dumps(
-                {"message": "Password should...\nhave at least one number.\nat least one uppercase and one lowercase " \
-                            "character.\nat least one special symbol.\nhave between 6 to 20 characters long."}), 400
+            raise exceptions.PasswordFormatException
         # if not re.search(phone_regex, phone):
         #     return "Not a valid phone number", 400
 
@@ -393,17 +391,22 @@ def send_phone_code(user):
     return "text sent", 200
 
 
-@user_service.route('/settings/password/update', methods=['POST', 'GET'])
+@user_service.route('/account/password/update', methods=['POST', 'GET'])
 @token_required
 def update_password(user):
     # user = users.find_one({'email': session['email']})
     old_password = user['password']
-    new_password = request.json['password']
+    password = request.json['password']
+    new_password = request.json['newPassword']
+    if not re.search(password_regex, new_password):
+        raise exceptions.PasswordFormatException
+    if not bcrypt.checkpw(password.encode('utf-8'), old_password):
+        raise exceptions.AuthError
     if bcrypt.checkpw(new_password.encode('utf-8'), old_password):
         raise exceptions.SamePasswordError
     else:
         hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-        users.find_one_and_update({'email': session['email']},
+        users.find_one_and_update({'email': user['email']},
                                   {'$set': {
                                       'password': hashed
                                   }})
@@ -467,9 +470,7 @@ def reset_password():
     if new_password != password_confirm:
         return json.dumps({"message": "Passwords don't match"}), 400
     if not re.search(password_regex, new_password):
-        return {"message": "Password should...\nhave at least one number.\nat least one uppercase and one lowercase "
-                           "character.\nat least one special symbol.\nhave between 6 to 20 characters long."}, 400
-
+        raise exceptions.PasswordFormatException
     hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
     users.find_one_and_update({'email': email},
                               {'$set': {

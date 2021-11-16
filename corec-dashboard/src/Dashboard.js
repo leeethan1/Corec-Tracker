@@ -220,10 +220,10 @@ function Dashboard() {
       <h1> Dashboard </h1>
 
       {loading ? (
-        <div>
-          <h2>Fetching Occupancies...</h2>
+        <center>
+          <p>Fetching Occupancies...</p>
           <Spinner size="lg" animation="border" />
-        </div>
+        </center>
       ) : (
         <div>
           {renderRooms()}
