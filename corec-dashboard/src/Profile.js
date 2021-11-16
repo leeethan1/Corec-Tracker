@@ -367,9 +367,7 @@ function Profile() {
         show={passwordChangeSuccess}
         onHide={() => setPasswordChangeSuccess(false)}
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Password Updated</Modal.Title>
-        </Modal.Header>
+        <Modal.Header closeButton>Password Updated</Modal.Header>
       </Modal>
       <Header />
       <hr />
