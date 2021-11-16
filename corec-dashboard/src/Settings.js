@@ -12,6 +12,7 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./Header";
+import Popup from "./Popup";
 
 import RangeSlider from "rsuite/RangeSlider";
 //import Slider from "rsuite/Slider"
@@ -250,6 +251,8 @@ function Settings() {
           <hr />
           {renderTimeSlider()}
           <hr />
+          {renderBugReport()}
+          <hr />
           <Button
             onClick={(e) => {
               e.preventDefault();
@@ -309,6 +312,18 @@ function Settings() {
           disabled={!emailsOn && !smsOn}
         />
       </div>
+    );
+  }
+  const [buttonPopup, setButtonPopup] = useState(false);
+
+  function renderBugReport() {
+    return(
+      <>
+        <Button variant="primary" onClick={() => {setButtonPopup(true)}}>Bug Report</Button>{' '}
+        <Popup trigger={buttonPopup} setTrigger={setButtonPopup}>
+          <h3>My Popup</h3>
+        </Popup>
+      </>
     );
   }
 
