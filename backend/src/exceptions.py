@@ -13,6 +13,12 @@ class SamePasswordError(Exception):
     description = "New password cannot be the same as old password"
 
 
+class PasswordFormatException(Exception):
+    code = 400
+    description = "Password should have at least one number, at least one uppercase and one lowercase "
+    "character, at least one special symbol, and be between 6 to 20 characters long."
+
+
 class VerificationCodeError(Exception):
     code = 401
     description = "Could not verify email or phone number.\nCheck that your verification codes are correct"
