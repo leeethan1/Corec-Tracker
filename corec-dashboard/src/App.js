@@ -47,15 +47,16 @@ function App() {
           <Route exact path="/password/reset/:token">
             <ResetPassword />
           </Route>
-          <Route exact path="/settings">
+          {/* <Route exact path="/settings">
             <Settings />
-          </Route>
+          </Route> */}
+          <PrivateRoute component={Settings} path="/settings" />
           {/* <PrivateRoute isLoggedIn={log} path="/dashboard" component={Dashboard} /> */}
           <Route exact path="/dashboard" component={Dashboard} />
           <Route exact path="/room/:roomName" component={Roompage} />
-          <Route exact path="/favorites" component={Favorites} />
-          <Route exact path="/chat" component={Chat} />
-          <Route exact path="/profile" component={Profile} />
+          <PrivateRoute path="/favorites" component={Favorites} />
+          <PrivateRoute path="/chat" component={Chat} />
+          <PrivateRoute path="/profile" component={Profile} />
         </Switch>
       </div>
     </Router>

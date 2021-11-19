@@ -36,7 +36,7 @@ function VerifyAccount() {
 
   function displayError() {
     if (error) {
-      return <b style={{ color: "red" }}>{errMessage}</b>;
+      return <b className='error'>{errMessage}</b>;
     }
   }
 

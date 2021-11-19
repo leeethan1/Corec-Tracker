@@ -121,7 +121,7 @@ function Login({ setLogIn }) {
 
   function formFailure() {
     if (loginFail) {
-      return <div style={{ color: "red" }}>Email or password is incorrect</div>;
+      return <div className='error'>Email or password is incorrect</div>;
     }
   }
 
