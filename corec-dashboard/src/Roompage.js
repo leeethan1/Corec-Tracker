@@ -20,6 +20,8 @@ import {
   Dropdown,
   DropdownButton,
   Container,
+  Form,
+  FormCheck,
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.css";
 import Tabs from "react-bootstrap/Tabs";
@@ -46,8 +48,11 @@ function Roompage() {
   const [weekBoundaries, setWeekBoundaries] = useState([0, 6]);
   const [timeBoundaries, setTimeBoundaries] = useState([0, 18]);
   const updateInterval = 10;
-  const [weekIndex, setWeekIndex] = useState(0);
+  const [weekIndex, setWeekIndex] = useState(-1);
   const [graphsLoading, setGraphsLoading] = useState(true);
+  const [graphLines, setGraphLines] = useState(
+    new Array(7).fill(undefined).map(() => true)
+  );
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -179,6 +184,15 @@ function Roompage() {
       const o = res.occupancies;
       setOccupancies(o);
       getAdvancedStatistics(occupancies);
+      if (weekIndex < 0) {
+        // setWeeklyOccupancies(
+        //   occupancies.map((day, index) =>
+        //     (day.reduce((a, b) => a + b, 0) / day.length).toFixed(2)
+        //   )
+        // );
+        setWeeklyOccupancies(averages);
+        //return;
+      }
       //console.log(o);
     }
     setLoading(false);
@@ -202,28 +216,29 @@ function Roompage() {
   async function updateWeeklyOccupancies() {
     console.log(weekIndex);
     if (weekIndex < 0) {
-      setAverages(
-        occupancies.map((day, index) =>
-          (day.reduce((a, b) => a + b, 0) / day.length).toFixed(2)
-        )
-      );
+      // setWeeklyOccupancies(
+      //   occupancies.map((day, index) =>
+      //     (day.reduce((a, b) => a + b, 0) / day.length).toFixed(2)
+      //   )
+      // );
       setWeeklyOccupancies(averages);
-      return;
-    }
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        room: roomName,
-        week: weekIndex,
-      }),
-    };
-    const response = await fetch("/records/week", requestOptions);
-    if (response.ok) {
-      const res = await response.json();
-      const averages = res.occupancies;
-      //console.log(averages);
-      setWeeklyOccupancies(averages);
+      //return;
+    } else {
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          room: roomName,
+          week: weekIndex,
+        }),
+      };
+      const response = await fetch("/records/week", requestOptions);
+      if (response.ok) {
+        const res = await response.json();
+        const averages = res.occupancies;
+        //console.log(averages);
+        setWeeklyOccupancies(averages);
+      }
     }
   }
 
@@ -426,16 +441,20 @@ function Roompage() {
                   <YAxis />
                   <Tooltip />
                   <Legend height={36} />
-                  {days.map((day, index) => (
-                    <Line
-                      type="monotoneX"
-                      dataKey={day}
-                      stroke="#8884d8"
-                      activeDot={{ r: 5 }}
-                      stroke={chartColors[index]}
-                    />
-                  ))}
+                  {days.map(
+                    (day, index) =>
+                      graphLines[index] && (
+                        <Line
+                          type="monotoneX"
+                          dataKey={day}
+                          stroke="#8884d8"
+                          activeDot={{ r: 5 }}
+                          stroke={chartColors[index]}
+                        />
+                      )
+                  )}
                 </LineChart>
+                {renderGraphLineSelection()}
               </Accordion.Body>
             </Accordion.Item>
             <Accordion.Item eventKey="1">
@@ -499,11 +518,15 @@ function Roompage() {
                   <XAxis dataKey="time" />
                   <YAxis />
                   <Tooltip />
-                  <Legend height={36} />
-                  {days.map((day, index) => (
-                    <Bar dataKey={day} fill={chartColors[index]}></Bar>
-                  ))}
+                  <Legend height={"36%"} />
+                  {days.map(
+                    (day, index) =>
+                      graphLines[index] && (
+                        <Bar dataKey={day} fill={chartColors[index]}></Bar>
+                      )
+                  )}
                 </BarChart>
+                {renderGraphLineSelection()}
               </Accordion.Body>
             </Accordion.Item>
             <Accordion.Item eventKey="1">
@@ -528,7 +551,7 @@ function Roompage() {
                   <YAxis />
                   <Tooltip />
                   <Legend height={36} />
-                  <Bar dataKey="occupancy" fill="#8f7bef"></Bar>
+                  <Bar dataKey="occupancy" fill="#6633BB"></Bar>
                 </BarChart>
               </Accordion.Body>
             </Accordion.Item>
@@ -537,6 +560,30 @@ function Roompage() {
       default:
         return <h1>NA</h1>;
     }
+  }
+
+  function renderGraphLineSelection() {
+    return (
+      <div>
+        <Container>
+          <Row>
+            {days.map((day, index) => (
+              <Col>
+                <FormCheck
+                  label={<p>{day}</p>}
+                  onChange={() => {
+                    let newArr = [...graphLines];
+                    newArr[index] = !newArr[index];
+                    setGraphLines(newArr);
+                  }}
+                  checked={graphLines[index]}
+                />
+              </Col>
+            ))}
+          </Row>
+        </Container>
+      </div>
+    );
   }
 
   function indexOfSmallest(a) {
