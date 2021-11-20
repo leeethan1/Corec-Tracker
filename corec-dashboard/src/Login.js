@@ -1,18 +1,20 @@
 import { React, useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { Form, FormCheck, InputGroup } from "react-bootstrap";
+import { Form, FormCheck, InputGroup, Container, Row } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCoffee } from "@fortawesome/fontawesome-free-solid";
 import axios from "axios";
+import CryptoJS from "crypto-js";
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
 const facebookID = "294054042557801";
 
-var rememberUser = false;
-export { rememberUser };
+// var rememberUser = false;
+// export { rememberUser };
+const secretKey = "not so secret key";
 
 function Login({ setLogIn }) {
   const [email, setEmail] = useState("");
@@ -27,33 +29,31 @@ function Login({ setLogIn }) {
     return email.length > 0 && password.length > 0;
   }
 
-  async function handleChatLogin(e, secret) {
-    e.preventDefault();
+  async function handleChatLogin() {
+    const encryptedSecret = CryptoJS.AES.encrypt(
+      password,
+      secretKey
+    ).toString();
+    sessionStorage.setItem("username", email);
+    sessionStorage.setItem("password", encryptedSecret);
+    if (remember) {
+      localStorage.setItem("username", email);
+      localStorage.setItem("password", encryptedSecret);
+    }
     const authHeader = {
       "Private-Key": "b35df4a0-b81b-45d0-b331-0b077b14d0bc",
     };
-    const authObject = {
-      "Project-ID": "9e45fcff-6309-40db-b521-4ef91549ccd2",
-      "User-Name": email,
-      "User-Secret": password,
-    };
     try {
       await axios.put(
-        "https://api.chatengine.io/users",
+        "https://api.chatengine.io/users/",
         {
           username: email,
-          secret: secret,
+          secret: password,
         },
         {
           headers: authHeader,
         }
       );
-      sessionStorage.setItem("username", email);
-      //sessionStorage.setItem("password", secret);
-      if (remember) {
-        localStorage.setItem("username", email);
-        //localStorage.setItem("password", secret);
-      }
     } catch (error) {
       console.log(error);
       //setLoginFail(true);
@@ -98,8 +98,8 @@ function Login({ setLogIn }) {
     const response = await fetch("/login/submit", requestOptions);
     if (response.ok) {
       setLogIn();
-      rememberUser = remember;
-      console.log(rememberUser);
+      //rememberUser = remember;
+      //console.log(rememberUser);
       const tokens = await response.json();
       sessionStorage.setItem("access", tokens.access_token);
       sessionStorage.setItem("refresh", tokens.refresh_token);
@@ -110,8 +110,8 @@ function Login({ setLogIn }) {
         //sessionStorage.setItem("access", localStorage.getItem("access"));
         //sessionStorage.setItem("refresh", localStorage.getItem("refresh"));
       }
-      handleChatLogin(e, tokens.access_token);
-      history.push("/dashboard", { user: "test" });
+      await handleChatLogin();
+      history.push("/dashboard");
     } else {
       setLoginFail(true);
       const res = await response.json();
@@ -121,7 +121,7 @@ function Login({ setLogIn }) {
 
   function formFailure() {
     if (loginFail) {
-      return <div className='error'>Email or password is incorrect</div>;
+      return <div className="error">Email or password is incorrect</div>;
     }
   }
 
@@ -165,7 +165,7 @@ function Login({ setLogIn }) {
 
   return (
     <div>
-      <div id="Login-Panel" style={{ height: "400px" }}>
+      <div id="Login-Panel" style={{ height: "480px" }}>
         <h1>Login</h1>
         <Form onSubmit={handleLogin}>
           <Form.Group size="lg" controlId="email" className="mb-3">
@@ -193,9 +193,9 @@ function Login({ setLogIn }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              {formFailure()}
             </InputGroup>
           </Form.Group>
+          {formFailure()}
           <div id="Remember-Forgot">
             <FormCheck
               label={<p>Remember Me</p>}
@@ -218,9 +218,18 @@ function Login({ setLogIn }) {
               Log In
             </Button>
           </div>
-          <a href="/signup" id="Signup-Link">
-            Don't have an account? Sign up
-          </a>
+          <Container>
+            <Row>
+              <a href="/signup" id="Signup-Link">
+                Don't have an account? Sign up
+              </a>
+            </Row>
+            <Row>
+              <a href="/admin/login" id="Signup-Link">
+                Login as Admin
+              </a>
+            </Row>
+          </Container>
           <div id="Other-Options">
             <Button
               block

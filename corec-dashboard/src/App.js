@@ -13,6 +13,7 @@ import Settings from "./Settings";
 import Favorites from "./Favorites";
 import Profile from "./Profile";
 import Chat from "./Chat";
+import AdminLogin from "./AdminLogin";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 //import 'font-awesome/css/font-awesome.min.css';
@@ -35,6 +36,7 @@ function App() {
             path="/signup"
             render={(props) => <Signup setLogIn={logIn} />}
           />
+          <Route exact path="/admin/login" component={AdminLogin} />
           <Route exact path="/account/verify">
             <VerifyAccount />
           </Route>
@@ -55,7 +57,7 @@ function App() {
           <Route exact path="/dashboard" component={Dashboard} />
           <Route exact path="/room/:roomName" component={Roompage} />
           <PrivateRoute path="/favorites" component={Favorites} />
-          <PrivateRoute path="/chat" component={Chat} />
+          <Route exact path="/chat" component={Chat} />
           <PrivateRoute path="/profile" component={Profile} />
         </Switch>
       </div>

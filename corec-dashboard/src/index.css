@@ -38,6 +38,9 @@ code {
 }
 
 .error {
+  margin: 5%;
+  justify-content: center;
+  text-align: center;
   color: red;
 }
 
