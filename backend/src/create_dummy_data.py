@@ -2,9 +2,11 @@ import database_service
 import random
 import record_service
 from datetime import datetime, timedelta
+import bcrypt
 
 db = database_service.connect_to_database("database")
 records = db["records"]
+admins = db['admins']
 
 
 def create():
@@ -31,5 +33,10 @@ def remove():
 
 
 if __name__ == '__main__':
-    remove()
-    create()
+    # remove()
+    # create()
+    password = 'pass123'
+    admins.insert_one({
+        'username': 'admin123',
+        'password': bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    })

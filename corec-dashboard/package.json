@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^12.8.3",
     "axios": "^0.23.0",
     "bootstrap": "^5.1.1",
+    "crypto-js": "^4.1.1",
     "floating-label-react": "^1.0.3",
     "font-awesome": "^4.7.0",
     "mdbreact": "^5.1.0",

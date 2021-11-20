@@ -6,7 +6,29 @@ import "./App.css";
 
 function PrivateRoute({ ...props }) {
   const { component, path } = props;
-  return localStorage.getItem("access") || sessionStorage.getItem("access") ? (
+  const [authenticated, setAuthenticated] = useState(false);
+
+  async function authenticate() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+    //console.log(token);
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: token,
+      },
+    };
+    const response = await fetch(`/auth`, requestOptions);
+    setAuthenticated(response.ok);
+  }
+
+  useEffect(() => {
+    authenticate();
+  }, []);
+
+  return authenticated ? (
     <Route exact path={path} component={component} />
   ) : (
     <div>

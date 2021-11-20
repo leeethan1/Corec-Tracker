@@ -4,6 +4,8 @@ import random
 import re
 import secrets
 from functools import wraps
+from bson.objectid import ObjectId
+
 
 import bcrypt
 import jwt
@@ -25,6 +27,7 @@ user_tokens = db["user tokens"]
 email_verification_codes = db['email verification codes']
 phone_verification_codes = db['phone verification codes']
 unverified_accounts = db['unverified accounts']
+admins = db['admins']
 
 email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 password_regex = re.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$")
@@ -45,7 +48,7 @@ def token_required(f):
         try:
             header_data = jwt.get_unverified_header(token)
             data = jwt.decode(token, key=my_secret, algorithms=[header_data['alg']])
-            user = users.find_one({"email": data['email']})
+            user = users.find_one({"_id": ObjectId(data['id'])})
             if not user:
                 raise exceptions.NotLoggedIn
         except Exception:
@@ -174,6 +177,7 @@ def verify_account():
                       'notifications': notifications,
                       'favoriteRooms': []}
         users.insert_one(user_input)
+        user = users.find_one({'email': account['email']})
 
         # remove user from unverified collection
         unverified_accounts.delete_many({'email': email})
@@ -184,7 +188,7 @@ def verify_account():
         ns.send_email(email, "Welcome to Corec Tracker",
                       "Glad to have you on board! Enjoy all this app has to offer!")
         access_payload = {
-            "email": email,
+            "id": str(user['_id']),
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
         }
         access_token = jwt.encode(
@@ -192,7 +196,7 @@ def verify_account():
             key=my_secret
         )
         refresh_payload = {
-            "email": email,
+            "id": str(user['_id']),
             "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
         }
         refresh_token = jwt.encode(
@@ -230,7 +234,7 @@ def login():
         if bcrypt.checkpw(password.encode('utf-8'), user_password):
             users.find_one_and_update({"email": email}, {"$set": {'remember': remember}})
             access_payload = {
-                "email": user_email,
+                "id": str(user['_id']),
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
             }
             access_token = jwt.encode(
@@ -238,7 +242,7 @@ def login():
                 key=my_secret
             )
             refresh_payload = {
-                "email": user_email,
+                "id": str(user['_id']),
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
             }
             refresh_token = jwt.encode(
@@ -277,7 +281,7 @@ def googleLogin():
             users.insert_one(user_input)
 
         access_payload = {
-            "email": email,
+            "id": str(user['_id']),
             "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=30)
         }
         access_token = jwt.encode(
@@ -285,7 +289,7 @@ def googleLogin():
             key=my_secret
         )
         refresh_payload = {
-            "email": email,
+            "id": str(user['_id']),
             "exp": datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=6)
         }
         refresh_token = jwt.encode(
@@ -329,25 +333,26 @@ def update_email(user):
                                       'email': new_email
                                   }})
         email_verification_codes.delete_many({'email': new_email})
-        access_payload = {
-            "email": new_email,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
-        }
-        access_token = jwt.encode(
-            payload=access_payload,
-            key=my_secret
-        )
-        refresh_payload = {
-            "email": new_email,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
-        }
-        refresh_token = jwt.encode(
-            payload=refresh_payload,
-            key=my_secret
-        )
-        # session["email"] = user_email
-        return json.dumps(
-            {'access_token': access_token.decode("utf-8"), 'refresh_token': refresh_token.decode("utf-8")}), 200
+        return "Email updated", 200
+        # access_payload = {
+        #     "email": new_email,
+        #     "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        # }
+        # access_token = jwt.encode(
+        #     payload=access_payload,
+        #     key=my_secret
+        # )
+        # refresh_payload = {
+        #     "email": new_email,
+        #     "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
+        # }
+        # refresh_token = jwt.encode(
+        #     payload=refresh_payload,
+        #     key=my_secret
+        # )
+        # # session["email"] = user_email
+        # return json.dumps(
+        #     {'access_token': access_token.decode("utf-8"), 'refresh_token': refresh_token.decode("utf-8")}), 200
     else:
         raise exceptions.VerificationCodeError
 
@@ -528,6 +533,34 @@ def remove_favorite(user):
         room_list.remove(room)
         users.update_one(query, {'$set': {'favoriteRooms': room_list}})
         return json.dumps({"rooms": room_list}), 200
+
+
+@user_service.route('/admin/login/submit', methods=['POST'])
+def admin_login():
+    username = request.json['username']
+    password = request.json['password']
+    admin = admins.find_one({'username': username})
+    if admin and bcrypt.checkpw(password.encode('utf-8'), admin['password']):
+        access_payload = {
+            "username": username,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        }
+        access_token = jwt.encode(
+            payload=access_payload,
+            key=my_secret
+        )
+        refresh_payload = {
+            "username": username,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)
+        }
+        refresh_token = jwt.encode(
+            payload=refresh_payload,
+            key=my_secret
+        )
+        # session["email"] = user_email
+        return json.dumps(
+            {'access_token': access_token.decode("utf-8"), 'refresh_token': refresh_token.decode("utf-8")}), 200
+    raise exceptions.AuthError
 
 
 def generate_email_verification_code(email):

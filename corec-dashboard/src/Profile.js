@@ -332,7 +332,7 @@ function Profile() {
         </Button>
       </InputGroup>
       {passwordChangeError.length > 0 && (
-        <p style={{ color: "red" }}>{passwordChangeError}</p>
+        <p className="error">{passwordChangeError}</p>
       )}
     </span>
   );
@@ -378,11 +378,7 @@ function Profile() {
         Email: <b>{email}</b>
       </p>
       {emailCodeSent ? verifyEmail : changeEmail}
-      {emailError.length > 0 ? (
-        <div style={{ color: "red" }}>{emailError}</div>
-      ) : (
-        ""
-      )}
+      {emailError.length > 0 && <div className="error">{emailError}</div>}
       <hr />
       <p>
         Phone Number: <b>{formatPhoneNumber(phone)}</b>
@@ -396,11 +392,7 @@ function Profile() {
       </Button>
 
       {deleteAccount ? deleteAcc : ""}
-      {deleteError.length > 0 ? (
-        <div style={{ color: "red" }}>{deleteError}</div>
-      ) : (
-        ""
-      )}
+      {deleteError.length > 0 && <div className="error">{deleteError}</div>}
     </div>
   );
 }
