@@ -28,6 +28,8 @@ import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
 import Card from 'react-bootstrap/Card';
 import Button from "react-bootstrap/Button";
+import Modal from 'react-bootstrap/Modal';
+import Table from 'react-bootstrap/Table';
 
 
 const cID =
@@ -56,6 +58,7 @@ function Roompage() {
   const [sum, setSum] = useState(0);
   const [timeAmt, setTimeAmt] = useState(0);
   const [displayPopup, setDisplayPopup] = useState(false);
+  const [dayStats, setDayStats] = useState(null);
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -135,16 +138,57 @@ function Roompage() {
   useEffect(() => {
     let tempSum = 0;
     let counter = 0;
+    let tempMon = 0;
+    let tempTue = 0;
+    let tempWed = 0;
+    let tempThu = 0;
+    let tempFri = 0;
+    let tempSat = 0;
+    let tempSun = 0;
+    let dayTempData = [];
     for (let i = 0; i < graphData.length; i++) {
       let t = graphData[i];
       tempSum += t.Mon + t.Tue + t.Wed + t.Thu + t.Fri + t.Sat + t.Sun;
-      counter += 7;
+      tempMon += t.Mon;
+      tempTue += t.Tue;
+      tempWed += t.Wed;
+      tempThu += t.Thu;
+      tempFri += t.Fri;
+      tempSat += t.Sat;
+      tempSun += t.Sun;
+      counter += 1;
     }
     setSum(tempSum);
-    setTimeAmt(counter);
-    // console.log(graphData);
-    // console.log(sum);
-    // console.log(timeAmt);
+    setTimeAmt(counter * 7);
+    dayTempData.push({
+      'day': 'Mon',
+      'avg':  (tempMon / counter).toFixed(2)
+    });
+    dayTempData.push({
+      'day': 'Tue',
+      'avg':  (tempTue / counter).toFixed(2)
+    });
+    dayTempData.push({
+      'day': 'Wed',
+      'avg':  (tempWed / counter).toFixed(2)
+    });
+    dayTempData.push({
+      'day': 'Thu',
+      'avg':  (tempThu / counter).toFixed(2)
+    });
+    dayTempData.push({
+      'day': 'Fri',
+      'avg':  (tempFri / counter).toFixed(2)
+    });
+    dayTempData.push({
+      'day': 'Sat',
+      'avg':  (tempSat / counter).toFixed(2)
+    });
+    dayTempData.push({
+      'day': 'Sun',
+      'avg':  (tempSun / counter).toFixed(2)
+    });
+    setDayStats(dayTempData);
   }, [graphData]);
 
   useEffect(() => {
@@ -312,6 +356,59 @@ function Roompage() {
           <Button onClick={() => setDisplayPopup(true)}>Show More</Button> 
         </div>
       )
+    }
+  }
+
+  function renderDataPopup() {
+    return (
+        <Modal show={displayPopup} onHide={() => setDisplayPopup(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Weekly Avg + Std Dev</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {renderTablePopup()}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setDisplayPopup(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+
+  function renderTablePopup() {
+    return (
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Average</th>
+            <th>Standard Deviation</th>
+            <th>Compare to Today</th>
+          </tr>
+        </thead>
+        <tbody>
+          {renderTablePopupRows()}
+        </tbody>
+      </Table>
+    )
+  }
+
+  function renderTablePopupRows() {
+    if (dayStats) {
+      let tData = [];
+      for (let i = 0; i < dayStats.length; i++) {
+        tData.push(
+          <tr>
+            <td>{dayStats[i].day}</td>
+            <td>{dayStats[i].avg}</td>
+            <td>test</td>
+            <td>123</td>
+          </tr>
+        );
+      }
+      return tData;
     }
   }
 
@@ -577,6 +674,7 @@ function Roompage() {
 
   return (
     <div className="vertical">
+      {renderDataPopup()}
       <Header />
       <h1 className="center">{roomName}</h1>
       <h2 className="center">
