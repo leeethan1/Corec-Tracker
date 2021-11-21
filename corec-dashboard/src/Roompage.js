@@ -136,8 +136,6 @@ function Roompage() {
   );
 
   useEffect(() => {
-    let tempSum = 0;
-    let counter = 0;
     let tempMon = 0;
     let tempTue = 0;
     let tempWed = 0;
@@ -146,9 +144,9 @@ function Roompage() {
     let tempSat = 0;
     let tempSun = 0;
     let dayTempData = [];
+    let counter = timeAmt / 7;
     for (let i = 0; i < graphData.length; i++) {
       let t = graphData[i];
-      tempSum += t.Mon + t.Tue + t.Wed + t.Thu + t.Fri + t.Sat + t.Sun;
       tempMon += t.Mon;
       tempTue += t.Tue;
       tempWed += t.Wed;
@@ -156,10 +154,7 @@ function Roompage() {
       tempFri += t.Fri;
       tempSat += t.Sat;
       tempSun += t.Sun;
-      counter += 1;
     }
-    setSum(tempSum);
-    setTimeAmt(counter * 7);
     dayTempData.push({
       'day': 'Mon',
       'avg':  (tempMon / counter).toFixed(2)
@@ -188,7 +183,20 @@ function Roompage() {
       'day': 'Sun',
       'avg':  (tempSun / counter).toFixed(2)
     });
+    console.log(dayTempData);
     setDayStats(dayTempData);
+  }, [sum, timeAmt]);
+
+  useEffect(() => {
+    let tempSum = 0;
+    let counter = 0;
+    for (let i = 0; i < graphData.length; i++) {
+      let t = graphData[i];
+      tempSum += t.Mon + t.Tue + t.Wed + t.Thu + t.Fri + t.Sat + t.Sun;
+      counter += 7;
+    }
+    setSum(tempSum);
+    setTimeAmt(counter);
   }, [graphData]);
 
   useEffect(() => {
