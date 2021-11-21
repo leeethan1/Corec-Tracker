@@ -10,7 +10,8 @@ import {
   CartesianGrid,
   Bar,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  ReferenceLine
 } from "recharts";
 import Header from "./Header";
 import {
@@ -25,7 +26,9 @@ import {
 import "bootstrap/dist/css/bootstrap.css";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
-import Card from 'react-bootstrap/Card'
+import Card from 'react-bootstrap/Card';
+import Button from "react-bootstrap/Button";
+
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
@@ -50,6 +53,9 @@ function Roompage() {
   const [weekIndex, setWeekIndex] = useState(0);
   const [graphsLoading, setGraphsLoading] = useState(true);
   const [cardLoading, setCardLoading] = useState(true);
+  const [sum, setSum] = useState(0);
+  const [timeAmt, setTimeAmt] = useState(0);
+  const [displayPopup, setDisplayPopup] = useState(false);
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -125,6 +131,21 @@ function Roompage() {
   const weeklyGraphData = weeklyOccupancies.map((element, index) =>
     createWeeklyData(index)
   );
+
+  useEffect(() => {
+    let tempSum = 0;
+    let counter = 0;
+    for (let i = 0; i < graphData.length; i++) {
+      let t = graphData[i];
+      tempSum += t.Mon + t.Tue + t.Wed + t.Thu + t.Fri + t.Sat + t.Sun;
+      counter += 7;
+    }
+    setSum(tempSum);
+    setTimeAmt(counter);
+    // console.log(graphData);
+    // console.log(sum);
+    // console.log(timeAmt);
+  }, [graphData]);
 
   useEffect(() => {
     let interval = null;
@@ -215,7 +236,7 @@ function Roompage() {
     if (response.ok) {
       const res = await response.json();
       const averages = res.occupancies;
-      //console.log(averages);
+      // console.log(averages);
       setWeeklyOccupancies(averages);
     }
   }
@@ -287,7 +308,8 @@ function Roompage() {
           <Spinner variant="danger" animation="grow" size="sm" />
           <br />
           Max: {maxOccupancies[curr.getDay()]} <br />
-          Min: {minOccupancies[curr.getDay()]} 
+          Min: {minOccupancies[curr.getDay()]} <br />
+          <Button onClick={() => setDisplayPopup(true)}>Show More</Button> 
         </div>
       )
     }
@@ -310,7 +332,7 @@ function Roompage() {
           </Row> */}
           <Row>
             <div className="center">
-              <Spinner animation="border" size="lg" />
+              <Spinner animation="border" size="lg" variant="primary" className="gCenter"/>
             </div>
           </Row>
         </Container>
@@ -401,6 +423,7 @@ function Roompage() {
                     <XAxis dataKey="time" />
                     <YAxis />
                     <Tooltip />
+                    <ReferenceLine y={sum / timeAmt} label="Avg" stroke="red" strokeDasharray="3 3" isFront={true}/>
                     <Legend height={36} />
                     {days.map((day, index) => (
                       <Line
@@ -511,24 +534,30 @@ function Roompage() {
               busiest day while <b>{days[indexOfSmallest(averages)]}</b> is the
               least busiest day
             </p>
-            <div className="horizontal">
-              The predicted occupancy for {" "}
+            <div className="flexAlign">
+              The predicted occupancy for
               <DropdownButton
                 title={days[forecastDay]}
                 size="sm"
                 variant="secondary"
+                className="space"
+                menuVariant="dark"
+                drop="up"
               >
                 {days.map((day, index) => (
                   <Dropdown.Item onClick={() => setForecastDay(index)}>
                     {day}
                   </Dropdown.Item>
                 ))}
-              </DropdownButton>{" "}
-              at{" "}
+              </DropdownButton>
+              at
               <DropdownButton
                 title={times[forecastTime]}
                 size="sm"
                 variant="secondary"
+                className="space"
+                menuVariant="dark"
+                drop="up"
               >
                 {times.map((time, index) => (
                   <Dropdown.Item onClick={() => setForecastTime(index)}>
@@ -537,7 +566,7 @@ function Roompage() {
                 ))}
               </DropdownButton>
               is
-              <b> {occupancies[forecastTime][forecastDay]} </b>
+              <b className="space">{occupancies[forecastTime][forecastDay]}</b>
               people
             </div>
           </Accordion.Body>

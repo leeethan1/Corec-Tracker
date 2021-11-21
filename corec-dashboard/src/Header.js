@@ -21,6 +21,7 @@ function Header() {
       },
     };
     const response = await fetch("/auth", requestOptions);
+    console.log(response);
     if (response.ok) {
       setLoggedIn(true);
     }

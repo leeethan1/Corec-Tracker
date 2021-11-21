@@ -4,7 +4,7 @@ import { Form, FormCheck, InputGroup } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import GoogleLogin from "react-google-login";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCoffee } from '@fortawesome/fontawesome-free-solid'
+import { faCoffee } from '@fortawesome/fontawesome-free-solid';
 
 const cID =
   "608867787381-cvgulq19nomsanr5b3ho6i2kr1ikocbs.apps.googleusercontent.com";
@@ -93,7 +93,7 @@ function Login({ setLogIn }) {
   function formFailure() {
     if (loginFail) {
       return (
-        <div>
+        <div style={{marginTop: '3px'}}>
           <b style={{ color: "red" }}>Email or password is incorrect</b>
         </div>
       );
@@ -141,7 +141,7 @@ function Login({ setLogIn }) {
   return (
     <div>
       <div id="Login-Panel">
-      <h1>Login</h1>
+      <h1>CorecTracker</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group size="lg" controlId="email" className="mb-3">
           <InputGroup>
@@ -168,8 +168,8 @@ function Login({ setLogIn }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          {formFailure()}
           </InputGroup>
+          {formFailure()}
         </Form.Group>
         <div id="Remember-Forgot">
           <FormCheck

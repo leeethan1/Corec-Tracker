@@ -9,7 +9,6 @@
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   width: 35%;
-  height: 60%;
   box-shadow: 10px -10px 5px #CCC;
   border-radius: 30px;
   border: 1px solid black;
@@ -41,11 +40,10 @@
 }
 
 #RoomDataCard {
-
   width: 15rem;
   margin-left: 30px;
   text-align: center;
-  height: 12rem;
+  height: 13rem;
   font-family: Roboto;
   font-size: larger;
 }
@@ -76,9 +74,33 @@
   color: black;
 }
 
+.failAlert {
+  height: 0px;
+  text-align: center;
+  font-size: medium;
+}
+
 .vCenter {
   margin: 0;
   margin-top: 35px;
-  /* position: absolute;
-  top: 50%; */
+}
+
+.gCenter {
+  margin: 0;
+  margin-top: 55px;
+}
+
+.space {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.flexAlign {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-menu {
+  height: 250px;
+  overflow-y: scroll;
 }

@@ -222,7 +222,7 @@ function Dashboard() {
       {loading ? (
         <div>
           <h2>Fetching Occupancies...</h2>
-          <Spinner size="lg" animation="border" />
+          <Spinner size="lg" animation="border"/>
         </div>
       ) : (
         <div>
