@@ -33,10 +33,10 @@ def remove():
 
 
 if __name__ == '__main__':
-    # remove()
-    # create()
-    password = 'pass123'
-    admins.insert_one({
-        'username': 'admin123',
-        'password': bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    })
+    remove()
+    create()
+    # password = 'pass123'
+    # admins.insert_one({
+    #     'username': 'admin123',
+    #     'password': bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    # })

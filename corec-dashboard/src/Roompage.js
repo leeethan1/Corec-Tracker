@@ -311,7 +311,8 @@ function Roompage() {
     return (
       <div>
         <select
-          defaultValue={0}
+          value={timeBoundaries[0]}
+          defaultValue={timeBoundaries[0]}
           class="form-select"
           aria-label="Default select example"
           onChange={(e) => {
@@ -328,7 +329,8 @@ function Roompage() {
           })}
         </select>
         <select
-          defaultValue={18}
+          value={timeBoundaries[1]}
+          defaultValue={timeBoundaries[1]}
           class="form-select"
           aria-label="Default select example"
           onChange={(e) => {
@@ -352,7 +354,8 @@ function Roompage() {
     return (
       <div>
         <select
-          defaultValue={0}
+          value={weekBoundaries[0]}
+          defaultValue={weekBoundaries[0]}
           class="form-select"
           aria-label="Default select example"
           onChange={(e) => {
@@ -370,7 +373,8 @@ function Roompage() {
           })}
         </select>
         <select
-          defaultValue={6}
+          value={weekBoundaries[1]}
+          defaultValue={weekBoundaries[1]}
           class="form-select"
           aria-label="Default select example"
           onChange={(e) => {
@@ -551,7 +555,7 @@ function Roompage() {
                   <YAxis />
                   <Tooltip />
                   <Legend height={36} />
-                  <Bar dataKey="occupancy" fill="#6633BB"></Bar>
+                  <Bar dataKey="occupancy" fill="#557799"></Bar>
                 </BarChart>
               </Accordion.Body>
             </Accordion.Item>
