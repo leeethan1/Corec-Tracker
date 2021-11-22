@@ -26,3 +26,7 @@ class UserNotFound(Exception):
 class ExpiredToken(Exception):
     code = 403
     description = "Token is expired"
+
+class BugReportSpamError(Exception):
+    code = 400
+    description = "You have sent 3 bug reports in the last hour. Please wait before sending another."

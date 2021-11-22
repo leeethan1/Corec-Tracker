@@ -70,23 +70,19 @@ function Header() {
           </Navbar.Brand>
           <Nav className="core-nav">
             <Nav.Link href="/dashboard">Home</Nav.Link>
-            {loggedIn ? "" : <Nav.Link href="/">Log In</Nav.Link>}
-            {loggedIn ? (
-              <Nav.Link href="/chat">Chat with an Admin</Nav.Link>
-            ) : (
-              ""
-            )}
-            {loggedIn ? "" : <Nav.Link href="/signup">Sign Up</Nav.Link>}
-            {loggedIn ? (
+            {!loggedIn && <Nav.Link href="/">Log In</Nav.Link>}
+            {loggedIn && <Nav.Link href="/chat">Chat with an Admin</Nav.Link>}
+            {!loggedIn && <Nav.Link href="/signup">Sign Up</Nav.Link>}
+            {loggedIn && (
               <Nav.Link>
-                <span onClick={() => signOut()}>Logout</span>
+                <span onClick={() => signOut()}>Log Out</span>
               </Nav.Link>
-            ) : (
-              ""
             )}
+            {loggedIn && <Nav.Link href="/profile">Profile</Nav.Link>}
             <Nav.Link href="/settings">
               <span>Settings</span>
             </Nav.Link>
+            {loggedIn && <Nav.Link href="/report">Report a Bug</Nav.Link>}
             <DropdownButton title="Rooms">
               {rooms.map((room, index) => (
                 <Dropdown.Item href={`/room/${encodeURIComponent(room)}`}>

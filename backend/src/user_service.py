@@ -503,3 +503,16 @@ def generate_phone_verification_code(phone):
         'phone': phone
     })
     return code
+
+@user_service.route("/report/send", methods=["POST"])
+@token_required
+def send_bug_report(user):
+    email = user['email']
+    bug = request.json['bug']
+    time = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+    sent_reports = bug_reports.find({'$and': [{'time': {'$gt': time}}, {'email': email}]})
+    if sent_reports.count() >= 3:
+        raise exceptions.BugReportSpamError
+    ns.send_email('corec-tracker@outlook.com', 'Bug Report [{}]'.format(str(datetime.datetime.utcnow())), bug)
+    bug_reports.insert_one({'email': email, 'time': datetime.datetime.utcnow()})
+    return "Bug Report Sent", 200

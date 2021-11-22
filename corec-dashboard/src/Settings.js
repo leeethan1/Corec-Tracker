@@ -251,8 +251,6 @@ function Settings() {
           <hr />
           {renderTimeSlider()}
           <hr />
-          {renderBugReport()}
-          <hr />
           <Button
             onClick={(e) => {
               e.preventDefault();
@@ -315,18 +313,6 @@ function Settings() {
     );
   }
   const [buttonPopup, setButtonPopup] = useState(false);
-
-  function renderBugReport() {
-    return(
-      <>
-        <Button variant="primary" onClick={() => {setButtonPopup(true)}}>Bug Report</Button>{' '}
-        <Popup trigger={buttonPopup} setTrigger={setButtonPopup}>
-          <h3>My Popup</h3>
-        </Popup>
-      </>
-    );
-  }
-
   return (
     <div>
       <Header />
