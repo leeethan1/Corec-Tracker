@@ -59,6 +59,7 @@ function Roompage() {
   const [timeAmt, setTimeAmt] = useState(0);
   const [displayPopup, setDisplayPopup] = useState(false);
   const [dayStats, setDayStats] = useState(null);
+  const [dayStatsSTD, setDayStatsSTD] = useState();
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -134,6 +135,28 @@ function Roompage() {
   const weeklyGraphData = weeklyOccupancies.map((element, index) =>
     createWeeklyData(index)
   );
+
+  useEffect(() => {
+    if (dayStats) {
+      let stdVal = [0, 0, 0, 0, 0, 0, 0];
+      for (let i = 0; i < graphData.length; i++) {
+        let t = graphData[i];
+        stdVal[0] += (t.Mon - dayStats[0].avg) ** 2; //Monday
+        stdVal[1] += (t.Tue - dayStats[1].avg) ** 2; //Tuesday
+        stdVal[2] += (t.Wed - dayStats[2].avg) ** 2; //Wednesday
+        stdVal[3] += (t.Thu - dayStats[3].avg) ** 2; //Thursday
+        stdVal[4] += (t.Fri - dayStats[4].avg) ** 2; //Friday
+        stdVal[5] += (t.Sat - dayStats[5].avg) ** 2; //Saturday
+        stdVal[6] += (t.Sun - dayStats[6].avg) ** 2; //Sunday
+      }
+      let counter = timeAmt / 7;
+      for (let i = 0; i < stdVal.length; i++) {
+        stdVal[i] = Math.sqrt(stdVal[i] / counter).toFixed(2);
+      }
+      setDayStatsSTD(stdVal);
+      console.log(stdVal);
+    }
+  }, [dayStats])
 
   useEffect(() => {
     let tempMon = 0;
@@ -411,7 +434,7 @@ function Roompage() {
           <tr>
             <td>{dayStats[i].day}</td>
             <td>{dayStats[i].avg}</td>
-            <td>test</td>
+            <td>{dayStatsSTD ? dayStatsSTD[i] : '-'}</td>
             <td>123</td>
           </tr>
         );
