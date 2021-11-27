@@ -30,6 +30,8 @@ import Card from 'react-bootstrap/Card';
 import Button from "react-bootstrap/Button";
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCoffee } from '@fortawesome/fontawesome-free-solid';
 
 
 const cID =
@@ -435,11 +437,30 @@ function Roompage() {
             <td>{dayStats[i].day}</td>
             <td>{dayStats[i].avg}</td>
             <td>{dayStatsSTD ? dayStatsSTD[i] : '-'}</td>
-            <td>123</td>
+            <td>{getCompareToday(i)}</td>
           </tr>
         );
       }
       return tData;
+    }
+  }
+
+  function getCompareToday(num) {
+    var curr = new Date(); // get current date
+    var day = curr.getDay();
+    if (num == day) {
+      return <p>---</p>;
+    }
+    else {
+      if (dayStats[num].avg > dayStats[day].avg) {
+        return <FontAwesomeIcon icon="arrow-up" />;
+      }
+      else if (dayStats[num].avg == dayStats[day].avg) {
+        return <FontAwesomeIcon icon="equals" />;
+      }
+      else {
+        return <FontAwesomeIcon icon="arrow-down" />;
+      }
     }
   }
 
