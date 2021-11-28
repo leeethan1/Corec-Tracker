@@ -44,7 +44,7 @@ function Login({ setLogIn }) {
       "Private-Key": "b35df4a0-b81b-45d0-b331-0b077b14d0bc",
     };
     try {
-      await axios.put(
+      const user = await axios.put(
         "https://api.chatengine.io/users/",
         {
           username: email,
@@ -54,6 +54,8 @@ function Login({ setLogIn }) {
           headers: authHeader,
         }
       );
+      console.log(user);
+      localStorage.setItem("chat user ID", user.data.id);
     } catch (error) {
       console.log(error);
       //setLoginFail(true);

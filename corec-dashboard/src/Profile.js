@@ -6,6 +6,7 @@ import "rc-slider/assets/index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NotLoggedIn from "./NotLoggedIn";
 import Header from "./Header";
+import axios from "axios";
 
 function Profile() {
   const [email, setEmail] = useState("");
@@ -17,6 +18,7 @@ function Profile() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [passwordChangeError, setPasswordChangeError] = useState("");
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
+  const [passwordDelete, setPasswordDelete] = useState("");
   const [deleteAccount, setDeleteAccount] = useState(false);
   const [authError, setAuthError] = useState(false);
   const [emailError, setEmailError] = useState("");
@@ -202,6 +204,21 @@ function Profile() {
     }
   }
 
+  async function deleteChatAccount() {
+    const authHeader = {
+      "Private-Key": "b35df4a0-b81b-45d0-b331-0b077b14d0bc",
+    };
+    try {
+      const id = localStorage.getItem("chat user ID");
+      await axios.delete(`https://api.chatengine.io/users/${id}/`, {
+        headers: authHeader,
+      });
+    } catch (error) {
+      console.log(error);
+      //setLoginFail(true);
+    }
+  }
+
   async function handleDeleteAccount() {
     const token = localStorage.getItem("remember")
       ? localStorage.getItem("access")
@@ -213,11 +230,15 @@ function Profile() {
         access: token,
       },
       body: JSON.stringify({
-        password: password,
+        password: passwordDelete,
       }),
     };
     const response = await fetch("/account/delete", requestOptions);
     if (response.ok) {
+      deleteChatAccount();
+      localStorage.clear();
+      sessionStorage.clear();
+      history.push("/");
     } else {
       const err = await response.json();
       setDeleteError(err.message);
@@ -297,7 +318,7 @@ function Profile() {
 
   const changePassword = (
     <span>
-      <p>Password</p>
+      <p>Change Password</p>
       <InputGroup>
         <Form.Control
           autoFocus
@@ -345,12 +366,12 @@ function Profile() {
           autoFocus
           type="password"
           placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={passwordDelete}
+          onChange={(e) => setPasswordDelete(e.target.value)}
         />
         <Button
           variant="danger"
-          disabled={password.length == 0}
+          disabled={passwordDelete.length == 0}
           onClick={handleDeleteAccount}
         >
           Delete Account

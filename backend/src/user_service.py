@@ -6,7 +6,6 @@ import secrets
 from functools import wraps
 from bson.objectid import ObjectId
 
-
 import bcrypt
 import jwt
 from dotenv import load_dotenv
@@ -105,7 +104,7 @@ def get_user_settings(user):
 
 
 @user_service.route('/signup/submit', methods=['POST', 'GET'])
-def create_account():
+def sign_up():
     # if "email" in session:
     #     return "Already logged in", 402
     if request.method == 'POST':
@@ -143,7 +142,6 @@ def create_account():
         email_verification_codes.delete_many({'email': email})
         phone_verification_codes.delete_many({'phone': phone})
         email_code = generate_email_verification_code(email)
-        phone_code = generate_phone_verification_code(phone)
         # ns.send_email(email, "Verify your email", "Your email verification code is {}".format(email_code))
         # ns.send_text(phone, "Your phone number verification code is {}".format(phone_code))
 
@@ -151,17 +149,37 @@ def create_account():
     return json.dumps({'message': "Could not create account"}), 400
 
 
-@user_service.route('/account/verify/submit', methods=['POST'])
-def verify_account():
-    phone_verification_code = request.json['phoneCode']
+@user_service.route('/email/verify/submit', methods=['POST'])
+def verify_email():
     email_verification_code = request.json['emailCode']
     email_entry = email_verification_codes.find_one({'code': email_verification_code})
-    phone_entry = phone_verification_codes.find_one({'code': phone_verification_code})
-    if email_entry and phone_entry:
+    if email_entry:
         email = email_entry['email']
+
+        account = unverified_accounts.find_one({'email': email})
+        if not account:
+            raise exceptions.UserNotFound
+
+        emailNotificationsOn = True
+        smsNotificationsOn = True
+        notifications = {}
+
+        # remove verification codes for user
+        email_verification_codes.delete_many({'email': email})
+
+        return "verified email", 200
+    else:
+        raise exceptions.VerificationCodeError
+
+
+@user_service.route('/phone/verify/submit', methods=['POST'])
+def verify_phone():
+    phone_verification_code = request.json['phoneCode']
+    phone_entry = phone_verification_codes.find_one({'code': phone_verification_code})
+    if phone_entry:
         phone = phone_entry['phone']
 
-        account = unverified_accounts.find_one({'$and': [{'email': email}, {'phone': phone}]})
+        account = unverified_accounts.find_one({'phone': phone})
         if not account:
             raise exceptions.UserNotFound
 
@@ -180,13 +198,10 @@ def verify_account():
         user = users.find_one({'email': account['email']})
 
         # remove user from unverified collection
-        unverified_accounts.delete_many({'email': email})
+        unverified_accounts.delete_many({'phone': phone})
         # remove verification codes for user
-        email_verification_codes.delete_many({'email': email})
         phone_verification_codes.delete_many({'phone': phone})
 
-        ns.send_email(email, "Welcome to Corec Tracker",
-                      "Glad to have you on board! Enjoy all this app has to offer!")
         access_payload = {
             "id": str(user['_id']),
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
@@ -579,6 +594,13 @@ def generate_email_verification_code(email):
         ns.send_email(email, "Verify your new email", "Your verification code is {}".format(code))
         return code
     return token['code']
+
+
+@user_service.route("/phone/code/send", methods=['POST'])
+def send_phone_code_SMS():
+    phone = request.json['phone']
+    generate_phone_verification_code(phone)
+    return "Phone code sent", 200
 
 
 def generate_phone_verification_code(phone):

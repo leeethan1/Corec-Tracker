@@ -5,7 +5,8 @@ import Login from "./Login";
 import Roompage from "./Roompage";
 import Dashboard from "./Dashboard";
 import Signup from "./Signup";
-import VerifyAccount from "./VerifyAccount";
+import VerifyEmail from "./VerifyEmail";
+import VerifyPhone from "./VerifyPhone";
 import ForgotPassword from "./ForgotPassword";
 import PasswordResetEmailSent from "./PasswordResetEmailSent";
 import ResetPassword from "./ResetPassword";
@@ -37,8 +38,11 @@ function App() {
             render={(props) => <Signup setLogIn={logIn} />}
           />
           <Route exact path="/admin/login" component={AdminLogin} />
-          <Route exact path="/account/verify">
-            <VerifyAccount />
+          <Route exact path="/email/verify">
+            <VerifyEmail />
+          </Route>
+          <Route exact path="/phone/verify">
+            <VerifyPhone />
           </Route>
           <Route exact path="/email-sent">
             <PasswordResetEmailSent />
