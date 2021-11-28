@@ -59,6 +59,7 @@ function Roompage() {
   const [cardLoading, setCardLoading] = useState(true);
   const [sum, setSum] = useState(0);
   const [timeAmt, setTimeAmt] = useState(0);
+  const [showAdvButton, setShowAdvButton] = useState(true);
   const [displayPopup, setDisplayPopup] = useState(false);
   const [dayStats, setDayStats] = useState(null);
   const [dayStatsSTD, setDayStatsSTD] = useState();
@@ -137,6 +138,31 @@ function Roompage() {
   const weeklyGraphData = weeklyOccupancies.map((element, index) =>
     createWeeklyData(index)
   );
+
+  useEffect(() => {
+    getAdvStatsSettings();
+  }, [])
+
+  async function getAdvStatsSettings() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: token,
+      },
+    };
+    const response = await fetch("/settings/get", requestOptions);
+    if (response.ok) {
+      const res = await response.json();
+      setShowAdvButton(res.advStats);
+    } else {
+      const res = await response.json();
+      console.log(res);
+    }
+  }
 
   useEffect(() => {
     if (dayStats) {
@@ -386,9 +412,15 @@ function Roompage() {
           <br />
           Max: {maxOccupancies[curr.getDay()]} <br />
           Min: {minOccupancies[curr.getDay()]} <br />
-          <Button onClick={() => setDisplayPopup(true)}>Show More</Button> 
+          {showMoreRender()}
         </div>
       )
+    }
+  }
+
+  function showMoreRender() {
+    if (showAdvButton) {
+      return <Button onClick={() => setDisplayPopup(true)}>Show More</Button> ;
     }
   }
 

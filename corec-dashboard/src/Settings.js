@@ -19,6 +19,7 @@ import RangeSlider from "rsuite/RangeSlider";
 function Settings() {
   const [emailsOn, setEmailsOn] = useState(true);
   const [smsOn, setSmsOn] = useState(true);
+  const [advStatsOn, setAdvStatsOn] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [disableEndTime, setDisableEndTime] = useState(true);
@@ -123,6 +124,7 @@ function Settings() {
         notifications: notifications,
         emailNotifications: emailsOn,
         smsNotifications: smsOn,
+        advStats: advStatsOn,
         startTime: timeBoundaries[0],
         endTime: timeBoundaries[1],
       }),
@@ -156,8 +158,10 @@ function Settings() {
     if (response.ok) {
       //setAuthError(false);
       const res = await response.json();
+      console.log(res);
       setEmailsOn(res.emailNotifications);
       setSmsOn(res.smsNotifications);
+      setAdvStatsOn(res.advStats);
       let newNotifications = [...notificationSettings];
       newNotifications.forEach((setting) => {
         setting.on = setting.room in res.notifications;
@@ -241,6 +245,13 @@ function Settings() {
             label={<h4>SMS Notifications</h4>}
             onChange={() => setSmsOn(!smsOn)}
             checked={smsOn}
+          />
+          <hr />
+          <FormCheck
+            type="switch"
+            label={<h4>Enable Adv Stats</h4>}
+            onChange={() => setAdvStatsOn(!advStatsOn)}
+            checked={advStatsOn}
           />
           <hr />
           <p><b>Receive notifications for...</b></p>

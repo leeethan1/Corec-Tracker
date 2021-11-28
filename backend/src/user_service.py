@@ -80,6 +80,7 @@ def get_user_settings(user):
             {
                 "emailNotifications": user['emailNotifications'],
                 "smsNotifications": user['smsNotifications'],
+                "advStats": user['advStats'],
                 "notifications": user['notifications'],
                 "startTime": user['startTime'],
                 "endTime": user['endTime']
@@ -90,6 +91,7 @@ def get_user_settings(user):
             {
                 "emailNotifications": user['emailNotifications'],
                 "smsNotifications": user['smsNotifications'],
+                "advStats": user['advStats'],
                 "notifications": user['notifications'],
             }
         ), 200
@@ -160,6 +162,7 @@ def verify_account():
 
         emailNotificationsOn = True
         smsNotificationsOn = True
+        advStats = True
         notifications = {}
 
         user_input = {'email': account['email'],
@@ -168,6 +171,7 @@ def verify_account():
                       'emailNotifications': emailNotificationsOn,
                       'smsNotifications': smsNotificationsOn,
                       'notifications': notifications,
+                      'advStats': advStats,
                       'favoriteRooms': []}
         users.insert_one(user_input)
 
@@ -264,12 +268,14 @@ def googleLogin():
         if not user:
             emailNotificationsOn = True
             smsNotificationsOn = True
+            advStats = True
             notifications = {}
             user_input = {'email': email,
                           'phone': None,
                           'emailNotifications': emailNotificationsOn,
                           'smsNotifications': smsNotificationsOn,
                           'notifications': notifications,
+                          'advStats': advStats,
                           'favoriteRooms': []}
             users.insert_one(user_input)
 
@@ -289,6 +295,7 @@ def googleLogin():
             payload=refresh_payload,
             key=my_secret
         )
+
         return {'access_token': str(access_token, encoding='utf-8'), 'refresh_token': str(refresh_token, encoding='utf-8')}, 200
 
     raise exceptions.AuthError
@@ -366,11 +373,13 @@ def update_notifications(user):
     email = user['email']
     emailNotifications = request.json['emailNotifications']
     smsNotifications = request.json['smsNotifications']
+    advStats = request.json['advStats']
     updated_notifications = request.json['notifications']
     users.find_one_and_update({'email': email},
                               {'$set': {'notifications': updated_notifications,
                                         'emailNotifications': emailNotifications,
                                         'smsNotifications': smsNotifications,
+                                        'advStats': advStats,
                                         'startTime': request.json['startTime'],
                                         'endTime': request.json['endTime']}})
     return "Notifications updated", 200
