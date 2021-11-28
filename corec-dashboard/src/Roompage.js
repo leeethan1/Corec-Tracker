@@ -20,6 +20,8 @@ import {
   Dropdown,
   DropdownButton,
   Container,
+  Form,
+  FormCheck,
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.css";
 import Tabs from "react-bootstrap/Tabs";
@@ -44,9 +46,13 @@ function Roompage() {
   const [loading, setLoading] = useState(false);
   const [tick, setTick] = useState(0);
   const [weekBoundaries, setWeekBoundaries] = useState([0, 6]);
+  const [timeBoundaries, setTimeBoundaries] = useState([0, 18]);
   const updateInterval = 10;
-  const [weekIndex, setWeekIndex] = useState(0);
+  const [weekIndex, setWeekIndex] = useState(-1);
   const [graphsLoading, setGraphsLoading] = useState(true);
+  const [graphLines, setGraphLines] = useState(
+    new Array(7).fill(undefined).map(() => true)
+  );
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -119,7 +125,7 @@ function Roompage() {
 
   const graphData = times.map((element, index) => createData(element, index));
 
-  const weeklyGraphData = weeklyOccupancies.map((element, index) =>
+  let weeklyGraphData = weeklyOccupancies.map((element, index) =>
     createWeeklyData(index)
   );
 
@@ -178,6 +184,15 @@ function Roompage() {
       const o = res.occupancies;
       setOccupancies(o);
       getAdvancedStatistics(occupancies);
+      if (weekIndex < 0) {
+        // setWeeklyOccupancies(
+        //   occupancies.map((day, index) =>
+        //     (day.reduce((a, b) => a + b, 0) / day.length).toFixed(2)
+        //   )
+        // );
+        setWeeklyOccupancies(averages);
+        //return;
+      }
       //console.log(o);
     }
     setLoading(false);
@@ -199,20 +214,31 @@ function Roompage() {
   }
 
   async function updateWeeklyOccupancies() {
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        room: roomName,
-        week: weekIndex,
-      }),
-    };
-    const response = await fetch("/records/week", requestOptions);
-    if (response.ok) {
-      const res = await response.json();
-      const averages = res.occupancies;
-      //console.log(averages);
+    console.log(weekIndex);
+    if (weekIndex < 0) {
+      // setWeeklyOccupancies(
+      //   occupancies.map((day, index) =>
+      //     (day.reduce((a, b) => a + b, 0) / day.length).toFixed(2)
+      //   )
+      // );
       setWeeklyOccupancies(averages);
+      //return;
+    } else {
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          room: roomName,
+          week: weekIndex,
+        }),
+      };
+      const response = await fetch("/records/week", requestOptions);
+      if (response.ok) {
+        const res = await response.json();
+        const averages = res.occupancies;
+        //console.log(averages);
+        setWeeklyOccupancies(averages);
+      }
     }
   }
 
@@ -244,7 +270,6 @@ function Roompage() {
     } else {
       var firstday = new Date(curr.setDate(first - 7 * index));
     }
-    
 
     return `${firstday.getMonth() + 1}/${firstday.getDate().toString()}`;
   }
@@ -282,11 +307,55 @@ function Roompage() {
     setWeekBoundaries(newBoundaries);
   }
 
-  function renderFilterOption() {
+  function renderTimeFilter() {
     return (
       <div>
         <select
-          defaultValue={0}
+          value={timeBoundaries[0]}
+          defaultValue={timeBoundaries[0]}
+          class="form-select"
+          aria-label="Default select example"
+          onChange={(e) => {
+            e.preventDefault();
+            setTimeBoundaries([parseInt(e.target.value), timeBoundaries[1]]);
+          }}
+        >
+          {times.map((day, index) => {
+            return (
+              <option value={index} disabled={index >= timeBoundaries[1]}>
+                {day}
+              </option>
+            );
+          })}
+        </select>
+        <select
+          value={timeBoundaries[1]}
+          defaultValue={timeBoundaries[1]}
+          class="form-select"
+          aria-label="Default select example"
+          onChange={(e) => {
+            e.preventDefault();
+            setTimeBoundaries([timeBoundaries[0], parseInt(e.target.value)]);
+          }}
+        >
+          {times.map((day, index) => {
+            return (
+              <option value={index} disabled={index <= timeBoundaries[0]}>
+                {day}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+    );
+  }
+
+  function renderWeekFilter() {
+    return (
+      <div>
+        <select
+          value={weekBoundaries[0]}
+          defaultValue={weekBoundaries[0]}
           class="form-select"
           aria-label="Default select example"
           onChange={(e) => {
@@ -304,7 +373,8 @@ function Roompage() {
           })}
         </select>
         <select
-          defaultValue={6}
+          value={weekBoundaries[1]}
+          defaultValue={weekBoundaries[1]}
           class="form-select"
           aria-label="Default select example"
           onChange={(e) => {
@@ -321,9 +391,23 @@ function Roompage() {
             );
           })}
         </select>
-        <select onChange={(e) => setWeekIndex(parseInt(e.target.value))}>
+      </div>
+    );
+  }
+
+  function renderWeekSelection() {
+    return (
+      <div>
+        <select
+          onChange={(e) => {
+            e.preventDefault();
+            setWeekIndex(parseInt(e.target.value));
+            //console.log(weekIndex);
+          }}
+        >
+          <option value={-1}>All Weeks</option>
           {[0, 1, 2].map((week, index) => {
-            return <option value={index}>Week of {getSunday(index)}</option>;
+            return <option value={week}>Week of {getSunday(index)}</option>;
           })}
         </select>
       </div>
@@ -339,12 +423,16 @@ function Roompage() {
         return (
           <Accordion defaultActiveKey="0">
             <Accordion.Item eventKey="0">
-              <Accordion.Header>View by time</Accordion.Header>
+              <Accordion.Header>View By Time</Accordion.Header>
               <Accordion.Body>
+                {renderTimeFilter()}
                 <LineChart
                   width={1200}
                   height={300}
-                  data={graphData}
+                  data={graphData.slice(
+                    timeBoundaries[0],
+                    timeBoundaries[1] + 1
+                  )}
                   margin={{
                     top: 5,
                     right: 30,
@@ -357,22 +445,27 @@ function Roompage() {
                   <YAxis />
                   <Tooltip />
                   <Legend height={36} />
-                  {days.map((day, index) => (
-                    <Line
-                      type="monotoneX"
-                      dataKey={day}
-                      stroke="#8884d8"
-                      activeDot={{ r: 5 }}
-                      stroke={chartColors[index]}
-                    />
-                  ))}
+                  {days.map(
+                    (day, index) =>
+                      graphLines[index] && (
+                        <Line
+                          type="monotoneX"
+                          dataKey={day}
+                          stroke="#8884d8"
+                          activeDot={{ r: 5 }}
+                          stroke={chartColors[index]}
+                        />
+                      )
+                  )}
                 </LineChart>
+                {renderGraphLineSelection()}
               </Accordion.Body>
             </Accordion.Item>
             <Accordion.Item eventKey="1">
-              <Accordion.Header>View by day</Accordion.Header>
+              <Accordion.Header>View By Day</Accordion.Header>
               <Accordion.Body>
-                {renderFilterOption()}
+                {renderWeekFilter()}
+                {renderWeekSelection()}
                 <LineChart
                   width={1200}
                   height={300}
@@ -400,30 +493,101 @@ function Roompage() {
         );
         break;
       case "Bar Chart":
+        const weeklyAverages = averages.map((value, index) => {
+          return {
+            day: days[index],
+            occupancy: value,
+          };
+        });
         return (
-          <BarChart
-            width={1000}
-            height={300}
-            data={graphData}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <XAxis dataKey="time" />
-            <YAxis />
-            <Tooltip />
-            <Legend height={36} />
-            {days.map((day, index) => (
-              <Bar dataKey={day} fill={chartColors[index]}></Bar>
-            ))}
-          </BarChart>
+          <Accordion defaultActiveKey="0">
+            <Accordion.Item eventKey="0">
+              <Accordion.Header>View By Time</Accordion.Header>
+              <Accordion.Body>
+                {renderTimeFilter()}
+                <BarChart
+                  width={1000}
+                  height={300}
+                  data={graphData.slice(
+                    timeBoundaries[0],
+                    timeBoundaries[1] + 1
+                  )}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <XAxis dataKey="time" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend height={"36%"} />
+                  {days.map(
+                    (day, index) =>
+                      graphLines[index] && (
+                        <Bar dataKey={day} fill={chartColors[index]}></Bar>
+                      )
+                  )}
+                </BarChart>
+                {renderGraphLineSelection()}
+              </Accordion.Body>
+            </Accordion.Item>
+            <Accordion.Item eventKey="1">
+              <Accordion.Header>View By Day</Accordion.Header>
+              <Accordion.Body>
+                {renderWeekFilter()}
+                <BarChart
+                  width={1000}
+                  height={300}
+                  data={weeklyAverages.slice(
+                    weekBoundaries[0],
+                    weekBoundaries[1] + 1
+                  )}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <XAxis dataKey="day" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend height={36} />
+                  <Bar dataKey="occupancy" fill="#557799"></Bar>
+                </BarChart>
+              </Accordion.Body>
+            </Accordion.Item>
+          </Accordion>
         );
       default:
         return <h1>NA</h1>;
     }
+  }
+
+  function renderGraphLineSelection() {
+    return (
+      <div>
+        <Container>
+          <Row>
+            {days.map((day, index) => (
+              <Col>
+                <FormCheck
+                  label={<p>{day}</p>}
+                  onChange={() => {
+                    let newArr = [...graphLines];
+                    newArr[index] = !newArr[index];
+                    setGraphLines(newArr);
+                  }}
+                  checked={graphLines[index]}
+                />
+              </Col>
+            ))}
+          </Row>
+        </Container>
+      </div>
+    );
   }
 
   function indexOfSmallest(a) {

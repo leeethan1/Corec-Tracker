@@ -24,8 +24,8 @@ function VerifyAccount() {
 
     if (response.ok) {
       const tokens = await response.json();
-      localStorage.setItem("access", tokens.access_token);
-      localStorage.setItem("refresh", tokens.refresh_token);
+      sessionStorage.setItem("access", tokens.access_token);
+      sessionStorage.setItem("refresh", tokens.refresh_token);
       history.push("/dashboard");
     } else {
       setError(true);
@@ -36,7 +36,7 @@ function VerifyAccount() {
 
   function displayError() {
     if (error) {
-      return <b style={{ color: "red" }}>{errMessage}</b>;
+      return <b className='error'>{errMessage}</b>;
     }
   }
 

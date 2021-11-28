@@ -7,24 +7,26 @@ import { useHistory } from "react-router";
 
 function Header() {
   const history = useHistory();
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  async function authenticate() {
-    const token = localStorage.getItem("remember")
-      ? localStorage.getItem("access")
-      : sessionStorage.getItem("access");
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        access: token,
-      },
-    };
-    const response = await fetch("/auth", requestOptions);
-    if (response.ok) {
-      setLoggedIn(true);
-    }
-  }
+  //const [loggedIn, setLoggedIn] = useState(false);
+  var loggedIn =
+    localStorage.getItem("access") || sessionStorage.getItem("access");
+  var admin = sessionStorage.getItem("isAdmin");
+  // async function authenticate() {
+  //   const token = localStorage.getItem("remember")
+  //     ? localStorage.getItem("access")
+  //     : sessionStorage.getItem("access");
+  //   const requestOptions = {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       access: token,
+  //     },
+  //   };
+  //   const response = await fetch("/auth", requestOptions);
+  //   if (response.ok) {
+  //     setLoggedIn(true);
+  //   }
+  // }
 
   async function signOut() {
     const token = localStorage.getItem("remember")
@@ -38,17 +40,13 @@ function Header() {
       },
     };
     const response = await fetch(`/logout`, requestOptions);
-    if (response.ok) {
-      //console.log(averages);
-      //console.log(occupancies);
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      localStorage.removeItem("remember");
-      sessionStorage.removeItem("access");
-      sessionStorage.removeItem("refresh");
-      setLoggedIn(false);
-      history.push("/");
-    }
+
+    //console.log(averages);
+    //console.log(occupancies);
+    localStorage.clear();
+    sessionStorage.clear();
+    //setLoggedIn(false);
+    history.push("/");
   }
   const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
 
@@ -60,9 +58,9 @@ function Header() {
     history.push("/settings");
   }
 
-  useEffect(() => {
-    authenticate();
-  }, []);
+  // useEffect(() => {
+  //   authenticate();
+  // }, []);
 
   return (
     <div className="header">
@@ -72,19 +70,27 @@ function Header() {
             <b>Corec Tracker</b>
           </Navbar.Brand>
           <Nav className="core-nav">
-            <Nav.Link href="/dashboard">Home</Nav.Link>
-            {loggedIn ? "" : <Nav.Link href="/">Log In</Nav.Link>}
-            {loggedIn ? "" : <Nav.Link href="/signup">Sign Up</Nav.Link>}
-            {loggedIn ? (
+            {!admin && <Nav.Link href="/dashboard">Home</Nav.Link>}
+            {!loggedIn && <Nav.Link href="/">Log In</Nav.Link>}
+            {loggedIn && !admin && (
+              <Nav.Link href="/chat">Chat with an Admin</Nav.Link>
+            )}
+            {!loggedIn && <Nav.Link href="/signup">Sign Up</Nav.Link>}
+            {loggedIn && (
               <Nav.Link>
-                <span onClick={() => signOut()}>Logout</span>
+                <span onClick={() => signOut()}>Log Out</span>
               </Nav.Link>
+            )}
+            {loggedIn && !admin ? (
+              <Nav.Link href="/profile">Profile</Nav.Link>
             ) : (
               ""
             )}
-            <Nav.Link href="/settings">
-              <span>Settings</span>
-            </Nav.Link>
+            {!admin && (
+              <Nav.Link href="/settings">
+                <span>Settings</span>
+              </Nav.Link>
+            )}
             <DropdownButton title="Rooms">
               {rooms.map((room, index) => (
                 <Dropdown.Item href={`/room/${encodeURIComponent(room)}`}>

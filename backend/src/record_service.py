@@ -1,4 +1,5 @@
 import json
+import statistics
 from datetime import datetime, timedelta, date
 from flask import Flask, Blueprint, session, jsonify, request
 import database_service as ds
@@ -77,26 +78,27 @@ def get_occupancies_in_week():
     room = request.json['room']
     week = request.json['week']
 
-    #snap to sunday
+    # snap to sunday
     today = datetime.today()
     if today.day == 0:
         today = today - timedelta(weeks=1)
-    start = today - timedelta(days=today.weekday()+1 + week * 7)
-    #start = start.isoformat()
+    start = today - timedelta(days=today.weekday() + 1 + week * 7)
+    # start = start.isoformat()
     end = start + timedelta(days=7)
-    #end = end.isoformat()
+    # end = end.isoformat()
     print(start, end)
     occupancies = []
     for day in range(0, 7):
         try:
-            record_list = list(records.find({'$and': [{'day': day}, {'room': room}, {'time':{'$gte': start, '$lt': end}}]}))
+            record_list = list(
+                records.find({'$and': [{'day': day}, {'room': room}, {'time': {'$gte': start, '$lt': end}}]}))
         except Exception as e:
             print(e)
         stats = [record['occupancy'] for record in record_list]
         if not stats:
             average = 0
         else:
-            average = sum(stats) / len(stats)
+            average = statistics.mean(stats)
             average = round(average, 1)
         occupancies.append(average)
     return json.dumps({'occupancies': occupancies}), 200
@@ -112,7 +114,7 @@ def get_average_occupancies():
         if not occupancies:
             average = 0
         else:
-            average = sum(occupancies) / len(occupancies)
+            average = statistics.mean(occupancies)
             average = round(average, 1)
         averages.append(average)
     return json.dumps({'averages': averages}), 200
@@ -130,7 +132,7 @@ def get_occupancies():
             if not stats:
                 average = 0
             else:
-                average = sum(stats) / len(stats)
+                average = statistics.mean(stats)
                 average = round(average, 1)
             averages.append(average)
         occupancies.append(averages)
@@ -154,9 +156,8 @@ def get_advanced_stats():
         else:
             maximum = max(occupancies)
             minimum = min(occupancies)
-            average = sum(occupancies) / len(occupancies)
+            average = statistics.mean(occupancies)
         mins.append(minimum)
         maxes.append(maximum)
         averages.append(round(average, 1))
     return json.dumps({'minimums': mins, 'maximums': maxes, 'averages': averages}), 200
-
