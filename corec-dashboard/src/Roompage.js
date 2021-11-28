@@ -169,13 +169,13 @@ function Roompage() {
       let stdVal = [0, 0, 0, 0, 0, 0, 0];
       for (let i = 0; i < graphData.length; i++) {
         let t = graphData[i];
-        stdVal[0] += (t.Mon - dayStats[0].avg) ** 2; //Monday
-        stdVal[1] += (t.Tue - dayStats[1].avg) ** 2; //Tuesday
-        stdVal[2] += (t.Wed - dayStats[2].avg) ** 2; //Wednesday
-        stdVal[3] += (t.Thu - dayStats[3].avg) ** 2; //Thursday
-        stdVal[4] += (t.Fri - dayStats[4].avg) ** 2; //Friday
-        stdVal[5] += (t.Sat - dayStats[5].avg) ** 2; //Saturday
-        stdVal[6] += (t.Sun - dayStats[6].avg) ** 2; //Sunday
+        stdVal[0] += (t.Mon - dayStats[0].avg) ** 2; //Sunday
+        stdVal[1] += (t.Tue - dayStats[1].avg) ** 2; //Monday
+        stdVal[2] += (t.Wed - dayStats[2].avg) ** 2; //Tuesday
+        stdVal[3] += (t.Thu - dayStats[3].avg) ** 2; //Wednesday
+        stdVal[4] += (t.Fri - dayStats[4].avg) ** 2; //Thursday
+        stdVal[5] += (t.Sat - dayStats[5].avg) ** 2; //Friday
+        stdVal[6] += (t.Sun - dayStats[6].avg) ** 2; //Saturday
       }
       let counter = timeAmt / 7;
       for (let i = 0; i < stdVal.length; i++) {
@@ -207,6 +207,10 @@ function Roompage() {
       tempSun += t.Sun;
     }
     dayTempData.push({
+      'day': 'Sun',
+      'avg':  (tempSun / counter).toFixed(2)
+    });
+    dayTempData.push({
       'day': 'Mon',
       'avg':  (tempMon / counter).toFixed(2)
     });
@@ -229,10 +233,6 @@ function Roompage() {
     dayTempData.push({
       'day': 'Sat',
       'avg':  (tempSat / counter).toFixed(2)
-    });
-    dayTempData.push({
-      'day': 'Sun',
-      'avg':  (tempSun / counter).toFixed(2)
     });
     console.log(dayTempData);
     setDayStats(dayTempData);
@@ -480,18 +480,20 @@ function Roompage() {
   function getCompareToday(num) {
     var curr = new Date(); // get current date
     var day = curr.getDay();
+    // console.log(day);
+    // console.log(dayStats);
     if (num == day) {
       return <p>---</p>;
     }
     else {
       if (dayStats[num].avg > dayStats[day].avg) {
-        return <FontAwesomeIcon icon="arrow-up" />;
+        return <FontAwesomeIcon icon="arrow-up" style={{color: "green"}}/>;
       }
       else if (dayStats[num].avg == dayStats[day].avg) {
-        return <FontAwesomeIcon icon="equals" />;
+        return <FontAwesomeIcon icon="equals" style={{color: "blue"}}/>;
       }
       else {
-        return <FontAwesomeIcon icon="arrow-down" />;
+        return <FontAwesomeIcon icon="arrow-down" style={{color: "red"}}/>;
       }
     }
   }
