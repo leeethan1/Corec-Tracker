@@ -47,6 +47,7 @@ function Roompage() {
   const updateInterval = 10;
   const [weekIndex, setWeekIndex] = useState(0);
   const [graphsLoading, setGraphsLoading] = useState(true);
+  const [timeBounds, setTimeBounds] = useState([0, 18]);
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const chartColors = [
@@ -216,24 +217,6 @@ function Roompage() {
     }
   }
 
-  async function updateWeeklyOccupancies() {
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        room: roomName,
-        week: weekIndex,
-      }),
-    };
-    const response = await fetch("/records/week", requestOptions);
-    if (response.ok) {
-      const res = await response.json();
-      const averages = res.occupancies;
-      console.log(averages);
-      setWeeklyOccupancies(averages);
-    }
-  }
-
   async function handleGetLiveOccupancy() {
     const requestOptions = {
       method: "POST",
@@ -256,17 +239,12 @@ function Roompage() {
     var curr = new Date(); // get current date
     var first = curr.getDate() - curr.getDay(); // First day is the day of the month - the day of the week
     // first.setDate(first. - 7 * index);
-    var firstday = new Date(curr.setDate(first - 7 * index));
 
-    return `${firstday.getMonth() + 1}/${firstday.getDate().toString()}`;
-  }
-
-  function getSunday(index) {
-
-    var curr = new Date; // get current date
-    var first = curr.getDate() - curr.getDay(); // First day is the day of the month - the day of the week
-    // first.setDate(first. - 7 * index);
-    var firstday = new Date(curr.setDate(first - 7 * index));
+    if (curr.getDay() == 0) {
+      var firstday = new Date(curr.setDate(first - 7 * (index + 1)));
+    } else {
+      var firstday = new Date(curr.setDate(first - 7 * index));
+    }
 
     return `${firstday.getMonth() + 1}/${firstday.getDate().toString()}`;
   }
@@ -280,18 +258,20 @@ function Roompage() {
   function renderGraphsLoading() {
     if (loading) {
       return (
-        <Container>
-          <Row>
-            <h3>
-              <i>Loading Graphs...</i>
-            </h3>
-          </Row>
-          <Row>
-            <div className="center">
-              <Spinner animation="border" size="lg" />
-            </div>
-          </Row>
-        </Container>
+        <div style={{ padding: "10rem" }}>
+          <Container>
+            <Row>
+              <h3>
+                <i>Loading Graphs...</i>
+              </h3>
+            </Row>
+            <Row>
+              <div className="center">
+                <Spinner animation="border" size="lg" />
+              </div>
+            </Row>
+          </Container>
+        </div>
       );
     }
   }
@@ -361,10 +341,50 @@ function Roompage() {
             <Accordion.Item eventKey="0">
               <Accordion.Header>View by time</Accordion.Header>
               <Accordion.Body>
+                <select
+                  defaultValue={0}
+                  class="form-select"
+                  aria-label="Default select example"
+                  onChange={(e) => {
+                    e.preventDefault();
+                    setTimeBounds([parseInt(e.target.value), timeBounds[1]]);
+                  }}
+                >
+                  {times.map((time, index) => {
+                    return (
+                      <option
+                        value={index}
+                        disabled={index >= timeBounds[1]}
+                      >
+                        {time}
+                      </option>
+                    );
+                  })}
+                </select>
+                <select
+                  defaultValue={18}
+                  class="form-select"
+                  aria-label="Default select example"
+                  onChange={(e) => {
+                    e.preventDefault();
+                    setTimeBounds([timeBounds[0], parseInt(e.target.value)]);
+                  }}
+                >
+                  {times.map((time, index) => {
+                    return (
+                      <option
+                        value={index}
+                        disabled={index <= timeBounds[0]}
+                      >
+                        {time}
+                      </option>
+                    );
+                  })}
+                </select>
                 <LineChart
                   width={1200}
                   height={300}
-                  data={graphData}
+                  data={graphData.slice(timeBounds[0], timeBounds[1] + 1)}
                   margin={{
                     top: 5,
                     right: 30,
@@ -531,10 +551,10 @@ function Roompage() {
           <Tabs
             id="chart tabs"
             defaultActiveKey="Line Graph"
-          // onSelect={(k) => {
-          //   setChartType(k);
-          //   console.log(chartType);
-          // }}
+            // onSelect={(k) => {
+            //   setChartType(k);
+            //   console.log(chartType);
+            // }}
           >
             {["Line Graph", "Bar Chart"].map((element, index) => (
               <Tab eventKey={element} title={element}>
