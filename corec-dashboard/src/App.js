@@ -15,6 +15,7 @@ import Favorites from "./Favorites";
 import Profile from "./Profile";
 import Chat from "./Chat";
 import AdminLogin from "./AdminLogin";
+import BugReport from "./BugReport";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 //import 'font-awesome/css/font-awesome.min.css';
@@ -62,6 +63,7 @@ function App() {
           <Route exact path="/room/:roomName" component={Roompage} />
           <PrivateRoute path="/favorites" component={Favorites} />
           <Route exact path="/chat" component={Chat} />
+          <Route exact path="/report" component={BugReport} />
           <PrivateRoute path="/profile" component={Profile} />
         </Switch>
       </div>

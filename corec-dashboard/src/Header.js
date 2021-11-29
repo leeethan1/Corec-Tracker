@@ -39,13 +39,14 @@ function Header() {
       },
     };
     const response = await fetch(`/logout`, requestOptions);
-
-    //console.log(averages);
-    //console.log(occupancies);
-    localStorage.clear();
-    sessionStorage.clear();
-    setLoggedIn(false);
-    history.push("/");
+    if (response.ok) {
+      //console.log(averages);
+      //console.log(occupancies);
+      localStorage.clear();
+      sessionStorage.clear();
+      setLoggedIn(false);
+      history.push("/");
+    }
   }
   const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
 
@@ -89,6 +90,9 @@ function Header() {
               <Nav.Link href="/settings">
                 <span>Settings</span>
               </Nav.Link>
+            )}
+            {loggedIn && !admin && (
+              <Nav.Link href="/report">Report a Bug</Nav.Link>
             )}
             <DropdownButton title="Rooms">
               {rooms.map((room, index) => (
