@@ -8,6 +8,7 @@ import { useHistory } from "react-router";
 function Header() {
   const history = useHistory();
   const [loggedIn, setLoggedIn] = useState(false);
+  const admin = sessionStorage.getItem("isAdmin");
 
   async function authenticate() {
     const token = localStorage.getItem("remember")
