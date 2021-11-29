@@ -37,6 +37,8 @@ def process_room():
             ret, frame = cap.read()
         except Exception as e:
             logging.error(traceback.format_exc())
+            record = records.find({'room': room}).sort([('time', -1)]).limit(1)
+            return json.dumps({'occupancy': record[0]['occupancy']}), 200
         cv2.normalize(frame, frame, 0, 80, cv2.NORM_MINMAX)
 
         if ret == False:

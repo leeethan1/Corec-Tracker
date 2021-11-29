@@ -5,6 +5,7 @@ import Header from "./Header";
 import { Alert, FormCheck, Spinner } from "react-bootstrap";
 //import Star from "react-star-rating-component";
 import Star from "./Star";
+import { PieChart, Pie, Tooltip, Legend } from "recharts";
 
 function Dashboard() {
   const [rooms, setRooms] = useState({
@@ -12,6 +13,16 @@ function Dashboard() {
     "Room 2": 0,
     "Room 3": 0,
     "Room 4": 0,
+  });
+
+  const graphData = Object.entries(rooms).map(([key, value], index) => {
+    return {
+      room: key,
+      occupancy: value,
+      fill: `#${parseInt(
+        0xaf77f9 * ((index + 1) / Object.keys(rooms).length)
+      ).toString(16)}`,
+    };
   });
 
   //const [user, setUser] = useState("");
@@ -24,16 +35,6 @@ function Dashboard() {
 
   //const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
   const history = useHistory();
-
-  useEffect(() => {
-    let interval = null;
-    //console.log(tick);
-    interval = setInterval(() => {
-      setTick((tick) => tick + 1);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [tick]);
 
   useEffect(() => {
     sortRooms();
@@ -218,7 +219,6 @@ function Dashboard() {
     <div>
       <Header />
       <h1> Dashboard </h1>
-
       {loading ? (
         <div className="fetching-loading">
           <h2>Fetching Occupancies</h2>
@@ -226,6 +226,11 @@ function Dashboard() {
         </div>
       ) : (
         <div>
+          <PieChart width={730} height={250}>
+            <Pie data={graphData} dataKey="occupancy" nameKey="room" label />
+            <Tooltip />
+            <Legend height={36} />
+          </PieChart>
           {renderRooms()}
           <Button
             block
