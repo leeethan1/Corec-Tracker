@@ -7,26 +7,24 @@ import { useHistory } from "react-router";
 
 function Header() {
   const history = useHistory();
-  //const [loggedIn, setLoggedIn] = useState(false);
-  var loggedIn =
-    localStorage.getItem("access") || sessionStorage.getItem("access");
-  var admin = sessionStorage.getItem("isAdmin");
-  // async function authenticate() {
-  //   const token = localStorage.getItem("remember")
-  //     ? localStorage.getItem("access")
-  //     : sessionStorage.getItem("access");
-  //   const requestOptions = {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       access: token,
-  //     },
-  //   };
-  //   const response = await fetch("/auth", requestOptions);
-  //   if (response.ok) {
-  //     setLoggedIn(true);
-  //   }
-  // }
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  async function authenticate() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: token,
+      },
+    };
+    const response = await fetch("/auth", requestOptions);
+    if (response.ok) {
+      setLoggedIn(true);
+    }
+  }
 
   async function signOut() {
     const token = localStorage.getItem("remember")
@@ -45,7 +43,7 @@ function Header() {
     //console.log(occupancies);
     localStorage.clear();
     sessionStorage.clear();
-    //setLoggedIn(false);
+    setLoggedIn(false);
     history.push("/");
   }
   const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
@@ -58,9 +56,9 @@ function Header() {
     history.push("/settings");
   }
 
-  // useEffect(() => {
-  //   authenticate();
-  // }, []);
+  useEffect(() => {
+    authenticate();
+  }, []);
 
   return (
     <div className="header">
