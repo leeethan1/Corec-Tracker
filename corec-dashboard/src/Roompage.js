@@ -727,6 +727,18 @@ function Roompage() {
                     <XAxis dataKey="day" />
                     <YAxis />
                     <Tooltip />
+                    <ReferenceLine
+                      y={
+                        weeklyOccupancies.reduce(
+                          (partial_sum, a) => partial_sum + a,
+                          0
+                        ) / weeklyOccupancies.length
+                      }
+                      label="Average"
+                      stroke="red"
+                      strokeDasharray="3 3"
+                      isFront={true}
+                    />
                     <Legend height={36} />
                     <Line dataKey="occupancy" type="monotoneX" />
                   </LineChart>
