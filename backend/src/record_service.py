@@ -1,7 +1,9 @@
 import json
 import statistics
-from datetime import datetime, timedelta, date
-from flask import Flask, Blueprint, session, jsonify, request
+from datetime import datetime, timedelta
+
+from flask import Blueprint, request
+
 import database_service as ds
 import notification_service as ns
 
@@ -145,6 +147,7 @@ def get_advanced_stats():
     room = request.json['room']
     maxes = []
     mins = []
+    std_devs = []
     averages = []
     for day in range(0, 7):
         record_list = list(records.find({'$and': [{'room': room}, {'day': day}]}))
@@ -153,11 +156,26 @@ def get_advanced_stats():
             maximum = 0
             minimum = 0
             average = 0
+            std_dev = 0
         else:
             maximum = max(occupancies)
             minimum = min(occupancies)
             average = statistics.mean(occupancies)
+            if len(occupancies) > 2:
+                std_dev = round(statistics.stdev(occupancies), 1)
+            else:
+                std_dev = 0
         mins.append(minimum)
         maxes.append(maximum)
+        std_devs.append(std_dev)
         averages.append(round(average, 1))
-    return json.dumps({'minimums': mins, 'maximums': maxes, 'averages': averages}), 200
+    today = datetime.utcnow().date()
+    start = datetime(today.year, today.month, today.day)
+    end = start + timedelta(days=1)
+    current_day_occupancies = [record['occupancy'] for record in list(
+        records.find({'$and': [{'room': room}, {'time': {'$lt': end}}, {'time': {'$gte': start}}]}))]
+    return json.dumps(
+        {'minimums': mins, 'maximums': maxes, 'averages': averages, "stdDevs": std_devs,
+         'todaysMin': min(current_day_occupancies),
+         'todaysMax': max(current_day_occupancies),
+         'todaysAverage': round(statistics.mean(current_day_occupancies), 1)}), 200

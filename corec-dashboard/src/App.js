@@ -63,7 +63,7 @@ function App() {
           <Route exact path="/room/:roomName" component={Roompage} />
           <PrivateRoute path="/favorites" component={Favorites} />
           <Route exact path="/chat" component={Chat} />
-          <Route exact path="/report" component={BugReport} />
+          <PrivateRoute path="/report" component={BugReport} />
           <PrivateRoute path="/profile" component={Profile} />
         </Switch>
       </div>

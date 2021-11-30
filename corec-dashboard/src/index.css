@@ -29,6 +29,7 @@ code {
 .vertical {
   display: flex;
   flex-direction: column;
+  width: 90%;
 }
 
 .header {
@@ -36,6 +37,7 @@ code {
   margin-left: -1rem;
   margin-right: -1rem;
   padding: -1rem;
+  width: 100%;
 }
 
 .error {

@@ -347,9 +347,9 @@
 
 #RoomDataCard {
   width: 15rem;
-  margin-left: 30px;
+  /* margin-left: 30px; */
   text-align: center;
-  height: 13rem;
+  height: fit-content;
   font-family: Roboto;
   font-size: larger;
 }
