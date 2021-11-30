@@ -414,7 +414,9 @@ function Roompage() {
     }
     return (
       <Card border="primary" id="RoomDataCard">
-        <Card.Header>{date}</Card.Header>
+        <Card.Header>
+          <span style={{ color: "black" }}>{date}</span>
+        </Card.Header>
         <Card.Body>
           <Card.Text className={fontColor}>{renderCardText()}</Card.Text>
         </Card.Body>
@@ -450,7 +452,11 @@ function Roompage() {
     return (
       <Modal show={displayPopup} onHide={() => setDisplayPopup(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Weekly Average + Standard Deviation</Modal.Title>
+          <Modal.Title>
+            <span style={{ color: "black" }}>
+              Weekly Average + Standard Deviation
+            </span>
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>{renderTablePopup()}</Modal.Body>
         <Modal.Footer>
@@ -666,7 +672,7 @@ function Roompage() {
               <Accordion.Header>View By Time</Accordion.Header>
               <Accordion.Body>
                 {renderTimeFilter()}
-                <ResponsiveContainer width="90%" height={400}>
+                <ResponsiveContainer width="100%" height={400}>
                   <LineChart
                     width={900}
                     height={300}
@@ -761,7 +767,7 @@ function Roompage() {
               <Accordion.Header>View By Time</Accordion.Header>
               <Accordion.Body>
                 {renderTimeFilter()}
-                <ResponsiveContainer width="90%" height={400}>
+                <ResponsiveContainer width="100%" height={400}>
                   <BarChart
                     width={900}
                     height={300}
@@ -795,7 +801,7 @@ function Roompage() {
               <Accordion.Header>View By Day</Accordion.Header>
               <Accordion.Body>
                 {renderWeekFilter()}
-                <ResponsiveContainer width="90%" height={400}>
+                <ResponsiveContainer width="100%" height={400}>
                   <BarChart
                     width={900}
                     height={300}
@@ -834,7 +840,7 @@ function Roompage() {
             {days.map((day, index) => (
               <Col>
                 <FormCheck
-                  label={<p>{day}</p>}
+                  label={<p style={{ color: "black" }}>{day}</p>}
                   onChange={() => {
                     let newArr = [...graphLines];
                     newArr[index] = !newArr[index];
@@ -875,7 +881,7 @@ function Roompage() {
             {cardLoading ? (
               <Spinner animation="border" className="textBlack vCenter" />
             ) : (
-              <div>
+              <div style={{ color: "black" }}>
                 {days.map((day, index) => (
                   <p>
                     The average occupancy on <b>{day}</b> is around{" "}
@@ -939,9 +945,9 @@ function Roompage() {
       {renderDataPopup()}
       <Header />
       <h1 className="center">{roomName}</h1>
-      <Container>
+      <Container style={{ margin: "-5px" }}>
         <Row>
-          <Col sm={9}>
+          <Col xs={10}>
             <div className="flexSpace">
               <span className="vertical">
                 <Tabs

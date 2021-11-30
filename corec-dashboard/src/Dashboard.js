@@ -226,7 +226,16 @@ function Dashboard() {
         </div>
       ) : (
         <div>
-          <PieChart width={730} height={250}>
+          <PieChart
+            width={730}
+            height={250}
+            margin={{
+              top: 25,
+              right: 0,
+              left: 0,
+              bottom: 0,
+            }}
+          >
             <Pie data={graphData} dataKey="occupancy" nameKey="room" label />
             <Tooltip />
             <Legend height={36} />

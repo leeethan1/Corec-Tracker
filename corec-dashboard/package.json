@@ -34,6 +34,7 @@
     "react-tabs": "^3.2.2",
     "recharts": "^2.1.5",
     "rsuite": "^5.1.0",
+    "styled-components": "^5.3.3",
     "web-vitals": "^1.1.2"
   },
   "scripts": {
