@@ -27,6 +27,7 @@ email_verification_codes = db['email verification codes']
 phone_verification_codes = db['phone verification codes']
 unverified_accounts = db['unverified accounts']
 admins = db['admins']
+bug_reports = db['Bug Reports']
 
 email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 password_regex = re.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$")
