@@ -620,6 +620,7 @@ def generate_phone_verification_code(phone):
         return code
     return token['code']
 
+
 @user_service.route("/report/send", methods=["POST"])
 @token_required
 def send_bug_report(user):

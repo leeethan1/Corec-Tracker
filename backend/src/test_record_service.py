@@ -89,6 +89,16 @@ class TestRecordService(unittest.TestCase):
             assert occupancy / total == expected_occupancies[index] / sum(expected_occupancies)
             index += 1
 
+    def testHourlyRecords(self):
+        for _ in range(5):
+            records.insert_one({
+                'room': 'Room 1', 'hour': 5, 'occupancy': 5
+            })
+        record_list = list(
+            records.find({'$and': [{'room': 'Room 1'}, {'hour': 5}]}))
+        occupancies = [record['occupancy'] for record in record_list]
+        assert sum(occupancies) == 25
+
     @classmethod
     def tearDown(cls) -> None:
         records.delete_many({})
