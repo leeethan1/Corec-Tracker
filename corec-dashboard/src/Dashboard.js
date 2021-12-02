@@ -43,6 +43,7 @@ function Dashboard() {
   console.log(busiestRooms);
   const [selectedHour, setSelectedHour] = useState(new Date().getHours());
   const [showPopup, setShowPopup] = useState(false);
+  const [userNotifications, setUserNotifications] = useState({});
 
   console.log(selectedHour);
 
@@ -85,9 +86,36 @@ function Dashboard() {
 
   useEffect(() => {
     handleGetFavorites();
+    handleGetSettings();
     getOccupancies();
     handleGetBusiestRooms();
   }, []);
+
+  async function handleGetSettings() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: token,
+      },
+    };
+    const response = await fetch("/settings/get", requestOptions);
+    if (response.ok) {
+      //setAuthError(false);
+      const res = await response.json();
+      //console.log(res);
+      //const notifs = await res.notifications.json();
+      setUserNotifications(res.notifications);
+      console.log(userNotifications);
+    } else {
+      const res = await response.json();
+      console.log(res);
+      setAuthError(true);
+    }
+  }
 
   const getOccupancies = async (_) => {
     setLoading(true);
@@ -240,6 +268,11 @@ function Dashboard() {
   function renderRooms() {
     let rowsToRender = [];
     Object.keys(rooms).forEach((item) => {
+      let underThreshold =
+        !authError &&
+        item in userNotifications &&
+        userNotifications[item] > rooms[item];
+
       rowsToRender.push(
         <div className="room-row" key={item}>
           <hr />
@@ -251,7 +284,17 @@ function Dashboard() {
             <h3>{item}</h3>
           </Link>
           {renderStar(item)}
-          <p>Most recent occupancy: {rooms[item]}</p>
+          <p>
+            Most recent occupancy:{" "}
+            <span
+              style={{
+                color: underThreshold ? "green" : "black",
+                fontSize: underThreshold ? "larger" : "normal",
+              }}
+            >
+              {rooms[item]}
+            </span>
+          </p>
           <hr />
         </div>
       );
