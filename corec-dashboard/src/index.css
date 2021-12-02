@@ -1,5 +1,4 @@
 body {
-  display: flexbox;
   margin: 10rem;
   padding: 1rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -7,6 +6,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: absolute;
+  overflow-x: scroll;
 }
 
 code {
@@ -15,29 +16,28 @@ code {
 }
 
 .center {
-  display: flex;
+  /* display: flex; */
   justify-content: center;
   align-items: center;
   text-align: center;
 }
 
 .horizontal {
-  display: flex;
-  flex-direction: row;
+  /* display: flex;
+  flex-direction: row; */
 }
 
 .vertical {
-  display: flex;
-  flex-direction: column;
-  width: 90%;
+  /* display: flex;
+  flex-direction: column; */
+  /* width: 90%; */
 }
 
 .header {
   margin-top: -1rem;
   margin-left: -1rem;
   margin-right: -1rem;
-  padding: -1rem;
-  width: 100%;
+  /* padding: -1rem; */
   z-index: 1;
   top: 0;
   position: sticky;
@@ -53,3 +53,5 @@ code {
 /* .margins {
   margin: 10rem;
 } */
+
+

@@ -948,7 +948,7 @@ function Roompage() {
       <Container style={{ margin: "-5px" }}>
         <Row>
           <Col xs={10}>
-            <div className="flexSpace">
+            <div>
               <span className="vertical">
                 <Tabs
                   id="chart tabs"

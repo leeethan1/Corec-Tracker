@@ -68,16 +68,6 @@ function Dashboard() {
     "11 pm",
   ];
 
-  const graphData = Object.entries(rooms).map(([key, value], index) => {
-    return {
-      room: key,
-      occupancy: value,
-      fill: `#${parseInt(
-        0xaf77f9 * ((index + 1) / Object.keys(rooms).length)
-      ).toString(16)}`,
-    };
-  });
-
   //const [user, setUser] = useState("");
   //const [showFavOnly, setShowFavOnly] = useState(false);
   const [favoriteRooms, setFavoriteRooms] = useState([]);
@@ -292,9 +282,15 @@ function Dashboard() {
 
   function renderPopup() {
     return (
-      <Modal show={showPopup} onHide={(e) => setShowPopup(false)}>
+      <Modal
+        show={showPopup}
+        onHide={(e) => setShowPopup(false)}
+        style={{ color: "black" }}
+      >
         <Modal.Header closeButton>
-          <Modal.Title><b>Busiest Rooms at {times[selectedHour - 5]}</b></Modal.Title>
+          <Modal.Title>
+            <b>Busiest Rooms at {times[selectedHour - 5]}</b>
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {busiestRooms?.map((entry, index) => (
@@ -339,7 +335,11 @@ function Dashboard() {
         </div>
       ) : (
         <div>
-          <PieChart width={730} height={250}>
+          <PieChart
+            width={730}
+            height={250}
+            margin={{ top: 25, bottom: 0, right: 0, left: 0 }}
+          >
             <Pie data={graphData} dataKey="occupancy" nameKey="room" label />
             <Tooltip />
             <Legend height={36} />
