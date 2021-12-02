@@ -76,7 +76,7 @@ function Header() {
               <Nav.Link href="/chat">Chat with an Admin</Nav.Link>
             )}
             {!loggedIn && <Nav.Link href="/signup">Sign Up</Nav.Link>}
-            {loggedIn && (
+            {(loggedIn || admin) && (
               <Nav.Link>
                 <span onClick={() => signOut()}>Log Out</span>
               </Nav.Link>

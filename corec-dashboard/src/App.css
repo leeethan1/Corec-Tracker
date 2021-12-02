@@ -346,12 +346,20 @@
 }
 
 #RoomDataCard {
-  width: 15rem;
+  width: 15vw;
   /* margin-left: 30px; */
   text-align: center;
+  left: 90%;
+  top: 25%;
   height: fit-content;
   font-family: Roboto;
-  font-size: larger;
+  /* font-size: larger; */
+}
+@media (max-width: 800px) {
+  #RoomDataCard {
+    font-size: 10px;
+    width: 90%;
+  }
 }
 
 .flexSpace {

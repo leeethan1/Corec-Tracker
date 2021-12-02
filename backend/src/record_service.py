@@ -182,6 +182,7 @@ def get_advanced_stats():
          'todaysMax': max(current_day_occupancies),
          'todaysAverage': round(statistics.mean(current_day_occupancies), 1)}), 200
 
+
 @record_service.route('/records/hour', methods=['POST', 'GET'])
 def get_rooms_by_hour():
     hour = request.json['hour']
