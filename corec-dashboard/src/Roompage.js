@@ -947,8 +947,8 @@ function Roompage() {
       <h1 className="center">{roomName}</h1>
       <Container style={{ margin: "-5px" }}>
         <Row>
-          <Col xs={10}>
-            <div>
+          <Col>
+            <div style={{ width: "65vw" }}>
               <span className="vertical">
                 <Tabs
                   id="chart tabs"
@@ -968,7 +968,7 @@ function Roompage() {
               </span>
             </div>
           </Col>
-          <Col sm="auto">{displayMoreStats()}</Col>
+          <Col>{displayMoreStats()}</Col>
         </Row>
       </Container>
 

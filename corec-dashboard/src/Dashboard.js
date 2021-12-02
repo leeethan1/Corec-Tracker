@@ -15,7 +15,7 @@ import {
 } from "react-bootstrap";
 //import Star from "react-star-rating-component";
 import Star from "./Star";
-import { PieChart, Pie, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 function Dashboard() {
   const [rooms, setRooms] = useState({
@@ -335,15 +335,16 @@ function Dashboard() {
         </div>
       ) : (
         <div>
-          <PieChart
-            width={730}
-            height={250}
-            margin={{ top: 25, bottom: 0, right: 0, left: 0 }}
-          >
-            <Pie data={graphData} dataKey="occupancy" nameKey="room" label />
-            <Tooltip />
-            <Legend height={36} />
-          </PieChart>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart
+              width={"100%"}
+              margin={{ top: 25, bottom: 0, right: 0, left: 0 }}
+            >
+              <Pie data={graphData} dataKey="occupancy" nameKey="room" label />
+              <Tooltip />
+              <Legend height={36} />
+            </PieChart>
+          </ResponsiveContainer>
           {renderRooms()}
           <Container style={{ padding: "0 45px" }}>
             <Row xs="auto">

@@ -346,9 +346,10 @@
 }
 
 #RoomDataCard {
-  width: 15rem;
+  width: 15vw;
   /* margin-left: 30px; */
   text-align: center;
+  top: 25%;
   height: fit-content;
   font-family: Roboto;
   font-size: larger;

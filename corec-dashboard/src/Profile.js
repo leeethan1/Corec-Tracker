@@ -136,14 +136,6 @@ function Profile() {
     };
     const response = await fetch("/email/update/verify", requestOptions);
     if (response.ok) {
-      const res = await response.json();
-      if (localStorage.getItem("remember")) {
-        localStorage.setItem("access", res.access_token);
-        localStorage.setItem("refresh", res.refresh_token);
-      } else {
-        sessionStorage.setItem("access", res.access_token);
-        sessionStorage.setItem("refresh", res.refresh_token);
-      }
       window.location.reload(false);
     } else {
       const err = await response.json();
