@@ -1,13 +1,28 @@
 body {
   margin: 10rem;
   padding: 1rem;
+  width: 100vw;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: absolute;
-  overflow-x: scroll;
+  /* overflow-x: scroll; */
+}
+/* for desktop */
+@media (min-width: 850px) {
+  body {
+    margin: 10rem;
+    padding: 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+      "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: absolute;
+    /* overflow-x: scroll; */
+  }
 }
 
 code {
@@ -53,5 +68,3 @@ code {
 /* .margins {
   margin: 10rem;
 } */
-
-

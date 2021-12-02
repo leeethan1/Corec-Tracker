@@ -11,6 +11,7 @@ import os
 db = database_service.connect_to_database("test")
 users = db['users']
 tokens = db['user tokens']
+bug_reports = db['Bug Reports']
 test_user = {
     'email': "email",
     'password': bcrypt.hashpw("pass123".encode('utf-8'), bcrypt.gensalt()),
@@ -109,10 +110,29 @@ class TestUserService(unittest.TestCase):
             assert False
         assert True
 
+    def testBugReportSuccess(self):
+        email = 'randomemail@email.com'
+        time = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+        sent_reports = bug_reports.find({'$and': [{'time': {'$gt': time}}, {'email': email}]})
+        if sent_reports.count() >= 3:
+            assert False
+        assert True
+
+    def testBugReportFail(self):
+        email = 'randomemail@email.com'
+        time = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+        for _ in range(3):
+            bug_reports.insert_one({'email': email, 'time': datetime.datetime.utcnow()})
+        sent_reports = bug_reports.find({'$and': [{'time': {'$gt': time}}, {'email': email}]})
+        if sent_reports.count() >= 3:
+            assert True
+        assert True
+
     @classmethod
     def tearDown(cls):
         users.delete_many({})
         tokens.delete_many({})
+        bug_reports.delete_many({})
 
 
 if __name__ == '__main__':
