@@ -8,6 +8,7 @@ import { useHistory } from "react-router";
 function Header() {
   const history = useHistory();
   const [loggedIn, setLoggedIn] = useState(false);
+  const admin = sessionStorage.getItem("isAdmin");
 
   async function authenticate() {
     const token = localStorage.getItem("remember")
@@ -41,11 +42,8 @@ function Header() {
     if (response.ok) {
       //console.log(averages);
       //console.log(occupancies);
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      localStorage.removeItem("remember");
-      sessionStorage.removeItem("access");
-      sessionStorage.removeItem("refresh");
+      localStorage.clear();
+      sessionStorage.clear();
       setLoggedIn(false);
       history.push("/");
     }
@@ -72,19 +70,30 @@ function Header() {
             <b>Corec Tracker</b>
           </Navbar.Brand>
           <Nav className="core-nav">
-            <Nav.Link href="/dashboard">Home</Nav.Link>
-            {loggedIn ? "" : <Nav.Link href="/">Log In</Nav.Link>}
-            {loggedIn ? "" : <Nav.Link href="/signup">Sign Up</Nav.Link>}
-            {loggedIn ? (
+            {!admin && <Nav.Link href="/dashboard">Home</Nav.Link>}
+            {!loggedIn && <Nav.Link href="/">Log In</Nav.Link>}
+            {loggedIn && !admin && (
+              <Nav.Link href="/chat">Chat with an Admin</Nav.Link>
+            )}
+            {!loggedIn && <Nav.Link href="/signup">Sign Up</Nav.Link>}
+            {(loggedIn || admin) && (
               <Nav.Link>
-                <span onClick={() => signOut()}>Logout</span>
+                <span onClick={() => signOut()}>Log Out</span>
               </Nav.Link>
+            )}
+            {loggedIn && !admin ? (
+              <Nav.Link href="/profile">Profile</Nav.Link>
             ) : (
               ""
             )}
-            <Nav.Link href="/settings">
-              <span>Settings</span>
-            </Nav.Link>
+            {!admin && (
+              <Nav.Link href="/settings">
+                <span>Settings</span>
+              </Nav.Link>
+            )}
+            {loggedIn && !admin && (
+              <Nav.Link href="/report">Report a Bug</Nav.Link>
+            )}
             <DropdownButton title="Rooms">
               {rooms.map((room, index) => (
                 <Dropdown.Item href={`/room/${encodeURIComponent(room)}`}>
