@@ -946,7 +946,7 @@ function Roompage() {
       <Header />
       <h1 className="center">{roomName}</h1>
       <Container style={{ margin: "-5px" }}>
-        <Row>
+        <Row xs={2}>
           <Col>
             <div style={{ width: "65vw" }}>
               <span className="vertical">
