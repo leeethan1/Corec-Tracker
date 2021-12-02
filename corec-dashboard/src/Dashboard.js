@@ -75,6 +75,7 @@ function Dashboard() {
   const [tick, setTick] = useState(0);
   const [sorted, setSorted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [thresholds, setThresholds] = useState();
 
   //const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
   const history = useHistory();
@@ -87,6 +88,24 @@ function Dashboard() {
     handleGetFavorites();
     getOccupancies();
     handleGetBusiestRooms();
+    async function fetchThresholds() {
+      const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          access: token,
+        },
+      };
+      const response = await fetch("/settings/get", requestOptions);
+      if (response.ok) {
+        const res = await response.json();
+        setThresholds(res.notifications);
+      }
+    }
+    fetchThresholds();
   }, []);
 
   const getOccupancies = async (_) => {
@@ -240,8 +259,10 @@ function Dashboard() {
   function renderRooms() {
     let rowsToRender = [];
     Object.keys(rooms).forEach((item) => {
+      console.log(item);
+      console.log(thresholds);
       rowsToRender.push(
-        <div className="room-row" key={item}>
+        <div className={getRowClass(rooms[item], thresholds[item])} key={item}>
           <hr />
           <Link
             to={{
@@ -257,6 +278,13 @@ function Dashboard() {
       );
     });
     return rowsToRender;
+  }
+
+  function getRowClass(curr, threshold) {
+    if (curr > threshold) {
+      return "room-row above-threshold"
+    }
+    return "room-row";
   }
 
   async function handleGetBusiestRooms() {
