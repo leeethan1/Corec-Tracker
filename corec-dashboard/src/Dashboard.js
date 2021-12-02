@@ -2,9 +2,20 @@ import { React, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Header from "./Header";
-import { Alert, FormCheck, Spinner } from "react-bootstrap";
+import {
+  Alert,
+  FormCheck,
+  Spinner,
+  Container,
+  Row,
+  Col,
+  Modal,
+  DropdownButton,
+  Dropdown,
+} from "react-bootstrap";
 //import Star from "react-star-rating-component";
 import Star from "./Star";
+import { PieChart, Pie, Tooltip, Legend } from "recharts";
 
 function Dashboard() {
   const [rooms, setRooms] = useState({
@@ -12,6 +23,49 @@ function Dashboard() {
     "Room 2": 0,
     "Room 3": 0,
     "Room 4": 0,
+  });
+
+  const [busiestRooms, setBusiestRooms] = useState([
+    Object.keys(rooms).map((key, index) => {
+      return { room: key, occupancy: rooms[key] };
+    }),
+  ]);
+  console.log(busiestRooms);
+  const [selectedHour, setSelectedHour] = useState(new Date().getHours());
+  const [showPopup, setShowPopup] = useState(false);
+
+  console.log(selectedHour);
+
+  const times = [
+    "5 am",
+    "6 am",
+    "7 am",
+    "8 am",
+    "9 am",
+    "10 am",
+    "11 am",
+    "12 pm",
+    "1 pm",
+    "2 pm",
+    "3 pm",
+    "4 pm",
+    "5 pm",
+    "6 pm",
+    "7 pm",
+    "8 pm",
+    "9 pm",
+    "10 pm",
+    "11 pm",
+  ];
+
+  const graphData = Object.entries(rooms).map(([key, value], index) => {
+    return {
+      room: key,
+      occupancy: value,
+      fill: `#${parseInt(
+        0xaf77f9 * ((index + 1) / Object.keys(rooms).length)
+      ).toString(16)}`,
+    };
   });
 
   //const [user, setUser] = useState("");
@@ -26,22 +80,13 @@ function Dashboard() {
   const history = useHistory();
 
   useEffect(() => {
-    let interval = null;
-    //console.log(tick);
-    interval = setInterval(() => {
-      setTick((tick) => tick + 1);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [tick]);
-
-  useEffect(() => {
     sortRooms();
   }, [sorted]);
 
   useEffect(() => {
     handleGetFavorites();
     getOccupancies();
+    handleGetBusiestRooms();
   }, []);
 
   const getOccupancies = async (_) => {
@@ -214,34 +259,113 @@ function Dashboard() {
     return rowsToRender;
   }
 
+  async function handleGetBusiestRooms() {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        hour: selectedHour,
+      }),
+    };
+    const response = await fetch(`/records/hour`, requestOptions);
+    if (response.ok) {
+      const res = await response.json();
+      console.log(res);
+      setBusiestRooms(res.rooms);
+    } else {
+      const res = await response.json();
+      console.log(res);
+    }
+  }
+
+  function renderPopup() {
+    return (
+      <Modal show={showPopup} onHide={(e) => setShowPopup(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title><b>Busiest Rooms at {times[selectedHour - 5]}</b></Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {busiestRooms?.map((entry, index) => (
+            <span>
+              <h3>{entry.room}</h3>
+              <p>Average Occupancy: {entry.occupancy}</p>
+            </span>
+          ))}
+        </Modal.Body>
+        <Modal.Footer>
+          <DropdownButton
+            title={times[selectedHour - 5]}
+            variant="secondary"
+            menuVariant="dark"
+            defaultValue={selectedHour}
+          >
+            {times.map((time, index) => (
+              <Dropdown.Item
+                onClick={() => {
+                  setSelectedHour(index + 5);
+                  handleGetBusiestRooms();
+                }}
+              >
+                {time}
+              </Dropdown.Item>
+            ))}
+          </DropdownButton>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+
   return (
     <div>
+      {renderPopup()}
       <Header />
       <h1> Dashboard </h1>
-
       {loading ? (
-        <div>
-          <h2>Fetching Occupancies...</h2>
-          <Spinner size="lg" animation="border" />
+        <div className="fetching-loading">
+          <h2>Fetching Occupancies</h2>
+          <div class="dot-elastic"></div>
         </div>
       ) : (
         <div>
+          <PieChart width={730} height={250}>
+            <Pie data={graphData} dataKey="occupancy" nameKey="room" label />
+            <Tooltip />
+            <Legend height={36} />
+          </PieChart>
           {renderRooms()}
-          <Button
-            block
-            size="lg"
-            type="submit"
-            onClick={() => history.push("/favorites")}
-            disabled={authError}
-          >
-            Show favorites only
-          </Button>
-          <FormCheck
-            type="switch"
-            label={<p>Sort by Occupancy</p>}
-            onChange={() => setSorted(!sorted)}
-            checked={sorted}
-          />
+          <Container style={{ padding: "0 45px" }}>
+            <Row xs="auto">
+              <Col xs="auto">
+                <FormCheck
+                  type="switch"
+                  label={<p>Sort by Occupancy</p>}
+                  onChange={() => setSorted(!sorted)}
+                  checked={sorted}
+                />
+              </Col>
+              <Col xs="auto">
+                <Button
+                  block
+                  size="lg"
+                  type="submit"
+                  onClick={() => history.push("/favorites")}
+                  disabled={authError}
+                >
+                  Show favorites only
+                </Button>
+              </Col>
+              <Col xs="auto">
+                <Button
+                  variant="light"
+                  onClick={() => setShowPopup(!showPopup)}
+                >
+                  More
+                </Button>
+              </Col>
+            </Row>
+          </Container>
         </div>
       )}
     </div>
