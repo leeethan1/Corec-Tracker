@@ -12,6 +12,8 @@ db = ds.connect_to_database("database")
 records = db["records"]
 users = db["users"]
 
+rooms = ['Room 1', 'Room 2', 'Room 3', 'Room 4']
+
 
 @record_service.route("/records/notify", methods=['POST'])
 def create_and_notify(room, occupancy, records):
@@ -179,3 +181,20 @@ def get_advanced_stats():
          'todaysMin': min(current_day_occupancies),
          'todaysMax': max(current_day_occupancies),
          'todaysAverage': round(statistics.mean(current_day_occupancies), 1)}), 200
+
+@record_service.route('/records/hour', methods=['POST', 'GET'])
+def get_rooms_by_hour():
+    hour = request.json['hour']
+    response = []
+    for room in rooms:
+        record_list = list(
+            records.find({'$and': [{'room': room}, {'hour': hour}]}))
+        occupancies = [record['occupancy'] for record in record_list]
+        if not occupancies:
+            average = 0
+        else:
+            average = round(statistics.mean(occupancies), 1)
+        response.append({'room': room, 'occupancy': average})
+    response = sorted(response, key=lambda d: d['occupancy'])
+    response.reverse()
+    return json.dumps({'rooms': response}), 200
