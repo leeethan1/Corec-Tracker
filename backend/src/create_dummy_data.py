@@ -23,6 +23,15 @@ def create():
             "time": datetime.utcnow() - timedelta(weeks=random.randint(0, 4))
         }
         records.insert_one(new_record)
+
+        new_record = {
+            "room": room,
+            "occupancy": occ,
+            "hour": hour,
+            "day": day,
+            "time": datetime.utcnow() - timedelta(hours=random.randint(-4, 4))
+        }
+        records.insert_one(new_record)
         # record_service.create_record(room,occ,records)
     print("done")
 

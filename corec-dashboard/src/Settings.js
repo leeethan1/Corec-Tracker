@@ -14,6 +14,7 @@ import "rc-slider/assets/index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import NotLoggedIn from "./NotLoggedIn";
 import Header from "./Header";
+import Popup from "./Popup";
 
 import RangeSlider from "rsuite/RangeSlider";
 //import Slider from "rsuite/Slider"
@@ -278,7 +279,7 @@ function Settings() {
       </div>
     );
   }
-
+  const [buttonPopup, setButtonPopup] = useState(false);
   return (
     <div>
       {settingsSaved && (

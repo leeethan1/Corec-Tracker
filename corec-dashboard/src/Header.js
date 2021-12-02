@@ -7,26 +7,25 @@ import { useHistory } from "react-router";
 
 function Header() {
   const history = useHistory();
-  //const [loggedIn, setLoggedIn] = useState(false);
-  var loggedIn =
-    localStorage.getItem("access") || sessionStorage.getItem("access");
-  var admin = sessionStorage.getItem("isAdmin");
-  // async function authenticate() {
-  //   const token = localStorage.getItem("remember")
-  //     ? localStorage.getItem("access")
-  //     : sessionStorage.getItem("access");
-  //   const requestOptions = {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       access: token,
-  //     },
-  //   };
-  //   const response = await fetch("/auth", requestOptions);
-  //   if (response.ok) {
-  //     setLoggedIn(true);
-  //   }
-  // }
+  const [loggedIn, setLoggedIn] = useState(false);
+  const admin = sessionStorage.getItem("isAdmin");
+
+  async function authenticate() {
+    const token = localStorage.getItem("remember")
+      ? localStorage.getItem("access")
+      : sessionStorage.getItem("access");
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access: token,
+      },
+    };
+    const response = await fetch("/auth", requestOptions);
+    if (response.ok) {
+      setLoggedIn(true);
+    }
+  }
 
   async function signOut() {
     const token = localStorage.getItem("remember")
@@ -40,13 +39,14 @@ function Header() {
       },
     };
     const response = await fetch(`/logout`, requestOptions);
-
-    //console.log(averages);
-    //console.log(occupancies);
-    localStorage.clear();
-    sessionStorage.clear();
-    //setLoggedIn(false);
-    history.push("/");
+    if (response.ok) {
+      //console.log(averages);
+      //console.log(occupancies);
+      localStorage.clear();
+      sessionStorage.clear();
+      setLoggedIn(false);
+      history.push("/");
+    }
   }
   const rooms = ["Room 1", "Room 2", "Room 3", "Room 4"];
 
@@ -58,9 +58,9 @@ function Header() {
     history.push("/settings");
   }
 
-  // useEffect(() => {
-  //   authenticate();
-  // }, []);
+  useEffect(() => {
+    authenticate();
+  }, []);
 
   return (
     <div className="header">
@@ -90,6 +90,9 @@ function Header() {
               <Nav.Link href="/settings">
                 <span>Settings</span>
               </Nav.Link>
+            )}
+            {loggedIn && !admin && (
+              <Nav.Link href="/report">Report a Bug</Nav.Link>
             )}
             <DropdownButton title="Rooms">
               {rooms.map((room, index) => (

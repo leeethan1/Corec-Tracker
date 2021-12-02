@@ -168,7 +168,7 @@ function Login({ setLogIn }) {
   return (
     <div>
       <div id="Login-Panel" style={{ height: "480px" }}>
-        <h1>Login</h1>
+        <h1 style={{ width: "fit-content"}}>Login</h1>
         <Form onSubmit={handleLogin}>
           <Form.Group size="lg" controlId="email" className="mb-3">
             <InputGroup>

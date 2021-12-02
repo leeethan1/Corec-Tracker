@@ -27,6 +27,7 @@ email_verification_codes = db['email verification codes']
 phone_verification_codes = db['phone verification codes']
 unverified_accounts = db['unverified accounts']
 admins = db['admins']
+bug_reports = db['Bug Reports']
 
 email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 password_regex = re.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$")
@@ -618,3 +619,16 @@ def generate_phone_verification_code(phone):
         ns.send_text(phone, "Your verification code is {}".format(code))
         return code
     return token['code']
+
+@user_service.route("/report/send", methods=["POST"])
+@token_required
+def send_bug_report(user):
+    email = user['email']
+    bug = request.json['bug']
+    time = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+    sent_reports = bug_reports.find({'$and': [{'time': {'$gt': time}}, {'email': email}]})
+    if sent_reports.count() >= 3:
+        raise exceptions.BugReportSpamError
+    ns.send_email('corec-tracker@outlook.com', 'Bug Report [{}]'.format(str(datetime.datetime.utcnow())), bug)
+    bug_reports.insert_one({'email': email, 'time': datetime.datetime.utcnow()})
+    return "Bug Report Sent", 200

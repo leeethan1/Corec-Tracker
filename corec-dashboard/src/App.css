@@ -1,16 +1,15 @@
-.star-selected svg{
+.star-selected svg {
   fill: yellow;
 }
 
 #Login-Panel {
   left: 50%;
   top: 50%;
-  position: absolute;
+  display: flex;
+  position: fixed;
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
-  width: 35%;
-  height: 60%;
-  box-shadow: 10px -10px 5px #CCC;
+  box-shadow: 10px -10px 5px #ccc;
   border-radius: 30px;
   border: 1px solid black;
   padding: 30px;
@@ -18,14 +17,18 @@
 
 #Login-Panel h1 {
   text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  size: 50pt;
 }
 
-#Remember-Forgot{
+#Remember-Forgot {
   display: flex;
   justify-content: space-between;
 }
 
-#Forgot, #Signup-Link  {
+#Forgot,
+#Signup-Link {
   text-decoration: none;
 }
 
@@ -253,14 +256,25 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-size: 62,5%;
+  font-size: 62, 5%;
 }
 
 .wrapper {
   height: 100vh;
-	width: 100%;
-  background: rgb(117,84,160);
-  background: linear-gradient(90deg, rgba(117,84,160,1) 7%, rgba(117,84,160,1) 17%, rgba(106,95,168,1) 29%, rgba(99,103,174,1) 44%, rgba(87,116,184,1) 66%, rgba(70,135,198,1) 83%, rgba(44,163,219,1) 96%, rgba(22,188,237,1) 100%, rgba(0,212,255,1) 100%);
+  width: 100%;
+  background: rgb(117, 84, 160);
+  background: linear-gradient(
+    90deg,
+    rgba(117, 84, 160, 1) 7%,
+    rgba(117, 84, 160, 1) 17%,
+    rgba(106, 95, 168, 1) 29%,
+    rgba(99, 103, 174, 1) 44%,
+    rgba(87, 116, 184, 1) 66%,
+    rgba(70, 135, 198, 1) 83%,
+    rgba(44, 163, 219, 1) 96%,
+    rgba(22, 188, 237, 1) 100%,
+    rgba(0, 212, 255, 1) 100%
+  );
   display: flex;
   justify-content: center;
   align-items: center;
@@ -269,7 +283,7 @@
 .input {
   color: #333;
   font-size: 1.2rem;
-	margin: 0 auto;
+  margin: 0 auto;
   padding: 1.5rem 2rem;
   border-radius: 0.2rem;
   background-color: rgb(255, 255, 255);
@@ -291,7 +305,7 @@
   color: white;
   margin-bottom: 30px;
   width: 100%;
-  font-size: 2.3em;;
+  font-size: 2.3em;
 }
 
 .button {
@@ -316,7 +330,7 @@
   transition: 0.4s;
 }
 .button span:after {
-  content: '\00bb';
+  content: "\00bb";
   position: absolute;
   opacity: 0;
   top: 0;
@@ -329,4 +343,170 @@
 .button:hover span:after {
   opacity: 1;
   right: 0;
+}
+
+#RoomDataCard {
+  width: 15rem;
+  /* margin-left: 30px; */
+  text-align: center;
+  height: fit-content;
+  font-family: Roboto;
+  font-size: larger;
+}
+
+.flexSpace {
+  display: flex;
+  justify-content: space-around;
+}
+
+.dayRange {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filterSelect {
+  width: 15% !important;
+}
+
+.textRed {
+  color: red;
+}
+
+.textGreen {
+  color: green;
+}
+
+.textBlack {
+  color: black;
+}
+
+.failAlert {
+  height: 0px;
+  text-align: center;
+  font-size: medium;
+}
+
+.vCenter {
+  margin: 0;
+  margin-top: 35px;
+}
+
+.gCenter {
+  margin: 0;
+  margin-top: 55px;
+}
+
+.space {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.flexAlign {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-menu {
+  height: 250px;
+  overflow-y: scroll;
+}
+
+.fetching-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dot-elastic {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #000000;
+  color: #000000;
+  margin-left: 20px;
+  margin-top: 10px;
+  animation: dotElastic 1s infinite linear;
+}
+
+.dot-elastic::before,
+.dot-elastic::after {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  top: 0;
+}
+
+.dot-elastic::before {
+  left: -15px;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #000000;
+  color: #000000;
+  animation: dotElasticBefore 1s infinite linear;
+}
+
+.dot-elastic::after {
+  left: 15px;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #000000;
+  color: #000000;
+  animation: dotElasticAfter 1s infinite linear;
+}
+
+@keyframes dotElasticBefore {
+  0% {
+    transform: scale(1, 1);
+  }
+  25% {
+    transform: scale(1, 1.5);
+  }
+  50% {
+    transform: scale(1, 0.67);
+  }
+  75% {
+    transform: scale(1, 1);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+@keyframes dotElastic {
+  0% {
+    transform: scale(1, 1);
+  }
+  25% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1, 1.5);
+  }
+  75% {
+    transform: scale(1, 1);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+@keyframes dotElasticAfter {
+  0% {
+    transform: scale(1, 1);
+  }
+  25% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1, 0.67);
+  }
+  75% {
+    transform: scale(1, 1.5);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
 }
