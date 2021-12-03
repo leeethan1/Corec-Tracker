@@ -33,6 +33,9 @@ class TestUserService(unittest.TestCase):
         user = users.find_one(query)
         assert user
 
+    def testAuthenticate(self):
+        assert user_service.authenticateHelper(test_user)
+
     def testUpdateSettings(self):
         query = {'email': "email"}
         user = users.find_one(query)

@@ -62,9 +62,15 @@ def token_required(f):
 @user_service.route('/auth', methods=['POST'])
 @token_required
 def authenticate(user):
-    if user:
+    if authenticateHelper(user):
         return "Authenticated", 200
     return "Not authorized", 400
+
+
+def authenticateHelper(user):
+    if user:
+        return True
+    return False
 
 
 @user_service.route('/user/info', methods=['POST'])
