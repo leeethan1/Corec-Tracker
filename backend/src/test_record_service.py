@@ -102,3 +102,6 @@ class TestRecordService(unittest.TestCase):
     @classmethod
     def tearDown(cls) -> None:
         records.delete_many({})
+
+if __name__ == '__main__':
+    unittest.main()

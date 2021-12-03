@@ -73,3 +73,6 @@ class TestNotificationService(unittest.TestCase):
     @classmethod
     def tearDown(cls):
         users.delete_many({})
+
+if __name__ == '__main__':
+    unittest.main()
