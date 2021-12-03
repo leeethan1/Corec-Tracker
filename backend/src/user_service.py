@@ -68,6 +68,7 @@ def authenticate(user):
 
 
 def authenticateHelper(user):
+    x = "Hello" + 3
     if user:
         return True
     return False
