@@ -1,4 +1,4 @@
-# Corec-Tracker 
+# Corec-Tracker (CS 307)
 By Team 7
 - 
 Daniel Shi
