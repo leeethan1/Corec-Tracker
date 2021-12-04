@@ -27,12 +27,22 @@ import { themeToggler } from "./ThemeToggler";
 function App() {
   const [log, setLog] = useState(false);
   const [theme, setTheme] = useState("light");
+  const [autoToggle, setAutoToggle] = useState(true);
 
   useEffect(() => {
-    if (new Date().getHours() >= 18 || new Date().getHours() < 6) {
-      setTheme("dark");
+    if (localStorage.getItem("autoToggle") == null) {
+      console.log("test");
+      localStorage.setItem("autoToggle", true);
     }
-  }, []);
+    setAutoToggle(localStorage.getItem("autoToggle"));
+    // console.log(autoToggle);
+    if (localStorage.getItem("autoToggle")) {
+      console.log("changing");
+      if (new Date().getHours() >= 18 || new Date().getHours() < 6) {
+        setTheme("dark");
+      }
+    }
+  }, [autoToggle]);
 
   const logIn = useCallback(() => {
     console.log("logged in!");
@@ -84,14 +94,30 @@ function App() {
             </Switch>
           </div>
         </Router>
-        <div style={{ marginTop: "3%" }}>
+        <div style={{ marginTop: "3px" }}>
           <FormCheck
             type="switch"
-            label={<p styles={{ color: "black" }}>Dark Mode</p>}
+            label={<h3 styles={{ color: "black" }}>Dark Mode</h3>}
             onChange={() => {
               setTheme(themeToggler(theme));
             }}
             checked={theme === "dark"}
+          />
+          <FormCheck
+            type="switch"
+            label={
+              <p styles={{ color: "black" }}>Automatically Toggle Dark Mode</p>
+            }
+            onChange={(e) => {
+              //e.preventDefault();
+              // localStorage.setItem("autoToggle", !localStorage.getItem("autoToggle"));
+              // setAutoToggle(localStorage.getItem("autoToggle") === true);
+
+              localStorage.setItem("autoToggle", !autoToggle);
+              setAutoToggle(!autoToggle);
+              console.log(autoToggle);
+            }}
+            checked={autoToggle}
           />
         </div>
       </>
