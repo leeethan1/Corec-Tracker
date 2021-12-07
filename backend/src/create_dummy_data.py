@@ -7,6 +7,7 @@ import bcrypt
 db = database_service.connect_to_database("database")
 records = db["records"]
 admins = db['admins']
+users = db['users']
 
 
 def create():
@@ -41,9 +42,15 @@ def remove():
     print("done")
 
 
+def clean_users():
+    users.delete_many({})
+
+
 if __name__ == '__main__':
+    print("deleting...")
     remove()
     create()
+    print("data added")
     # password = 'pass123'
     # admins.insert_one({
     #     'username': 'admin123',
