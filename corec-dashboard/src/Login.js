@@ -168,102 +168,108 @@ function Login({ setLogIn }) {
   return (
     <div>
       <div id="Login-Panel" style={{ height: "480px" }}>
-        <h1 style={{ width: "fit-content"}}>Login</h1>
-        <Form onSubmit={handleLogin}>
-          <Form.Group size="lg" controlId="email" className="mb-3">
-            <InputGroup>
-              <InputGroup.Text>
-                <FontAwesomeIcon icon="envelope" />
-              </InputGroup.Text>
-              <Form.Control
-                autoFocus
-                placeholder="Email Address"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </InputGroup>
-          </Form.Group>
-          <Form.Group size="lg" controlId="password" className="mb-3">
-            <InputGroup>
-              <InputGroup.Text>
-                <FontAwesomeIcon icon="key" />
-              </InputGroup.Text>
-              <Form.Control
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </InputGroup>
-          </Form.Group>
-          {formFailure()}
-          <div id="Remember-Forgot">
-            <FormCheck
-              label={<p>Remember Me</p>}
-              onChange={() => setRemember(!remember)}
-              checked={remember}
-            />
-            <a id="Forgot" href="/forgot-password">
-              Forgot Password
-            </a>
-          </div>
-          <div id="Login-Aree">
-            <Button
-              id="Login-Button"
-              block
-              size="lg"
-              type="submit"
-              onClick={handleLogin}
-              disabled={!validateForm()}
-            >
-              Log In
-            </Button>
-          </div>
-          <Container>
-            <Row>
-              <a href="/signup" id="Signup-Link">
-                Don't have an account? Sign up
-              </a>
-            </Row>
-            <Row>
-              <a href="/admin/login" id="Signup-Link">
-                Login as Admin
-              </a>
-            </Row>
-          </Container>
-          <div id="Other-Options">
-            <Button
-              block
-              size="md"
-              type="submit"
-              variant="secondary"
-              onClick={(e) => {
-                localStorage.removeItem("access");
-                localStorage.removeItem("refresh");
-                sessionStorage.removeItem("access");
-                sessionStorage.removeItem("refresh");
-                history.push("/dashboard");
-              }}
-            >
-              Continue as Guest
-            </Button>
-            <GoogleLogin
-              // render={(renderProps) => {
-              //   return (
-              //   <Button onClick={renderProps.onClick} disabled={renderProps.disabled}>
-              //     <FontAwesomeIcon icon="google" />
-              //   </Button>)
-              // }}
-              theme="dark"
-              clientId={cID}
-              buttonText="Log in with Google"
-              onSuccess={handleGoogleSuccess}
-              onFailure={handleGoogleFailure}
-              cookiePolicy={"single_host_origin"}
-            />
-          </div>
-          {/* <FacebookLogin
+        <Container>
+          <Row>
+            <div>
+              <h1 className="center">Login</h1>
+            </div>
+          </Row>
+          <Row>
+            <Form onSubmit={handleLogin}>
+              <Form.Group size="lg" controlId="email" className="mb-3">
+                <InputGroup>
+                  <InputGroup.Text>
+                    <FontAwesomeIcon icon="envelope" />
+                  </InputGroup.Text>
+                  <Form.Control
+                    autoFocus
+                    placeholder="Email Address"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </InputGroup>
+              </Form.Group>
+              <Form.Group size="lg" controlId="password" className="mb-3">
+                <InputGroup>
+                  <InputGroup.Text>
+                    <FontAwesomeIcon icon="key" />
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </InputGroup>
+              </Form.Group>
+              {formFailure()}
+              <div id="Remember-Forgot">
+                <FormCheck
+                  label={<p>Remember Me</p>}
+                  onChange={() => setRemember(!remember)}
+                  checked={remember}
+                />
+                <a id="Forgot" href="/forgot-password">
+                  Forgot Password
+                </a>
+              </div>
+              <div id="Login-Aree">
+                <Button
+                  id="Login-Button"
+                  block
+                  size="lg"
+                  type="submit"
+                  onClick={handleLogin}
+                  disabled={!validateForm()}
+                >
+                  Log In
+                </Button>
+              </div>
+              <Container>
+                <Row>
+                  <a href="/signup" id="Signup-Link">
+                    Don't have an account? Sign up
+                  </a>
+                </Row>
+                <Row>
+                  <a href="/admin/login" id="Signup-Link">
+                    Login as Admin
+                  </a>
+                </Row>
+              </Container>
+              <div id="Other-Options">
+                <Button
+                  block
+                  size="md"
+                  type="submit"
+                  variant="secondary"
+                  onClick={(e) => {
+                    localStorage.removeItem("access");
+                    localStorage.removeItem("refresh");
+                    sessionStorage.removeItem("access");
+                    sessionStorage.removeItem("refresh");
+                    history.push("/dashboard");
+                  }}
+                >
+                  Continue as Guest
+                </Button>
+                <GoogleLogin
+                  // render={(renderProps) => {
+                  //   return (
+                  //   <Button onClick={renderProps.onClick} disabled={renderProps.disabled}>
+                  //     <FontAwesomeIcon icon="google" />
+                  //   </Button>)
+                  // }}
+                  theme="dark"
+                  clientId={cID}
+                  buttonText="Log in with Google"
+                  onSuccess={handleGoogleSuccess}
+                  onFailure={handleGoogleFailure}
+                  cookiePolicy={"single_host_origin"}
+                />
+              </div>
+              {/* <FacebookLogin
           appId={facebookID}
           autoLoad={true}
           fields="name,email,picture"
@@ -271,7 +277,9 @@ function Login({ setLogIn }) {
           cssClass="my-facebook-button-class"
           icon="fa-facebook"
         /> */}
-        </Form>
+            </Form>
+          </Row>
+        </Container>
       </div>
     </div>
   );
